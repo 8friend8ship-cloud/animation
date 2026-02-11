@@ -1,0 +1,13 @@
+html {
+  color-scheme: light;
+  background-color: #f1f5f9; /* slate-100 */
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+/* 
+  @tailwindcss/browser 스크립트가 Tailwind 클래스를 처리합니다.
+  여기서는 커스텀 클래스만 정의합니다.
+*/
