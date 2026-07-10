@@ -46,9 +46,37 @@ import {
   RadioTower,
   PaintBucket,
   GalleryThumbnails,
+  Smile,
+  Moon,
+  Box,
+  Scroll,
+  Stamp,
+  Sticker,
+  Zap,
+  Scissors,
+  Edit3,
+  Newspaper,
+  Paperclip,
+  Layers,
+  Signpost,
+  BarChart3,
+  TriangleAlert,
+  Monitor,
+  Presentation,
+  Network,
+  MonitorPlay,
+  Shapes,
 } from 'lucide-react';
 
-const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
+const getAI = () => {
+  const key = process.env.GEMINI_API_KEY || process.env.API_KEY;
+  if (!key) {
+    throw new Error('Gemini API 키가 설정되지 않았습니다. 설정(Settings) 메뉴의 Secrets 섹션에서 GEMINI_API_KEY를 추가해 주세요.');
+  }
+  return new GoogleGenAI({ apiKey: key });
+};
+
+const ai = getAI();
 
 const BLUE_TIE_BASE_IMAGE_DATA_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NjAiIGhlaWdodD0iNTQwIiB2aWV3Qm94PSIwIDAgOTYwIDU0MCI+CiAgPHJlY3Qgd2lkdGg9Ijk2MCIgaGVpZGhodD0iNTQwIiIGZpbGw9Im5vbmUiLz4KICA8ZyBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNNDgwIDMzMHYxMDAiIGZpbGw9Im5vbmUiLz4KICAgIDxwYXRoIGQ9Im00MjAgMzgwIDYwLTMwIDYwIDMwIiBmaWxsPSJub25lIi8+CiAgICA8cGF0aCBkPSJtNDQwIDQ4MCA0MC01MCA0MCA1MCINCiAgICAgIGZpbGw9Im5vbmUiLz4KICAgIDxjaXJjbGUgY3g9IjQ4MCIgY3k9IjI1MCIgcj0iODAiIGZpbGw9IiM0Mjg1ZjQiLz4KICAgIDxwYXRoIGQ9Im00ODAgMzMwLTIwIDIwIDIwIDQwIDIwLTQwLTIwLTIweiIgZmlsbD0iI2RiNDQzNyIgc3Ryb2tlLXdpZHRoPSI1Ii8+CiAgPC9nPgo8L3N2Zz4=';
 const RED_TIE_TEDDY_BASE_IMAGE_DATA_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NjAiIGhlaWdodD0iNTQwIiB2aWV3Qm94PSIwIDAgOTYwIDU0MCI+CiAgPHJlY3Qgd2lkdGg9Ijk2MCIgaGVpZ2h0PSI1NDAiIGZpbGw9Im5vbmUiLz4KICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0ODAgMjcwKSBzY2FsZSgxLjUpIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj4KICAgIDxnIGZpbGw9IiM4ZDZlNjMiPgogICAgICA8Y2lyY2xlIGN4PSIwIiBjeT0iLTMwIiByPSI3MCIvPgogICAgICA8Y2lyY2xlIGN4PSItNjAiIGN5PSItODAiIHI9IjI1Ii8+CiAgICAgIDxjaXJjbGUgY3g9IjYwIiBjeT0iLTgwIiByPSIyNSIvPgogICAgICA8ZWxsaXBzZSBjeD0iMCIgY3k9IjgwIiByeD0iNTAiIHJ5PSI2MCIvPgogICAgPC9nPgogICAgPGNpcmNsZSBjeD0iLTI1IiBjeT0iLTQwIiByPSIxMCIgZmlsbD0iI2ZmZiIvPgogICAgPGNpcmNsZSBjeD0iMjUiIGN5PSItNDAiIHI9IjEwIiBmaWxsPSIjZmZmIi8+CiAgICA8Y2lyY2xlIGN4PSItMjUiIGN5PSItNDAiIHI9IjQiIGZpbGw9IiMwMDAiLz4KICAgIDxjaXJjbGUgY3g9IjI1IiBjeT0iLTQwIiByPSI0IiBmaWxsPSIjMDAwIi8+CiAgICA8ZWxsaXBzZSBjeD0iMCIgY3k9Ii01IiByeD0iMjUiIHJ5PSIyMCIgZmlsbD0iI2VmZWJlOSIvPgogICAgPHBhdGggZD0iTTAgLTUgcSA1IDUgMCAxMCBxIC01IC01IDAgLTEweiIgZmlsbD0iIzAwMCIvPgogICAgPHBhdGggZD0iTS0yMCAyMCBBIDIwIDEwIDAgMCAwIDIwIDIwIiBmaWxsPSJub25lIiBzdHJva2Utd2lkdGg9IjQiLz4KICA8L2c+Cjwvc3ZnPg==';
@@ -89,22 +117,62 @@ const SCENE_ANIMATION_SYSTEM_INSTRUCTION = `You are a world-class animation dire
 - Maintain object permanence and visual consistency.
 - No text allowed.`;
 
-const ANIMATION_STYLES = [
-  { name: '블루 타이', prompt: 'Rough SD character style with blue round head and red tie, black hand-drawn outlines.', icon: Bot, baseImage: BLUE_TIE_BASE_IMAGE_DATA_URL },
-  { name: '레드타이 테디', prompt: 'Meme-style comical reaction cartoon, exaggerated expressions, rough black outlines.', icon: Laugh, baseImage: RED_TIE_TEDDY_BASE_IMAGE_DATA_URL },
-  { name: '애니메이션', prompt: 'Modern Japanese anime style, vibrant colors, sharp lines.', icon: Film },
-  { name: '카툰', prompt: 'Bubbly American cartoon style, soft rounded shapes, simple bright colors.', icon: Brush },
-  { name: '픽셀아트', prompt: 'Retro 16-bit pixel art style.', icon: Grid3X3 },
-  { name: '지브리', prompt: 'Painterly Ghibli-inspired style, soft lighting, nostalgic feel.', icon: Feather },
-  { name: '스케치', prompt: 'Rough pencil sketch style, energetic hatching.', icon: PenTool },
-  { name: '막대인간', prompt: 'Simple black and white stick figure minimalist style.', icon: PersonStanding },
-  { name: '3D 렌더', prompt: 'High-quality 3D render, cinematic lighting, detailed textures.', icon: Cuboid },
-  { name: '클레이', prompt: 'Digital claymation style, visible fingerprints, stop-motion look.', icon: Paintbrush },
-  { name: '수채화', prompt: 'Soft watercolor painting, bleeding colors, textured paper.', icon: Droplet },
-  { name: '필름 누아르', prompt: 'High-contrast black and white, dramatic shadows, 1940s film noir style.', icon: Camera },
-  { name: '사이버펑크', prompt: 'Cyberpunk art style, neon lights, futuristic cityscapes, high-tech details.', icon: RadioTower },
-  { name: '유화', prompt: 'Classic oil painting style, visible brushstrokes, rich textures.', icon: GalleryThumbnails },
-  { name: '팝아트', prompt: 'Bold and colorful pop art style, inspired by Andy Warhol, using Ben-Day dots and vibrant colors.', icon: PaintBucket },
+// Helper to get a stable preview URL for styles
+const getStylePreviewUrl = (styleName: string, prompt: string) => {
+  const seed = styleName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const encodedPrompt = encodeURIComponent(`A cute cat, ${prompt}, detailed, high quality`);
+  return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=300&height=300&seed=${seed}&nologo=true`;
+};
+
+type StyleCategory = '캐릭터/애니' | '예술/회화' | '3D/질감' | '디자인/심볼' | '분위기';
+
+const STYLE_CATEGORIES: StyleCategory[] = ['캐릭터/애니', '예술/회화', '3D/질감', '디자인/심볼', '분위기'];
+
+const ANIMATION_STYLES: { name: string; prompt: string; icon: React.ElementType; category: StyleCategory; baseImage?: string }[] = [
+  // 캐릭터/애니
+  { name: '블루 타이', prompt: 'Rough SD character style with blue round head and red tie, black hand-drawn outlines.', icon: Bot, category: '캐릭터/애니', baseImage: BLUE_TIE_BASE_IMAGE_DATA_URL },
+  { name: '레드타이 테디', prompt: 'Meme-style comical reaction cartoon, exaggerated expressions, rough black outlines.', icon: Laugh, category: '캐릭터/애니', baseImage: RED_TIE_TEDDY_BASE_IMAGE_DATA_URL },
+  { name: '애니메이션', prompt: 'Modern Japanese anime style, vibrant colors, sharp lines.', icon: Film, category: '캐릭터/애니' },
+  { name: '카툰', prompt: 'Bubbly American cartoon style, soft rounded shapes, simple bright colors.', icon: Brush, category: '캐릭터/애니' },
+  { name: '픽셀아트', prompt: 'Retro 16-bit pixel art style.', icon: Grid3X3, category: '캐릭터/애니' },
+  { name: '막대인간', prompt: 'Simple black and white stick figure minimalist style.', icon: PersonStanding, category: '캐릭터/애니' },
+  
+  // 예술/회화
+  { name: '아이가 그린 그림', prompt: 'Children\'s crayon drawing style, colorful, messy, creative, white paper background, simple shapes.', icon: Smile, category: '예술/회화' },
+  { name: '지브리', prompt: 'Painterly Ghibli-inspired style, soft lighting, nostalgic feel.', icon: Feather, category: '예술/회화' },
+  { name: '스케치', prompt: 'Rough pencil sketch style, energetic hatching.', icon: PenTool, category: '예술/회화' },
+  { name: '수채화', prompt: 'Soft watercolor painting, bleeding colors, textured paper.', icon: Droplet, category: '예술/회화' },
+  { name: '유화', prompt: 'Classic oil painting style, visible brushstrokes, rich textures.', icon: GalleryThumbnails, category: '예술/회화' },
+  { name: '판화', prompt: 'Traditional woodblock print style, bold lines, limited color palette.', icon: Stamp, category: '예술/회화' },
+  { name: '팝아트', prompt: 'Bold and colorful pop art style, inspired by Andy Warhol, using Ben-Day dots and vibrant colors.', icon: PaintBucket, category: '예술/회화' },
+  { name: '칠판 낙서', prompt: 'White chalk drawing on a green blackboard, dusty texture, rough lines.', icon: Edit3, category: '예술/회화' },
+
+  // 3D/질감
+  { name: '3D 렌더', prompt: 'High-quality 3D render, cinematic lighting, detailed textures.', icon: Cuboid, category: '3D/질감' },
+  { name: '클레이', prompt: 'Digital claymation style, visible fingerprints, stop-motion look.', icon: Paintbrush, category: '3D/질감' },
+  { name: '종이접기', prompt: 'Origami style, folded paper texture, geometric shapes, soft shadows.', icon: Scroll, category: '3D/질감' },
+  { name: '로우 폴리', prompt: 'Low poly 3D art, flat shading, geometric aesthetic, minimalistic.', icon: Box, category: '3D/질감' },
+  { name: '페이퍼 컷아웃', prompt: 'Paper cut-out animation style, visible scissor cuts, construction paper texture, lo-fi aesthetic, South Park style, flat layers with drop shadows.', icon: Scissors, category: '3D/질감' },
+  { name: '콜라주', prompt: 'Mixed media collage style, cut-out paper texture, eclectic mix of elements.', icon: Layers, category: '3D/질감' },
+  { name: '스티커', prompt: 'Die-cut sticker art style, white borders, vibrant vector colors.', icon: Sticker, category: '3D/질감' },
+  { name: '랜섬 노트', prompt: 'Ransom note style, letters cut out from magazines with different fonts and sizes, chaotic layout, paper textures, collage aesthetic.', icon: Newspaper, category: '3D/질감' },
+  { name: '믹스드 미디어', prompt: 'Mixed media collage style, stick figures interacting with real receipts, graphs, and newspaper clippings, dry and factual aesthetic, 2D and photo blend.', icon: Paperclip, category: '3D/질감' },
+
+  // 디자인/심볼 (New additions)
+  { name: '픽토그램', prompt: 'Pictogram style, simple black and white, universal symbol design, flat shapes, no detail, clear communication.', icon: Signpost, category: '디자인/심볼' },
+  { name: '아이소타입', prompt: 'Isotype style, statistical graphic symbol, simplified repeated figures, flat design, infographic aesthetic.', icon: BarChart3, category: '디자인/심볼' },
+  { name: '세이프티 사인', prompt: 'Safety signage style, high contrast yellow black red, warning symbol aesthetic, bold geometric shapes.', icon: TriangleAlert, category: '디자인/심볼' },
+  { name: '플랫 일러스트', prompt: 'Flat illustration style, 2D, no gradients, clean lines, modern digital art, minimalist.', icon: Monitor, category: '디자인/심볼' },
+  { name: '벡터 아이콘', prompt: 'Vector icon style, flat color background, simple geometric construction, clean lines, app icon aesthetic.', icon: Shapes, category: '디자인/심볼' },
+  { name: '코퍼레이트', prompt: 'Corporate PowerPoint design style, clean layout, professional, bullet points visual style, charts, blue and grey tones.', icon: Presentation, category: '디자인/심볼' },
+  { name: '다이어그램', prompt: 'Diagrammatic style, flowcharts, arrows, geometric shapes, logical connection lines, schematic look.', icon: Network, category: '디자인/심볼' },
+  { name: '미니멀리즘', prompt: 'Minimalist keynote slide style, vast negative space, single focal point, high impact, Steve Jobs presentation style.', icon: MonitorPlay, category: '디자인/심볼' },
+
+  // 분위기
+  { name: '흑백 만화', prompt: 'High contrast black and white comic book style, ink lines, manga style, screen tones.', icon: Moon, category: '분위기' },
+  { name: '필름 누아르', prompt: 'High-contrast black and white, dramatic shadows, 1940s film noir style.', icon: Camera, category: '분위기' },
+  { name: '사이버펑크', prompt: 'Cyberpunk art style, neon lights, futuristic cityscapes, high-tech details.', icon: RadioTower, category: '분위기' },
+  { name: '네온', prompt: 'Glowing neon lines against a dark background, futuristic and bright.', icon: Zap, category: '분위기' },
 ];
 
 
@@ -222,6 +290,9 @@ export default function Home() {
   const [showGenerationSettingsModal, setShowGenerationSettingsModal] = useState(false);
   const [generationConfig, setGenerationConfig] = useState<GenerationConfig | null>(null);
 
+  const [hoveredStyle, setHoveredStyle] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<StyleCategory>('캐릭터/애니');
+
   const isInteracting = useRef(false);
   const lastPosition = useRef({ x: 0, y: 0 });
   const skipCanvasRedrawRef = useRef(false);
@@ -231,6 +302,33 @@ export default function Home() {
   const colorInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleScenePromptChange = (idx: number, newPrompt: string) => {
+    setSceneData(prev => {
+      const next = [...prev];
+      while (next.length <= idx) {
+        next.push({ title: '', prompt: '' });
+      }
+      next[idx] = { ...next[idx], prompt: newPrompt };
+      return next;
+    });
+  };
+
+  const handleSceneTitleChange = (idx: number, newTitle: string) => {
+    setSceneData(prev => {
+      const next = [...prev];
+      while (next.length <= idx) {
+        next.push({ title: '', prompt: '' });
+      }
+      next[idx] = { ...next[idx], title: newTitle };
+      return next;
+    });
+  };
+
+  // Sync the prompt field with the active scene's prompt when scene index changes
+  useEffect(() => {
+    setPrompt(sceneData[currentFrameIndex]?.prompt || '');
+  }, [currentFrameIndex, sceneData.length]);
 
 
   const currentFrameData = frames[currentFrameIndex];
@@ -248,6 +346,7 @@ export default function Home() {
     const imageUrl = Array.isArray(dataUrl) ? dataUrl[0] : dataUrl;
     if (imageUrl) {
       const img = new Image();
+      img.crossOrigin = 'Anonymous';
       img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       img.src = imageUrl;
     }
@@ -273,6 +372,47 @@ export default function Home() {
     }
     return () => { if (subFramePlaybackRef.current) clearInterval(subFramePlaybackRef.current); };
   }, [currentFrameData, fps]);
+
+  const handleDownloadCurrentImage = () => {
+    if (!displayImage) return;
+    const a = document.createElement('a');
+    a.href = displayImage;
+    a.download = `scene_${currentFrameIndex + 1}.png`;
+    a.click();
+  };
+
+  useEffect(() => {
+    if (!isPlaying) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      return;
+    }
+
+    if (audioInfo && audioRef.current) {
+      const expectedTime = frameDurations.slice(0, currentFrameIndex).reduce((sum, d) => sum + d, 0) / 1000;
+      if (Math.abs(audioRef.current.currentTime - expectedTime) > 0.5) {
+        audioRef.current.currentTime = expectedTime;
+      }
+      audioRef.current.play().catch(err => console.log("Audio play error:", err));
+    }
+
+    const duration = frameDurations[currentFrameIndex] || 1000;
+    const timer = setTimeout(() => {
+      if (currentFrameIndex < frames.length - 1) {
+        setCurrentFrameIndex(currentFrameIndex + 1);
+      } else {
+        setIsPlaying(false);
+        setCurrentFrameIndex(0);
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+      }
+    }, duration);
+
+    return () => clearTimeout(timer);
+  }, [isPlaying, currentFrameIndex, frameDurations, frames.length, audioInfo]);
 
   const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
@@ -439,38 +579,63 @@ export default function Home() {
     setFrames(prev => { const next = [...prev]; next[currentFrameIndex] = data; return next; });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!prompt) return;
+  const generateFrameImage = async (frameIdx: number, promptText: string, stylePrompt: string | null, characterIndices: number[]) => {
+    if (!promptText) return;
     setIsLoading(true);
+    setIsAnimatingFrame(frameIdx);
     try {
       const parts: any[] = [];
-      selectedCharacterIndices.forEach(idx => parts.push({ inlineData: { data: cast[idx].split(',')[1], mimeType: 'image/png' } }));
-      let finalPrompt = `Create an image in ${aspectRatio} ratio. ${prompt}. Style: ${selectedStyle || 'detailed digital art'}. NO TEXT.`;
+      characterIndices.forEach(idx => {
+        if (cast[idx]) {
+          parts.push({ inlineData: { data: cast[idx].split(',')[1], mimeType: 'image/png' } });
+        }
+      });
+      
+      let characterInstruction = "";
+      if (characterIndices.length > 0) {
+        characterInstruction = "\n\nCRITICAL STYLE CONSISTENCY INSTRUCTION: The input image(s) provided are your reference for character design, features, style, colors, and clothing. You MUST generate the new image such that the main character matches this reference perfectly. Keep face, hair, outfit, and style consistent with the reference image.";
+      }
+
+      let finalPrompt = `${CREATIVE_IMAGE_SYSTEM_INSTRUCTION}${characterInstruction}\n\nCreate an image in ${aspectRatio} ratio. ${promptText}. Style: ${stylePrompt || 'detailed digital art'}. NO TEXT.`;
       parts.push({ text: finalPrompt });
 
       const res = await ai.models.generateContent({
         model: selectedModel,
         contents: { parts },
-        config: { systemInstruction: CREATIVE_IMAGE_SYSTEM_INSTRUCTION, imageConfig: { aspectRatio } }
+        config: { imageConfig: { aspectRatio } }
       });
       const generated = res.candidates?.[0]?.content?.parts.find(p => p.inlineData)?.inlineData?.data;
       if (generated) {
         const url = `data:image/png;base64,${generated}`;
-        setFrames(prev => { const next = [...prev]; next[currentFrameIndex] = url; return next; });
-        drawCanvasContent(canvasRef.current, url);
+        setFrames(prev => {
+          const next = [...prev];
+          next[frameIdx] = url;
+          return next;
+        });
+        if (frameIdx === currentFrameIndex && viewMode === 'editor') {
+          drawCanvasContent(canvasRef.current, url);
+        }
         updateHistory(url, true);
         setSceneData(prev => {
           const next = [...prev];
-          while (next.length <= currentFrameIndex) next.push({ title: '', prompt: '' });
-          next[currentFrameIndex].prompt = prompt;
+          while (next.length <= frameIdx) next.push({ title: '', prompt: '' });
+          next[frameIdx].prompt = promptText;
           return next;
         });
       }
     } catch (e) {
       setErrorMessage(parseError(e));
       setShowErrorModal(true);
-    } finally { setIsLoading(false); }
+    } finally {
+      setIsLoading(false);
+      setIsAnimatingFrame(-1);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prompt) return;
+    await generateFrameImage(currentFrameIndex, prompt, selectedStyle, selectedCharacterIndices);
   };
 
   const handleAspectRatioChange = (newRatio: AspectRatio) => {
@@ -681,19 +846,43 @@ export default function Home() {
   const handleGenerateAllScenes = async () => {
       setIsLoading(true);
       const newFrames = [...frames];
+      let generatedCount = 0;
       for (let i = 0; i < sceneData.length; i++) {
           if (frames[i] !== null) continue;
+          
+          if (generatedCount > 0) {
+              // 무료 티어의 분당 호출 속도 제한(RPM)을 초과하지 않도록 각 프레임 사이에 12초 대기 시간을 둡니다.
+              // 만약 429 오류가 여전히 발생하는 경우 수동으로 장면을 나누어 생성하는 것을 권장합니다.
+              await new Promise(resolve => setTimeout(resolve, 12000));
+          }
+          
           setIsAnimatingFrame(i);
           try {
+              const parts: any[] = [];
+              selectedCharacterIndices.forEach(idx => {
+                if (cast[idx]) {
+                  parts.push({ inlineData: { data: cast[idx].split(',')[1], mimeType: 'image/png' } });
+                }
+              });
+              
+              let characterInstruction = "";
+              if (selectedCharacterIndices.length > 0) {
+                characterInstruction = "\n\nCRITICAL STYLE CONSISTENCY INSTRUCTION: The input image(s) provided are your reference for character design, features, style, colors, and clothing. You MUST generate the new image such that the main character matches this reference perfectly. Keep face, hair, outfit, and style consistent with the reference image.";
+              }
+
+              let finalPrompt = `${CREATIVE_IMAGE_SYSTEM_INSTRUCTION}${characterInstruction}\n\nCreate an image in ${aspectRatio} ratio. ${sceneData[i].prompt}. Style: ${selectedStyle || 'detailed digital art'}. NO TEXT.`;
+              parts.push({ text: finalPrompt });
+
               const res = await ai.models.generateContent({
                   model: selectedModel,
-                  contents: { parts: [{ text: `Create an image in ${aspectRatio} ratio. ${sceneData[i].prompt}. Style: ${selectedStyle || 'detailed digital art'}. NO TEXT.` }] },
-                  config: { systemInstruction: CREATIVE_IMAGE_SYSTEM_INSTRUCTION, imageConfig: { aspectRatio } }
+                  contents: { parts },
+                  config: { imageConfig: { aspectRatio } }
               });
               const generated = res.candidates?.[0]?.content?.parts.find(p => p.inlineData)?.inlineData?.data;
               if (generated) {
                   newFrames[i] = `data:image/png;base64,${generated}`;
                   setFrames([...newFrames]);
+                  generatedCount++;
               }
           } catch (e) {
               setErrorMessage(`${i+1}번째 장면 생성 중 오류 발생: ${parseError(e)}`);
@@ -795,23 +984,20 @@ export default function Home() {
 
   const closeErrorModal = () => setShowErrorModal(false);
 
-  const handleSelectStyle = (style: { name: string; prompt: string; icon: React.ElementType; baseImage?: string; }) => {
+  const handleSelectStyle = async (style: { name: string; prompt: string; icon: React.ElementType; baseImage?: string; }) => {
     setSelectedStyle(style.prompt);
-    if (style.baseImage) {
-      const dataUrl = style.baseImage;
-      setFrames(prev => {
-        const next = [...prev];
-        next[currentFrameIndex] = dataUrl;
-        return next;
-      });
-      updateHistory(dataUrl, true);
-      setPrompt(`A ${style.name} character is `); // Pre-fill prompt
+    
+    // Decoupled selection: do NOT overwrite the prompt/script!
+    // But immediately trigger generation in this style if there is an active prompt
+    const activePrompt = sceneData[currentFrameIndex]?.prompt || prompt;
+    if (activePrompt) {
+      await generateFrameImage(currentFrameIndex, activePrompt, style.prompt, selectedCharacterIndices);
     }
   };
 
   const renderTimelineView = () => (
-    <div className="flex-grow w-full flex flex-col md:flex-row items-stretch gap-4 overflow-hidden">
-      <div className="flex-grow flex flex-col items-center justify-center p-4 bg-slate-200 rounded-xl min-h-[40vh] relative">
+    <div className="flex-grow w-full flex flex-col md:flex-row items-stretch gap-4 md:overflow-hidden min-h-0">
+      <div className="flex-grow flex flex-col items-center justify-center p-4 bg-slate-200 rounded-xl min-h-[40vh] md:min-h-[50vh] relative flex-shrink-0">
         <div className="w-full max-w-full max-h-full relative bg-white shadow-xl flex items-center justify-center rounded-lg overflow-hidden" style={{ aspectRatio: aspectRatio.replace(':', ' / ') }}>
           <div className="absolute inset-0 bg-[conic-gradient(#ccc_25%,#eee_0_50%,#ccc_0_75%,#eee_0)] bg-[length:20px_20px]"></div>
           {(isAnimatingFrame > -1 || isGeneratingSynopsis) && <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center z-20 text-white"><LoaderCircle className="w-10 h-10 animate-spin mb-4"/><p className="font-bold">{isGeneratingSynopsis ? "장면 분석 중..." : `${isAnimatingFrame + 1}번 장면 생성 중...`}</p></div>}
@@ -821,21 +1007,30 @@ export default function Home() {
           <button onClick={() => setIsPlaying(!isPlaying)} className="w-14 h-14 bg-white shadow-lg rounded-full flex items-center justify-center hover:scale-110 transition-transform">
             {isPlaying ? <Pause className="text-slate-700"/> : <Play className="ml-1 text-slate-700"/>}
           </button>
+          {displayImage && (
+            <button 
+              onClick={handleDownloadCurrentImage} 
+              title="현재 장면 이미지 다운로드" 
+              className="w-14 h-14 bg-white shadow-lg rounded-full flex items-center justify-center hover:scale-110 transition-transform text-blue-600"
+            >
+              <Download className="w-6 h-6"/>
+            </button>
+          )}
         </div>
       </div>
-      <aside className="w-full md:w-[400px] flex flex-col gap-4">
-        <div className="bg-white/70 p-4 rounded-xl shadow-sm flex justify-between items-center">
+      <aside className="w-full md:w-[400px] flex flex-col gap-4 md:min-h-0 md:overflow-hidden">
+        <div className="bg-white/70 p-4 rounded-xl shadow-sm flex justify-between items-center flex-shrink-0">
           <div><h1 className="font-bold text-lg">Animation Studio</h1><p className="text-xs text-slate-500">Native Gemini Image Gen</p></div>
           <button onClick={() => setShowSettings(!showSettings)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><Settings2 className="w-5 h-5"/></button>
         </div>
         {showSettings && (
-          <div className="bg-white p-4 rounded-xl shadow-lg space-y-4">
+          <div className="bg-white p-4 rounded-xl shadow-lg space-y-4 flex-shrink-0">
             <div><label className="text-xs font-bold block mb-1">모델</label><select value={selectedModel} onChange={e => setSelectedModel(e.target.value)} className="w-full p-2 border rounded text-sm"><option value="gemini-2.5-flash-image">Gemini 2.5 Flash</option><option value="gemini-3-pro-image-preview">Gemini 3.0 Pro</option></select></div>
             <button onClick={() => setShowExportModal(true)} className="w-full py-2 bg-slate-800 text-white rounded text-sm font-bold flex items-center justify-center gap-2"><Download className="w-4 h-4"/>콘텐츠 내보내기</button>
           </div>
         )}
-        <div className="flex-grow bg-white/70 p-4 rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="flex justify-between items-center mb-3">
+        <div className="flex-grow bg-white/70 p-4 rounded-xl shadow-sm flex flex-col md:overflow-hidden md:min-h-0">
+          <div className="flex justify-between items-center mb-3 flex-shrink-0">
               <h3 className="font-bold text-sm">타임라인</h3>
               <div className="flex gap-2">
                   <button onClick={() => setShowScriptModal(true)} className="text-xs flex items-center gap-1 bg-white px-3 py-1.5 rounded-full shadow-sm hover:bg-slate-50"><FileText className="w-3 h-3"/> 스크립트</button>
@@ -843,16 +1038,40 @@ export default function Home() {
               </div>
           </div>
           {sceneData.length > 0 && frames.some(f => f === null) && (
-              <button onClick={handleGenerateAllScenes} disabled={isLoading} className="w-full mb-2 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-blue-700 disabled:bg-slate-400">
+              <button onClick={handleGenerateAllScenes} disabled={isLoading} className="w-full mb-2 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-blue-700 disabled:bg-slate-400 flex-shrink-0">
                   {isLoading ? <><LoaderCircle className="w-4 h-4 animate-spin"/> 생성 중...</> : <><Clapperboard className="w-4 h-4"/> 모든 장면 생성</>}
               </button>
           )}
-          <div className="flex-grow overflow-y-auto space-y-2 pr-2">
+          <div className="flex-grow overflow-y-auto space-y-2 pr-2 min-h-[250px] md:min-h-0">
             {frames.map((f, i) => (
               <div key={i} onClick={() => setCurrentFrameIndex(i)} onDoubleClick={() => setViewMode('editor')} className={`relative flex items-center gap-3 p-2 rounded-lg cursor-pointer border-2 transition-all ${currentFrameIndex === i ? 'border-blue-500 bg-blue-50' : 'border-transparent bg-white'}`}>
                 {isAnimatingFrame === i && <div className="absolute inset-0 bg-blue-500/20 rounded-lg flex items-center justify-center"><LoaderCircle className="w-5 h-5 text-white animate-spin"/></div>}
                 <div className="w-20 h-12 bg-slate-200 rounded overflow-hidden flex items-center justify-center">{f ? <img src={Array.isArray(f) ? f[0] : f} className="w-full h-full object-contain"/> : <span className="text-[10px] text-slate-400">빈 프레임</span>}</div>
-                <div className="flex-grow min-w-0"><p className="text-xs font-bold">Scene {i+1}</p><p className="text-[10px] text-slate-500 truncate">{sceneData[i]?.prompt || '내용 없음'}</p></div>
+                <div className="flex-grow min-w-0 space-y-1.5" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-slate-700 whitespace-nowrap">장면 {i+1}</span>
+                    <input
+                      type="text"
+                      value={sceneData[i]?.title || ''}
+                      onChange={(e) => handleSceneTitleChange(i, e.target.value)}
+                      placeholder="제목..."
+                      className="text-[10px] px-1.5 py-0.5 border border-slate-200 rounded bg-white w-full max-w-[120px] font-normal focus:outline-none focus:border-blue-400"
+                    />
+                  </div>
+                  <textarea
+                    value={sceneData[i]?.prompt || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      handleScenePromptChange(i, val);
+                      if (i === currentFrameIndex) {
+                        setPrompt(val);
+                      }
+                    }}
+                    placeholder="프롬프트/대본 내용..."
+                    rows={2}
+                    className="w-full text-[10px] p-1 border border-slate-200 rounded bg-white resize-y focus:outline-none focus:border-blue-400 leading-tight"
+                  />
+                </div>
                 <div className="flex flex-col gap-1">
                   <button onClick={(e) => { e.stopPropagation(); setAnimationTargetIndex(i); setShowAnimateModal(true); }} className="p-1 hover:bg-blue-200 rounded"><Sparkles className="w-3 h-3 text-blue-500"/></button>
                   <button onClick={(e) => { e.stopPropagation(); deleteFrame(i); }} className="p-1 hover:bg-red-200 rounded"><Trash2 className="w-3 h-3 text-red-500"/></button>
@@ -863,7 +1082,7 @@ export default function Home() {
           <div className="mt-3 pt-3 border-t space-y-3">
             <div className="flex items-center gap-2"><span className="text-[10px] font-bold">FPS</span><input type="range" min="1" max="24" value={fps} onChange={e => setFps(Number(e.target.value))} className="flex-grow"/><span className="text-[10px] w-4">{fps}</span></div>
             <div className="flex justify-between items-center"><div className="flex items-center gap-1"><span className="text-[10px]">시간:</span><input type="number" step="0.1" value={((frameDurations[currentFrameIndex] || 1000)/1000).toFixed(1)} onChange={e => { const v = Number(e.target.value); if(v>0){ const n = [...frameDurations]; n[currentFrameIndex] = v*1000; setFrameDurations(n); } }} className="w-10 text-[10px] border rounded p-0.5 text-center"/></div><button onClick={handleGenerateNarration} disabled={isGeneratingNarration} className="p-2 bg-white shadow rounded-full hover:scale-110 disabled:opacity-50">{isGeneratingNarration ? <LoaderCircle className="w-4 h-4 animate-spin"/> : <Sparkles className="w-4 h-4 text-blue-500"/>}</button></div>
-            {audioInfo && <div className="p-2 bg-blue-50 border rounded-lg flex items-center gap-2"><audio src={audioInfo.url} controls className="h-6 flex-grow"/><button onClick={handleRemoveAudio}><Trash2 className="w-4 h-4 text-slate-400"/></button></div>}
+            {audioInfo && <div className="p-2 bg-blue-50 border rounded-lg flex items-center gap-2"><audio src={audioInfo.url} ref={audioRef} controls className="h-6 flex-grow"/><button onClick={handleRemoveAudio}><Trash2 className="w-4 h-4 text-slate-400"/></button></div>}
             <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => imageInputRef.current?.click()} className="w-full py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50 flex items-center justify-center gap-2">
                     <ImageUp className="w-4 h-4"/> 이미지 업로드
@@ -881,9 +1100,14 @@ export default function Home() {
   );
 
   const renderEditorView = () => (
-    <div className="flex-grow flex flex-col gap-4 overflow-hidden">
-      <header className="flex justify-between items-center">
-        <button onClick={() => setViewMode('timeline')} className="h-12 px-6 bg-white shadow-md rounded-full flex items-center gap-2 font-bold text-sm hover:scale-105 transition-transform"><ArrowLeft className="w-4 h-4"/> 타임라인으로 돌아가기</button>
+    <div className="flex-grow flex flex-col gap-4 md:overflow-hidden min-h-0">
+      <header className="flex justify-between items-center flex-shrink-0">
+        <div className="flex gap-2">
+          <button onClick={() => setViewMode('timeline')} className="h-12 px-6 bg-white shadow-md rounded-full flex items-center gap-2 font-bold text-sm hover:scale-105 transition-transform"><ArrowLeft className="w-4 h-4"/> 타임라인으로 돌아가기</button>
+          {displayImage && (
+            <button type="button" onClick={handleDownloadCurrentImage} className="h-12 px-4 bg-white shadow-md rounded-full flex items-center justify-center gap-2 font-bold text-sm hover:scale-105 transition-transform text-blue-600"><Download className="w-4 h-4"/> 이미지 다운로드</button>
+          )}
+        </div>
         <div className="flex p-1 bg-slate-200 rounded-full">
             <button onClick={() => handleAspectRatioChange('16:9')} className={`p-3 rounded-full transition-all ${aspectRatio === '16:9' ? 'bg-white shadow' : ''}`}>
                 <RectangleHorizontal className="w-5 h-5"/>
@@ -893,43 +1117,129 @@ export default function Home() {
             </button>
         </div>
       </header>
-      <div className="flex-grow flex flex-col md:flex-row gap-4 overflow-hidden">
-        <aside className="w-full md:w-20 flex md:flex-col gap-2 p-2 bg-white/70 rounded-xl shadow-sm border border-white">
-          <button onClick={() => setActiveTool('pen')} className={`p-4 rounded-xl transition-all ${activeTool === 'pen' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'bg-white hover:bg-slate-100'}`}><PenTool className="w-5 h-5"/></button>
-          <button onClick={() => setActiveTool('eraser')} className={`p-4 rounded-xl transition-all ${activeTool === 'eraser' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'bg-white hover:bg-slate-100'}`}><Eraser className="w-5 h-5"/></button>
-          <button onClick={() => setActiveTool('ai-eraser')} className={`p-4 rounded-xl transition-all ${activeTool === 'ai-eraser' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'bg-white hover:bg-slate-100'}`} title="AI 지우개"><Sparkles className="w-5 h-5"/></button>
-          <button onClick={() => setActiveTool('pan')} className={`p-4 rounded-xl transition-all ${activeTool === 'pan' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'bg-white hover:bg-slate-100'}`}><Hand className="w-5 h-5"/></button>
+      <div className="flex-grow flex flex-col md:flex-row gap-4 md:overflow-hidden min-h-0">
+        <aside className="w-full md:w-20 flex flex-row md:flex-col gap-2 p-2 bg-white/70 rounded-xl shadow-sm border border-white flex-shrink-0 overflow-x-auto md:overflow-x-visible">
+          <button onClick={() => setActiveTool('pen')} className={`p-4 rounded-xl transition-all flex-shrink-0 ${activeTool === 'pen' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'bg-white hover:bg-slate-100'}`}><PenTool className="w-5 h-5"/></button>
+          <button onClick={() => setActiveTool('eraser')} className={`p-4 rounded-xl transition-all flex-shrink-0 ${activeTool === 'eraser' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'bg-white hover:bg-slate-100'}`}><Eraser className="w-5 h-5"/></button>
+          <button onClick={() => setActiveTool('ai-eraser')} className={`p-4 rounded-xl transition-all flex-shrink-0 ${activeTool === 'ai-eraser' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'bg-white hover:bg-slate-100'}`} title="AI 지우개"><Sparkles className="w-5 h-5"/></button>
+          <button onClick={() => setActiveTool('pan')} className={`p-4 rounded-xl transition-all flex-shrink-0 ${activeTool === 'pan' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'bg-white hover:bg-slate-100'}`}><Hand className="w-5 h-5"/></button>
           <div className="h-px bg-slate-300 mx-2 my-2 hidden md:block"></div>
-          <button onClick={() => colorInputRef.current?.click()} className="p-4 rounded-xl bg-white shadow-sm flex justify-center hover:scale-105"><div className="w-6 h-6 rounded-full border-2 border-white shadow-inner" style={{backgroundColor: penColor}}></div></button>
+          <button onClick={() => colorInputRef.current?.click()} className="p-4 rounded-xl bg-white shadow-sm flex justify-center hover:scale-105 flex-shrink-0"><div className="w-6 h-6 rounded-full border-2 border-white shadow-inner" style={{backgroundColor: penColor}}></div></button>
           <input type="color" ref={colorInputRef} className="hidden" value={penColor} onChange={e => setPenColor(e.target.value)}/>
-          <button onClick={handleUndo} className="p-4 rounded-xl bg-white disabled:opacity-30 hover:scale-105" disabled={!(historyIndex[currentFrameIndex] > 0)}><RotateCcw className="w-5 h-5"/></button>
-          <button onClick={clearCanvas} className="p-4 rounded-xl bg-white hover:bg-red-50 hover:text-red-500 transition-colors"><Trash2 className="w-5 h-5"/></button>
+          <button onClick={handleUndo} className="p-4 rounded-xl bg-white disabled:opacity-30 hover:scale-105 flex-shrink-0" disabled={!(historyIndex[currentFrameIndex] > 0)}><RotateCcw className="w-5 h-5"/></button>
+          <button onClick={clearCanvas} className="p-4 rounded-xl bg-white hover:bg-red-50 hover:text-red-500 transition-colors flex-shrink-0"><Trash2 className="w-5 h-5"/></button>
         </aside>
 
-        <div className="flex-grow flex flex-col gap-4 overflow-hidden">
-          <div className="flex-grow relative bg-white overflow-hidden rounded-xl shadow-inner flex items-center justify-center p-8 border-4 border-white">
+        <div className="flex-grow flex flex-col gap-4 md:overflow-hidden min-h-0">
+          <div className="flex-grow h-[350px] md:h-auto relative bg-white overflow-hidden rounded-xl shadow-inner flex items-center justify-center p-4 md:p-8 border-4 border-white">
             <div className="absolute inset-0 bg-[conic-gradient(#ccc_25%,#eee_0_50%,#ccc_0_75%,#eee_0)] bg-[length:24px_24px]"></div>
-            <div className="relative shadow-2xl z-10 bg-white" style={{ aspectRatio: `${currentCanvasDimensions.width} / ${currentCanvasDimensions.height}`, width: 'auto', height: '100%' }}>
+            <div className="relative shadow-2xl z-10 bg-white max-w-full max-h-full" style={{ aspectRatio: `${currentCanvasDimensions.width} / ${currentCanvasDimensions.height}`, width: aspectRatio === '16:9' ? '100%' : 'auto', height: aspectRatio === '16:9' ? 'auto' : '100%' }}>
               <canvas ref={canvasRef} width={currentCanvasDimensions.width} height={currentCanvasDimensions.height} onMouseDown={startInteraction} onMouseMove={moveInteraction} onMouseUp={stopInteraction} onMouseLeave={stopInteraction} onTouchStart={startInteraction} onTouchMove={moveInteraction} onTouchEnd={stopInteraction} className="absolute top-0 left-0 w-full h-full z-20 touch-none cursor-crosshair" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: 'top left' }} />
               <canvas ref={overlayCanvasRef} width={currentCanvasDimensions.width} height={currentCanvasDimensions.height} className="absolute top-0 left-0 w-full h-full z-30 pointer-events-none" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: 'top left' }} />
             </div>
           </div>
-          <form onSubmit={handleSubmit} className="relative group">
-            <input type="text" value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="만들고 싶은 이미지를 설명하세요..." className="w-full h-16 pl-6 pr-20 bg-white shadow-xl rounded-2xl border-2 border-transparent focus:border-blue-500 focus:outline-none transition-all font-medium text-lg" />
+          <form onSubmit={handleSubmit} className="relative group flex-shrink-0">
+            <input 
+              type="text" 
+              value={prompt} 
+              onChange={e => {
+                const val = e.target.value;
+                setPrompt(val);
+                setSceneData(prev => {
+                  const next = [...prev];
+                  while (next.length <= currentFrameIndex) next.push({ title: '', prompt: '' });
+                  next[currentFrameIndex] = { ...next[currentFrameIndex], prompt: val };
+                  return next;
+                });
+              }} 
+              placeholder="만들고 싶은 이미지를 설명하세요..." 
+              className="w-full h-16 pl-6 pr-20 bg-white shadow-xl rounded-2xl border-2 border-transparent focus:border-blue-500 focus:outline-none transition-all font-medium text-lg" 
+            />
             <button type="submit" disabled={isLoading} className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 disabled:bg-slate-300 transition-all flex items-center justify-center">
               {isLoading ? <LoaderCircle className="w-6 h-6 animate-spin"/> : <SendHorizontal className="w-6 h-6"/>}
             </button>
           </form>
         </div>
 
-        <aside className="w-full md:w-60 overflow-y-auto bg-white/70 p-4 rounded-xl shadow-sm border border-white flex flex-col gap-6">
-          <div>
-            <h4 className="text-sm font-bold mb-3 flex items-center gap-2"><Palette className="w-4 h-4"/> 스타일</h4>
-            <div className="grid grid-cols-2 gap-2">
-              {ANIMATION_STYLES.map(s => (<button key={s.name} onClick={() => handleSelectStyle(s)} className={`p-3 rounded-xl border-2 text-center text-[10px] font-bold transition-all ${selectedStyle === s.prompt ? 'border-blue-500 bg-blue-50 text-blue-600 scale-105' : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'}`}><s.icon className="w-5 h-5 mx-auto mb-1"/>{s.name}</button>))}
+        <aside className="w-full md:w-80 md:overflow-hidden bg-white/70 p-4 rounded-xl shadow-sm border border-white flex flex-col gap-4 relative md:min-h-0 flex-shrink-0">
+          {/* Styles segment */}
+          <div className="flex-1 flex flex-col md:min-h-0 min-h-[300px]">
+            <h4 className="text-sm font-bold mb-3 flex items-center gap-2 flex-shrink-0"><Palette className="w-4 h-4"/> 스타일</h4>
+            
+            {/* Category Tabs */}
+            <div className="flex overflow-x-auto gap-2 mb-3 pb-2 -mx-2 px-2 scrollbar-thin scrollbar-thumb-slate-300 flex-shrink-0">
+              {STYLE_CATEGORIES.map(category => (
+                <button
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
+                  className={`px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all flex-shrink-0 ${
+                    activeCategory === category 
+                      ? 'bg-slate-800 text-white shadow-md' 
+                      : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex-grow overflow-y-auto pr-1 md:min-h-0">
+              <div className="grid grid-cols-2 gap-2 relative">
+                {ANIMATION_STYLES.filter(s => s.category === activeCategory).map(s => (
+                  <div key={s.name} className="relative group">
+                    <button 
+                      onClick={() => handleSelectStyle(s)} 
+                      onMouseEnter={() => setHoveredStyle(s.name)}
+                      onMouseLeave={() => setHoveredStyle(null)}
+                      className={`w-full p-2 rounded-xl border-2 flex items-center gap-2 text-[10px] font-bold transition-all text-left ${selectedStyle === s.prompt ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'}`}
+                    >
+                      <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+                          <img src={getStylePreviewUrl(s.prompt, "")} alt={s.name} className="w-full h-full object-cover" />
+                      </div>
+                      <span className="truncate">{s.name}</span>
+                    </button>
+                    {/* Hover Preview Card - Adjusted position to be relative to viewport/container better */}
+                    {hoveredStyle === s.name && (
+                      <div className="fixed z-50 right-[350px] top-1/2 -translate-y-1/2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-200 pointer-events-none animate-in fade-in zoom-in-95 duration-200">
+                          <div className="w-full aspect-square rounded-lg overflow-hidden bg-slate-100 mb-3 relative">
+                              <img src={getStylePreviewUrl(s.prompt, "")} alt={s.name} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-2">
+                                  <span className="text-white text-xs font-bold">Preview</span>
+                              </div>
+                          </div>
+                          <h5 className="font-bold text-sm mb-1">{s.name}</h5>
+                          <p className="text-[10px] text-slate-500 leading-tight">{s.prompt}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-          <div><div className="flex justify-between items-center mb-3"><h4 className="text-sm font-bold flex items-center gap-2"><Users className="w-4 h-4"/> 캐릭터</h4><button onClick={handleSaveCharacter} className="p-1 hover:bg-slate-200 rounded"><UserPlus className="w-4 h-4"/></button></div><div className="grid grid-cols-2 gap-2">{cast.map((c, i) => (<div key={i} onClick={() => handleSelectCharacter(i)} className={`relative p-1 rounded-xl border-2 cursor-pointer transition-all ${selectedCharacterIndices.includes(i) ? 'border-blue-500 bg-blue-50' : 'border-slate-100 bg-white'}`}><img src={c} className="w-full aspect-square object-contain rounded-lg"/><button onClick={e => handleRemoveCharacter(e, i)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center shadow-lg hover:scale-110">X</button></div>))}</div></div>
+
+          {/* Characters segment */}
+          <div className="md:h-[25vh] min-h-[150px] flex flex-col md:min-h-0 border-t pt-4 flex-shrink-0">
+            <div className="flex justify-between items-center mb-3 flex-shrink-0">
+              <h4 className="text-sm font-bold flex items-center gap-2"><Users className="w-4 h-4"/> 캐릭터</h4>
+              <button onClick={handleSaveCharacter} title="현재 프레임을 캐릭터로 저장" className="p-1 hover:bg-slate-200 rounded transition-colors"><UserPlus className="w-4 h-4"/></button>
+            </div>
+            <div className="flex-grow overflow-y-auto min-h-0 pr-1">
+              {cast.length === 0 ? (
+                <div className="h-full flex items-center justify-center border-2 border-dashed border-slate-200 rounded-xl p-4 text-center bg-slate-50/50">
+                  <p className="text-[10px] text-slate-400">현재 프레임을 캐릭터로 등록하여 일관된 스타일로 생성할 수 있습니다.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {cast.map((c, i) => (
+                    <div key={i} onClick={() => handleSelectCharacter(i)} className={`relative p-1 rounded-xl border-2 cursor-pointer transition-all ${selectedCharacterIndices.includes(i) ? 'border-blue-500 bg-blue-50' : 'border-slate-100 bg-white'}`}>
+                      <img src={c} className="w-full aspect-square object-contain rounded-lg"/>
+                      <button onClick={e => handleRemoveCharacter(e, i)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center shadow-lg hover:scale-110">X</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </aside>
       </div>
     </div>
@@ -992,12 +1302,53 @@ export default function Home() {
       />
   );
 
+  const exportModal = showExportModal && (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-lg flex items-center gap-2"><Download className="w-5 h-5"/> 콘텐츠 내보내기</h3>
+          <button onClick={() => setShowExportModal(false)} className="p-1 hover:bg-slate-200 rounded-full"><X className="w-5 h-5"/></button>
+        </div>
+        <p className="text-sm text-slate-500 mb-6">애니메이션 프로젝트를 원하는 형식으로 내보내세요.</p>
+        <div className="space-y-3">
+          <button 
+            onClick={handleExportFrames}
+            className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors"
+          >
+            <Download className="w-4 h-4"/> PNG 프레임 다운로드 (ZIP)
+          </button>
+          <button 
+            onClick={handleExportGif}
+            disabled={isExporting}
+            className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+          >
+            {isExporting ? <LoaderCircle className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>} GIF 애니메이션 다운로드
+          </button>
+          <button 
+            onClick={handleExportWebM}
+            disabled={isExportingWebM}
+            className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+          >
+            {isExportingWebM ? <LoaderCircle className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>} WebM 동영상 다운로드
+          </button>
+        </div>
+        <button 
+          onClick={() => setShowExportModal(false)}
+          className="w-full mt-6 py-2 bg-slate-800 text-white rounded-lg font-bold text-sm hover:bg-slate-900 transition-colors"
+        >
+          닫기
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="w-full h-full p-4 flex flex-col font-sans text-slate-800">
+    <div className="w-full min-h-screen md:h-screen md:max-h-screen p-4 flex flex-col font-sans text-slate-800 overflow-y-auto md:overflow-hidden bg-slate-100">
         {errorModal}
         {aspectRatioConfirmationModal}
         {scriptModal}
         {generationSettingsModal}
+        {exportModal}
         {viewMode === 'timeline' ? renderTimelineView() : renderEditorView()}
     </div>
   );
