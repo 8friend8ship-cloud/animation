@@ -109,6 +109,88 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
   });
 };
 
+class IndexedDBHelper {
+  private dbName = 'animation_studio_indexed_db';
+  private dbVersion = 1;
+
+  private getDB(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.dbVersion);
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains('media')) {
+          db.createObjectStore('media');
+        }
+      };
+    });
+  }
+
+  async set(key: string, value: any): Promise<void> {
+    try {
+      const db = await this.getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('media', 'readwrite');
+        const store = tx.objectStore('media');
+        const req = store.put(value, key);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    } catch (e) {
+      console.warn('IndexedDB set failed:', e);
+    }
+  }
+
+  async get(key: string): Promise<any> {
+    try {
+      const db = await this.getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('media', 'readonly');
+        const store = tx.objectStore('media');
+        const req = store.get(key);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    } catch (e) {
+      console.warn('IndexedDB get failed:', e);
+      return null;
+    }
+  }
+
+  async delete(key: string): Promise<void> {
+    try {
+      const db = await this.getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('media', 'readwrite');
+        const store = tx.objectStore('media');
+        const req = store.delete(key);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    } catch (e) {
+      console.warn('IndexedDB delete failed:', e);
+    }
+  }
+
+  async clear(): Promise<void> {
+    try {
+      const db = await this.getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('media', 'readwrite');
+        const store = tx.objectStore('media');
+        const req = store.clear();
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    } catch (e) {
+      console.warn('IndexedDB clear failed:', e);
+    }
+  }
+}
+
+const idb = new IndexedDBHelper();
+
 const CREATIVE_IMAGE_SYSTEM_INSTRUCTION =
   'You are an expert digital artist and illustrator. Your task is to create a visually appealing and high-quality image based on the user\'s prompt. CRITICAL RULE: The output MUST be a purely visual image. It must NOT contain any text, letters, numbers, or characters of ANY language. This is absolute. You MUST strictly adhere to the requested aspect ratio.';
 
@@ -249,21 +331,69 @@ export default function Home() {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash-image');
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(() => {
+    try {
+      const saved = localStorage.getItem('animation_studio_aspectRatio');
+      return saved === '16:9' || saved === '9:16' ? (saved as AspectRatio) : '16:9';
+    } catch {
+      return '16:9';
+    }
+  });
   
-  const [frames, setFrames] = useState<(string | string[] | null)[]>([null]);
+  const [frames, setFrames] = useState<(string | string[] | null)[]>(() => {
+    try {
+      const saved = localStorage.getItem('animation_studio_frames');
+      return saved ? JSON.parse(saved) : [null];
+    } catch {
+      return [null];
+    }
+  });
   const [currentFrameIndex, setCurrentFrameIndex] = useState(0);
-  const [sceneData, setSceneData] = useState<SynopsisScene[]>([]);
-  const [frameDurations, setFrameDurations] = useState<number[]>([1000]);
-  const [fps, setFps] = useState(8);
+  const [sceneData, setSceneData] = useState<SynopsisScene[]>(() => {
+    try {
+      const saved = localStorage.getItem('animation_studio_sceneData');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [frameDurations, setFrameDurations] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem('animation_studio_frameDurations');
+      return saved ? JSON.parse(saved) : [1000];
+    } catch {
+      return [1000];
+    }
+  });
+  const [fps, setFps] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('animation_studio_fps');
+      return saved ? Number(saved) : 8;
+    } catch {
+      return 8;
+    }
+  });
   const [isPlaying, setIsPlaying] = useState(false);
   const [subFrameIndex, setSubFrameIndex] = useState(0);
   
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [cast, setCast] = useState<string[]>([]);
+  const [cast, setCast] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('animation_studio_cast');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [selectedCharacterIndices, setSelectedCharacterIndices] = useState<number[]>([]);
-  const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
+  const [selectedStyle, setSelectedStyle] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem('animation_studio_selectedStyle');
+    } catch {
+      return null;
+    }
+  });
 
   const [audioInfo, setAudioInfo] = useState<{ url: string; duration: number; name: string; blob: Blob; } | null>(null);
   const [isGeneratingNarration, setIsGeneratingNarration] = useState(false);
@@ -271,9 +401,16 @@ export default function Home() {
   
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingWebM, setIsExportingWebM] = useState(false);
+  const [isExportingMp4, setIsExportingMp4] = useState(false);
   
   const [showScriptModal, setShowScriptModal] = useState(false);
-  const [scriptText, setScriptText] = useState('');
+  const [scriptText, setScriptText] = useState<string>(() => {
+    try {
+      return localStorage.getItem('animation_studio_scriptText') || '';
+    } catch {
+      return '';
+    }
+  });
   const [isGeneratingSynopsis, setIsGeneratingSynopsis] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -302,6 +439,204 @@ export default function Home() {
   const colorInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
+
+  // Load initial state from IndexedDB on mount
+  useEffect(() => {
+    idb.get('frames').then((savedFrames) => {
+      if (savedFrames && Array.isArray(savedFrames)) {
+        setFrames(savedFrames);
+        const initialHistory: { [key: number]: (string | string[])[] } = {};
+        const initialHistoryIndex: { [key: number]: number } = {};
+        savedFrames.forEach((frame, idx) => {
+          if (frame) {
+            initialHistory[idx] = [frame];
+            initialHistoryIndex[idx] = 0;
+          }
+        });
+        setHistory(initialHistory);
+        setHistoryIndex(initialHistoryIndex);
+      }
+    });
+
+    idb.get('cast').then((savedCast) => {
+      if (savedCast && Array.isArray(savedCast)) {
+        setCast(savedCast);
+      }
+    });
+
+    idb.get('sceneData').then((savedSceneData) => {
+      if (savedSceneData && Array.isArray(savedSceneData)) {
+        setSceneData(savedSceneData);
+      }
+    });
+
+    idb.get('audioInfo').then((savedAudio) => {
+      if (savedAudio && savedAudio.blob) {
+        try {
+          const url = URL.createObjectURL(savedAudio.blob);
+          setAudioInfo({
+            url,
+            duration: savedAudio.duration,
+            name: savedAudio.name,
+            blob: savedAudio.blob
+          });
+        } catch (e) {
+          console.warn('Failed to restore audio URL from blob:', e);
+        }
+      }
+    });
+  }, []);
+
+  // Save audioInfo to IndexedDB whenever it changes
+  useEffect(() => {
+    if (audioInfo) {
+      idb.set('audioInfo', {
+        duration: audioInfo.duration,
+        name: audioInfo.name,
+        blob: audioInfo.blob
+      });
+    } else {
+      idb.delete('audioInfo');
+    }
+  }, [audioInfo]);
+
+  // Auto-save sync effects
+  useEffect(() => {
+    setSaveStatus('saving');
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem('animation_studio_frames', JSON.stringify(frames));
+        setSaveStatus('saved');
+      } catch (e) {
+        console.warn('Failed to auto-save frames:', e);
+        setSaveStatus('error');
+      }
+      idb.set('frames', frames);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [frames]);
+
+  useEffect(() => {
+    setSaveStatus('saving');
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem('animation_studio_sceneData', JSON.stringify(sceneData));
+        setSaveStatus('saved');
+      } catch (e) {
+        console.warn('Failed to auto-save sceneData:', e);
+        setSaveStatus('error');
+      }
+      idb.set('sceneData', sceneData);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [sceneData]);
+
+  useEffect(() => {
+    setSaveStatus('saving');
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem('animation_studio_frameDurations', JSON.stringify(frameDurations));
+        setSaveStatus('saved');
+      } catch (e) {
+        console.warn('Failed to auto-save frameDurations:', e);
+        setSaveStatus('error');
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [frameDurations]);
+
+  useEffect(() => {
+    setSaveStatus('saving');
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem('animation_studio_cast', JSON.stringify(cast));
+        setSaveStatus('saved');
+      } catch (e) {
+        console.warn('Failed to auto-save cast:', e);
+        setSaveStatus('error');
+      }
+      idb.set('cast', cast);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [cast]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('animation_studio_aspectRatio', aspectRatio);
+    } catch (e) {
+      console.warn('Failed to auto-save aspectRatio:', e);
+    }
+  }, [aspectRatio]);
+
+  useEffect(() => {
+    try {
+      if (selectedStyle !== null) {
+        localStorage.setItem('animation_studio_selectedStyle', selectedStyle);
+      } else {
+        localStorage.removeItem('animation_studio_selectedStyle');
+      }
+    } catch (e) {
+      console.warn('Failed to auto-save selectedStyle:', e);
+    }
+  }, [selectedStyle]);
+
+  useEffect(() => {
+    setSaveStatus('saving');
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem('animation_studio_scriptText', scriptText);
+        setSaveStatus('saved');
+      } catch (e) {
+        console.warn('Failed to auto-save scriptText:', e);
+        setSaveStatus('error');
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [scriptText]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('animation_studio_fps', String(fps));
+    } catch (e) {
+      console.warn('Failed to auto-save fps:', e);
+    }
+  }, [fps]);
+
+  const handleResetProject = () => {
+    if (window.confirm("정말로 모든 작업을 초기화하고 새 프로젝트를 시작하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+      try {
+        localStorage.removeItem('animation_studio_frames');
+        localStorage.removeItem('animation_studio_sceneData');
+        localStorage.removeItem('animation_studio_frameDurations');
+        localStorage.removeItem('animation_studio_cast');
+        localStorage.removeItem('animation_studio_selectedStyle');
+        localStorage.removeItem('animation_studio_scriptText');
+        localStorage.removeItem('animation_studio_fps');
+        localStorage.removeItem('animation_studio_aspectRatio');
+      } catch (e) {
+        console.warn('Failed to clear localStorage on reset:', e);
+      }
+      
+      // Clear IndexedDB store
+      idb.clear();
+
+      setFrames([null]);
+      setSceneData([]);
+      setFrameDurations([1000]);
+      setCast([]);
+      setSelectedCharacterIndices([]);
+      setSelectedStyle(null);
+      setScriptText('');
+      setFps(8);
+      setAspectRatio('16:9');
+      setCurrentFrameIndex(0);
+      setHistory({});
+      setHistoryIndex({});
+      setAudioInfo(null);
+    }
+  };
 
   const handleScenePromptChange = (idx: number, newPrompt: string) => {
     setSceneData(prev => {
@@ -381,21 +716,38 @@ export default function Home() {
     a.click();
   };
 
+  // 1. Play/Pause control for Audio when isPlaying state changes
   useEffect(() => {
-    if (!isPlaying) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      return;
-    }
-
-    if (audioInfo && audioRef.current) {
+    if (!audioRef.current || !audioInfo) return;
+    if (isPlaying) {
+      // Sync the audio currentTime to the beginning of the active frame on playback start
       const expectedTime = frameDurations.slice(0, currentFrameIndex).reduce((sum, d) => sum + d, 0) / 1000;
-      if (Math.abs(audioRef.current.currentTime - expectedTime) > 0.5) {
+      audioRef.current.currentTime = expectedTime;
+      audioRef.current.play().catch(err => console.log("Audio play error:", err));
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying]);
+
+  // 2. Track changes to currentFrameIndex to update audio seek time
+  useEffect(() => {
+    if (!audioRef.current || !audioInfo) return;
+    const expectedTime = frameDurations.slice(0, currentFrameIndex).reduce((sum, d) => sum + d, 0) / 1000;
+    
+    if (isPlaying) {
+      // Only seek when playing if we are significantly desynced (more than 1.5 seconds) - e.g. manual timeline clicking
+      if (Math.abs(audioRef.current.currentTime - expectedTime) > 1.5) {
         audioRef.current.currentTime = expectedTime;
       }
-      audioRef.current.play().catch(err => console.log("Audio play error:", err));
+    } else {
+      // If paused, always sync the audio currentTime to the frame start time
+      audioRef.current.currentTime = expectedTime;
     }
+  }, [currentFrameIndex, isPlaying, audioInfo]);
+
+  // 3. Keep the video frames progression timer running while isPlaying is active
+  useEffect(() => {
+    if (!isPlaying) return;
 
     const duration = frameDurations[currentFrameIndex] || 1000;
     const timer = setTimeout(() => {
@@ -412,7 +764,7 @@ export default function Home() {
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [isPlaying, currentFrameIndex, frameDurations, frames.length, audioInfo]);
+  }, [isPlaying, currentFrameIndex, frameDurations, frames.length]);
 
   const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
@@ -940,14 +1292,71 @@ export default function Home() {
       canvas.height = currentCanvasDimensions.height;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
-      const stream = canvas.captureStream();
-      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-      const chunks: Blob[] = [];
-      recorder.ondataavailable = (e) => chunks.push(e.data);
-      recorder.onstop = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(chunks, {type: 'video/webm'})); a.download = 'animation.webm'; a.click(); setIsExportingWebM(false); setShowExportModal(false); };
+      
       const all = frames.flat().filter((f): f is string => f !== null);
-      const imgs = await Promise.all(all.map(url => new Promise<HTMLImageElement>((res) => { const i = new Image(); i.onload = () => res(i); i.src = url; })));
+      const imgs = await Promise.all(all.map(url => new Promise<HTMLImageElement>((res, rej) => { 
+        const i = new Image(); 
+        i.onload = () => res(i); 
+        i.onerror = (e) => rej(e);
+        i.src = url; 
+      })));
+      
+      const stream = canvas.captureStream(30);
+      let combinedStream = stream;
+      let audioNode: HTMLAudioElement | null = null;
+      let audioCtx: AudioContext | null = null;
+
+      if (audioInfo) {
+        audioNode = new Audio(audioInfo.url);
+        audioNode.crossOrigin = "anonymous";
+        
+        audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const source = audioCtx.createMediaElementSource(audioNode);
+        const dest = audioCtx.createMediaStreamDestination();
+        source.connect(dest);
+        
+        const audioTrack = dest.stream.getAudioTracks()[0];
+        if (audioTrack) {
+          combinedStream = new MediaStream([
+            ...stream.getVideoTracks(),
+            audioTrack
+          ]);
+        }
+      }
+
+      let mimeType = 'video/webm;codecs=vp9,opus';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'video/webm;codecs=vp8,opus';
+      }
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'video/webm';
+      }
+
+      const recorder = new MediaRecorder(combinedStream, { mimeType });
+      const chunks: Blob[] = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          chunks.push(e.data);
+        }
+      };
+      
+      recorder.onstop = () => { 
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(new Blob(chunks, { type: mimeType })); 
+        a.download = 'animation.webm'; 
+        a.click(); 
+        setIsExportingWebM(false); 
+        setShowExportModal(false); 
+        if (audioCtx) audioCtx.close();
+      };
+
       recorder.start();
+      
+      if (audioNode) {
+        audioNode.currentTime = 0;
+        await audioNode.play().catch(err => console.log("Recording audio play error:", err));
+      }
+
       let idx = 0;
       for (let i = 0; i < frames.length; i++) {
         const f = frames[i]; if (!f) continue;
@@ -959,8 +1368,185 @@ export default function Home() {
           await new Promise(r => setTimeout(r, dur));
         }
       }
+      
+      if (audioNode) {
+        audioNode.pause();
+      }
       recorder.stop();
-    } catch (e) { setErrorMessage(parseError(e)); setIsExportingWebM(false); }
+    } catch (e) { 
+      setErrorMessage(parseError(e)); 
+      setIsExportingWebM(false); 
+    }
+  };
+
+  const handleExportMp4 = async () => {
+    if (isExportingMp4) return;
+    const allFrames = frames.flat().filter((f): f is string => f !== null);
+    if (allFrames.length === 0) return;
+    setIsExportingMp4(true);
+    
+    try {
+      if (!audioInfo) {
+        // Fallback to fast offline silent MP4 generation using h264-mp4-encoder if there is no audio loaded
+        const { createH264MP4Encoder } = await import('h264-mp4-encoder');
+        const encoder = await createH264MP4Encoder();
+        
+        let videoWidth = currentCanvasDimensions.width;
+        let videoHeight = currentCanvasDimensions.height;
+        if (videoWidth % 2 !== 0) videoWidth += 1;
+        if (videoHeight % 2 !== 0) videoHeight += 1;
+        
+        const targetFps = fps || 10;
+        encoder.width = videoWidth;
+        encoder.height = videoHeight;
+        encoder.frameRate = targetFps;
+        encoder.kbps = 4000;
+        encoder.initialize();
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = videoWidth;
+        canvas.height = videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('Canvas 2D context not available');
+        
+        const imgs = await Promise.all(allFrames.map(url => new Promise<HTMLImageElement>((res, rej) => {
+          const i = new Image();
+          i.onload = () => res(i);
+          i.onerror = (err) => rej(err);
+          i.src = url;
+        })));
+        
+        let imgIdx = 0;
+        for (let i = 0; i < frames.length; i++) {
+          const f = frames[i];
+          if (!f) continue;
+          const sub = Array.isArray(f) ? f : [f];
+          const dur = (frameDurations[i] || 1000) / sub.length;
+          const frameTimeMs = 1000 / targetFps;
+          const repeatCount = Math.max(1, Math.round(dur / frameTimeMs));
+          
+          for (const _ of sub) {
+            const img = imgs[imgIdx++];
+            if (!img) continue;
+            ctx.clearRect(0, 0, videoWidth, videoHeight);
+            ctx.drawImage(img, 0, 0, videoWidth, videoHeight);
+            const imgData = ctx.getImageData(0, 0, videoWidth, videoHeight);
+            for (let r = 0; r < repeatCount; r++) {
+              encoder.addFrameRgba(imgData.data);
+            }
+          }
+        }
+        
+        encoder.finalize();
+        const uint8Array = encoder.FS.readFile(encoder.outputFilename);
+        const blob = new Blob([uint8Array], { type: 'video/mp4' });
+        
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'animation.mp4';
+        a.click();
+        
+        encoder.delete();
+        setIsExportingMp4(false);
+        setShowExportModal(false);
+        return;
+      }
+
+      // If audio is loaded, we record in real-time to mux the audio track with the video frames
+      const canvas = document.createElement('canvas');
+      canvas.width = currentCanvasDimensions.width;
+      canvas.height = currentCanvasDimensions.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas 2D context not available');
+
+      const imgs = await Promise.all(allFrames.map(url => new Promise<HTMLImageElement>((res, rej) => {
+        const i = new Image();
+        i.onload = () => res(i);
+        i.onerror = (err) => rej(err);
+        i.src = url;
+      })));
+
+      const stream = canvas.captureStream(30);
+      let combinedStream = stream;
+      let audioNode: HTMLAudioElement | null = null;
+      let audioCtx: AudioContext | null = null;
+
+      audioNode = new Audio(audioInfo.url);
+      audioNode.crossOrigin = "anonymous";
+      
+      audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const source = audioCtx.createMediaElementSource(audioNode);
+      const dest = audioCtx.createMediaStreamDestination();
+      source.connect(dest);
+      
+      const audioTrack = dest.stream.getAudioTracks()[0];
+      if (audioTrack) {
+        combinedStream = new MediaStream([
+          ...stream.getVideoTracks(),
+          audioTrack
+        ]);
+      }
+
+      let mimeType = 'video/mp4;codecs=h264,aac';
+      let extension = 'mp4';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'video/mp4';
+      }
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'video/webm;codecs=h264';
+      }
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'video/webm';
+        extension = 'webm';
+      }
+
+      const recorder = new MediaRecorder(combinedStream, { mimeType });
+      const chunks: Blob[] = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          chunks.push(e.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const finalBlob = new Blob(chunks, { type: mimeType });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(finalBlob);
+        a.download = `animation.${extension}`;
+        a.click();
+        
+        setIsExportingMp4(false);
+        setShowExportModal(false);
+        if (audioCtx) audioCtx.close();
+      };
+
+      recorder.start();
+      
+      audioNode.currentTime = 0;
+      await audioNode.play().catch(err => console.log("Recording audio play error:", err));
+
+      let imgIdx = 0;
+      for (let i = 0; i < frames.length; i++) {
+        const f = frames[i];
+        if (!f) continue;
+        const sub = Array.isArray(f) ? f : [f];
+        const dur = (frameDurations[i] || 1000) / sub.length;
+        
+        for (const _ of sub) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(imgs[imgIdx++], 0, 0, canvas.width, canvas.height);
+          await new Promise(r => setTimeout(r, dur));
+        }
+      }
+
+      audioNode.pause();
+      recorder.stop();
+
+    } catch (e) {
+      console.error(e);
+      setErrorMessage(parseError(e));
+      setIsExportingMp4(false);
+    }
   };
 
   const handleAnimateFrame = async (idx: number, count: number) => {
@@ -1020,13 +1606,38 @@ export default function Home() {
       </div>
       <aside className="w-full md:w-[400px] flex flex-col gap-4 md:min-h-0 md:overflow-hidden">
         <div className="bg-white/70 p-4 rounded-xl shadow-sm flex justify-between items-center flex-shrink-0">
-          <div><h1 className="font-bold text-lg">Animation Studio</h1><p className="text-xs text-slate-500">Native Gemini Image Gen</p></div>
+          <div>
+            <h1 className="font-bold text-lg flex items-center gap-2">
+              Animation Studio
+              {saveStatus === 'saved' && (
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="모든 변경사항이 로컬에 저장되었습니다" />
+              )}
+              {saveStatus === 'saving' && (
+                <span className="w-2 h-2 rounded-full bg-yellow-500 animate-ping" title="자동 저장 중..." />
+              )}
+              {saveStatus === 'error' && (
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-bounce" title="저장 실패 (로컬 스토리지 한도 초과)" />
+              )}
+            </h1>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <p className="text-xs text-slate-500">Native Gemini Image Gen</p>
+              <span className="text-[10px] text-slate-400">•</span>
+              <span className="text-[10px] text-slate-400 font-medium">
+                {saveStatus === 'saved' && "자동 저장 완료"}
+                {saveStatus === 'saving' && "저장 중..."}
+                {saveStatus === 'error' && "용량 제한 초과"}
+              </span>
+            </div>
+          </div>
           <button onClick={() => setShowSettings(!showSettings)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><Settings2 className="w-5 h-5"/></button>
         </div>
         {showSettings && (
           <div className="bg-white p-4 rounded-xl shadow-lg space-y-4 flex-shrink-0">
             <div><label className="text-xs font-bold block mb-1">모델</label><select value={selectedModel} onChange={e => setSelectedModel(e.target.value)} className="w-full p-2 border rounded text-sm"><option value="gemini-2.5-flash-image">Gemini 2.5 Flash</option><option value="gemini-3-pro-image-preview">Gemini 3.0 Pro</option></select></div>
             <button onClick={() => setShowExportModal(true)} className="w-full py-2 bg-slate-800 text-white rounded text-sm font-bold flex items-center justify-center gap-2"><Download className="w-4 h-4"/>콘텐츠 내보내기</button>
+            <div className="border-t border-slate-200 pt-3">
+              <button onClick={handleResetProject} className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded text-sm font-bold flex items-center justify-center gap-2 transition-colors"><Trash2 className="w-4 h-4"/>프로젝트 완전히 초기화</button>
+            </div>
           </div>
         )}
         <div className="flex-grow bg-white/70 p-4 rounded-xl shadow-sm flex flex-col md:overflow-hidden md:min-h-0">
@@ -1102,11 +1713,16 @@ export default function Home() {
   const renderEditorView = () => (
     <div className="flex-grow flex flex-col gap-4 md:overflow-hidden min-h-0">
       <header className="flex justify-between items-center flex-shrink-0">
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <button onClick={() => setViewMode('timeline')} className="h-12 px-6 bg-white shadow-md rounded-full flex items-center gap-2 font-bold text-sm hover:scale-105 transition-transform"><ArrowLeft className="w-4 h-4"/> 타임라인으로 돌아가기</button>
           {displayImage && (
             <button type="button" onClick={handleDownloadCurrentImage} className="h-12 px-4 bg-white shadow-md rounded-full flex items-center justify-center gap-2 font-bold text-sm hover:scale-105 transition-transform text-blue-600"><Download className="w-4 h-4"/> 이미지 다운로드</button>
           )}
+          <span className="text-[11px] text-slate-500 bg-white shadow-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 ml-2 font-medium">
+            {saveStatus === 'saved' && <><span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"/> 자동 저장 완료</>}
+            {saveStatus === 'saving' && <><span className="w-2 h-2 rounded-full bg-yellow-500 animate-ping"/> 저장 중...</>}
+            {saveStatus === 'error' && <><span className="w-2 h-2 rounded-full bg-red-500 animate-bounce"/> 용량 제한 초과</>}
+          </span>
         </div>
         <div className="flex p-1 bg-slate-200 rounded-full">
             <button onClick={() => handleAspectRatioChange('16:9')} className={`p-3 rounded-full transition-all ${aspectRatio === '16:9' ? 'bg-white shadow' : ''}`}>
@@ -1330,6 +1946,13 @@ export default function Home() {
             className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
           >
             {isExportingWebM ? <LoaderCircle className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>} WebM 동영상 다운로드
+          </button>
+          <button 
+            onClick={handleExportMp4}
+            disabled={isExportingMp4}
+            className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+          >
+            {isExportingMp4 ? <LoaderCircle className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>} MP4 동영상 다운로드
           </button>
         </div>
         <button 
