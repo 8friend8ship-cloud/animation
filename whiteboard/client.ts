@@ -22,9 +22,12 @@ export type WhiteboardPlan = {
 
 export type WhiteboardRenderRequest = {
   srt: File;
-  lineArt?: File | null;
+  sceneImages: File[];
+  annotations?: File[];
   aspectRatio: '16:9' | '9:16';
   projectName: string;
+  inkPath: 'grid' | 'skeleton';
+  colorFill: 'contour-wipe' | 'brush';
 };
 
 export type WhiteboardRenderResult = {
@@ -109,11 +112,11 @@ export function groupWhiteboardScenes(
 
 export function buildWhiteboardPlan(text: string): WhiteboardPlan {
   const cues = parseSrt(text);
-  return { cues, scenes: groupWhiteboardScenes(cues) };
+  return {cues, scenes: groupWhiteboardScenes(cues)};
 }
 
 export function getWhiteboardRendererUrl(): string {
-  const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
+  const viteEnv = (import.meta as ImportMeta & {env?: Record<string, string | undefined>}).env;
   return (viteEnv?.VITE_WHITEBOARD_RENDERER_URL || '').replace(/\/$/, '');
 }
 
@@ -134,17 +137,29 @@ export async function submitWhiteboardRender(request: WhiteboardRenderRequest): 
     return {
       ok: false,
       status: 'WAITING_RENDERER_URL',
-      message: 'VITE_WHITEBOARD_RENDERER_URL이 설정되지 않았습니다.',
+      message: 'VITE_WHITEBOARD_RENDERER_URL이 설정되지 않았습니다. 외부 AI API는 필요 없지만 Python/OpenCV 렌더러 실행 주소는 필요합니다.',
+    };
+  }
+
+  if (!request.sceneImages.length) {
+    return {
+      ok: false,
+      status: 'WAITING_SCENE_IMAGES',
+      message: '각 장면의 완성 그림을 넣어 주세요. 렌더러는 그림을 생성하지 않고 완성 그림에서 선과 색을 다시 그립니다.',
     };
   }
 
   const form = new FormData();
   form.append('srt', request.srt);
-  if (request.lineArt) form.append('lineArt', request.lineArt);
+  request.sceneImages.forEach((file) => form.append('sceneImages', file, file.name));
+  (request.annotations || []).forEach((file) => form.append('annotations', file, file.name));
   form.append('aspectRatio', request.aspectRatio);
   form.append('projectName', request.projectName);
+  form.append('inkPath', request.inkPath);
+  form.append('colorFill', request.colorFill);
+  form.append('workflow', 'completed-scene-image');
 
-  const response = await fetch(`${baseUrl}/render`, { method: 'POST', body: form });
+  const response = await fetch(`${baseUrl}/render`, {method: 'POST', body: form});
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
     return {
@@ -153,5 +168,5 @@ export async function submitWhiteboardRender(request: WhiteboardRenderRequest): 
       message: payload.message || '화이트보드 렌더링 요청에 실패했습니다.',
     };
   }
-  return { ok: true, ...payload };
+  return {ok: true, ...payload};
 }
