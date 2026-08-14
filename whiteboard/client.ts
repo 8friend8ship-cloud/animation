@@ -20,6 +20,12 @@ export type WhiteboardPlan = {
   scenes: WhiteboardScene[];
 };
 
+export type WhiteboardSceneTiming = {
+  targetSec?: number;
+  minSec?: number;
+  maxSec?: number;
+};
+
 export type WhiteboardRenderRequest = {
   srt: File;
   sceneImages: File[];
@@ -28,6 +34,11 @@ export type WhiteboardRenderRequest = {
   projectName: string;
   inkPath: 'grid' | 'skeleton';
   colorFill: 'contour-wipe' | 'brush';
+  profile?: 'standard' | 'drywriter';
+  narrationSync?: boolean;
+  subtitleSync?: boolean;
+  finalHoldMs?: number;
+  motionFx?: 'none' | 'subtle-pan-zoom';
 };
 
 export type WhiteboardRenderResult = {
@@ -110,9 +121,17 @@ export function groupWhiteboardScenes(
   return scenes;
 }
 
-export function buildWhiteboardPlan(text: string): WhiteboardPlan {
+export function buildWhiteboardPlan(text: string, timing: WhiteboardSceneTiming = {}): WhiteboardPlan {
   const cues = parseSrt(text);
-  return {cues, scenes: groupWhiteboardScenes(cues)};
+  return {
+    cues,
+    scenes: groupWhiteboardScenes(
+      cues,
+      timing.targetSec ?? 30,
+      timing.minSec ?? 25,
+      timing.maxSec ?? 35,
+    ),
+  };
 }
 
 export function getWhiteboardRendererUrl(): string {
@@ -158,6 +177,11 @@ export async function submitWhiteboardRender(request: WhiteboardRenderRequest): 
   form.append('inkPath', request.inkPath);
   form.append('colorFill', request.colorFill);
   form.append('workflow', 'completed-scene-image');
+  form.append('profile', request.profile || 'standard');
+  form.append('narrationSync', String(request.narrationSync ?? true));
+  form.append('subtitleSync', String(request.subtitleSync ?? true));
+  form.append('finalHoldMs', String(request.finalHoldMs ?? 500));
+  form.append('motionFx', request.motionFx || 'none');
 
   const response = await fetch(`${baseUrl}/render`, {method: 'POST', body: form});
   const payload = await response.json().catch(() => ({}));
