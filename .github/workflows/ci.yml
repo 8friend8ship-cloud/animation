@@ -19,3 +19,32 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
+
+  whiteboard-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prepare renderer environment
+        working-directory: vendor/srt-whiteboard-animation
+        run: |
+          python scripts/prepare_env.py
+          ENV_PY=$(python scripts/prepare_env.py --check | sed -n 's/^ENV_PY=//p' | tail -1)
+          echo "ENV_PY=$ENV_PY" >> "$GITHUB_ENV"
+      - name: Render example MP4
+        working-directory: vendor/srt-whiteboard-animation
+        run: |
+          "$ENV_PY" scripts/render_stream_whiteboard.py \
+            examples/scene-01-monkey-mountain-banana.png \
+            examples/scene-01-monkey-mountain-banana.annotation.json \
+            /tmp/whiteboard-smoke.mp4 \
+            assets/drawing-hand.png \
+            --ink-path grid \
+            --color-fill contour-wipe \
+            --total-ms 1500
+          test -s /tmp/whiteboard-smoke.mp4
+          ls -lh /tmp/whiteboard-smoke.mp4
