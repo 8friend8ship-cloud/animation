@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-08-15",
+  "styles": [
+    {
+      "styleId": "WHITEBOARD_BASE_LIVE_DRAW_HAND",
+      "domains": ["drywriter", "education", "explain"],
+      "scenePattern": ["BASE", "LIVE_DRAW", "HAND", "SUBTITLE", "HOLD"],
+      "personaRule": "Resolve PERSONA_ID for visible characters; treat hand/pen overlay separately.",
+      "cameraRule": "Use subtle pan/zoom only after major draw steps.",
+      "actionRule": "Reveal only narration-relevant stroke paths; keep completed sketch fixed.",
+      "audioRule": "VO is master timeline.",
+      "subtitleRule": "Phrase-level sync; avoid the active drawing region.",
+      "driveAssetId": "1utS7n4mt3dEcnWaxBAHNpiZFfNLASYBI",
+      "template1Id": "T1-WHITEBOARD-STROKE",
+      "template2Id": "T2-WHITEBOARD-EDIT",
+      "seedStatus": "CANDIDATE"
+    },
+    {
+      "styleId": "COOKING_CHARACTER_REAL_CLOSEUP",
+      "domains": ["cooking", "recipe"],
+      "scenePattern": ["INTRO_CHARACTER", "INGREDIENT", "COOKING_CLOSEUP", "TASTE_REACTION", "FINAL_DISH", "CTA"],
+      "personaRule": "Keep cooking host PERSONA_ID consistent across all character shots.",
+      "cameraRule": "Alternate medium character, overhead ingredient, and macro food closeup shots.",
+      "actionRule": "Use realistic cooking hand actions for instructional steps.",
+      "audioRule": "Sync narration to RECIPE_STEP_ID.",
+      "subtitleRule": "Use short ingredient/action labels in safe margins.",
+      "driveAssetId": "1lBTGXY0o4qzaC2h1Vlqkwz58hqSH-a-h",
+      "template1Id": "T1-COOKING-SCENE",
+      "template2Id": "T2-COOKING-EDIT",
+      "seedStatus": "CANDIDATE"
+    },
+    {
+      "styleId": "DAILY_MEDITATION_LIGHT_SITCOM",
+      "domains": ["drywriter", "daily-meditation", "sitcom"],
+      "scenePattern": ["SETUP", "DIALOGUE", "MISUNDERSTANDING", "COMIC_ESCALATION", "TURN", "REFLECTION"],
+      "personaRule": "Use 2-3 stable PERSONA_IDs with consistent relationship, speech style and reactions.",
+      "cameraRule": "Use medium two-shot, reaction closeup, then a calm final hold.",
+      "actionRule": "Drive the message through dialogue and reaction rather than lecture.",
+      "audioRule": "Dialogue first; reflective narration only in final 10-20 percent.",
+      "subtitleRule": "Dialogue subtitles plus one concise final reflection line.",
+      "driveAssetId": "1Us6dI7RpZ0AVyHS9YX4JSH1t4_hWyCDj",
+      "template1Id": "T1-SITCOM-STORY",
+      "template2Id": "T2-SITCOM-EDIT",
+      "seedStatus": "CANDIDATE"
+    }
+  ]
+}
