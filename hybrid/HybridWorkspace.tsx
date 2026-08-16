@@ -7,7 +7,7 @@ export default function HybridWorkspace({onBack}: Props) {
   const [style, setStyle] = useState<ReuseStyleId>('hybrid');
   const [title, setTitle] = useState('사랑해라는 말이 부채가 된 이유');
   const [audioName, setAudioName] = useState('사랑해라는_말이_부채가_된_이유.m4a');
-  const [queueUrl, setQueueUrl] = useState(import.meta.env.VITE_FLOW_QUEUE_URL || '');
+  const [queueUrl, setQueueUrl] = useState('');
   const selected = useMemo(() => DRYWRITER_REUSE_STYLES.find((x) => x.id === style)!, [style]);
 
   const flowPrompts = [
