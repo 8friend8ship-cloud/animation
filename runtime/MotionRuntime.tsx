@@ -16,7 +16,8 @@ const MASTER_URL = 'https://drive.google.com/uc?export=download&id=1rai10e1leGvj
 function ms(v: unknown) { return Number(v || 0); }
 
 export default function MotionRuntime() {
-  const [packUrl, setPackUrl] = useState(import.meta.env.VITE_MOTION_PACK_URL || '');
+  const runtimeEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
+  const [packUrl, setPackUrl] = useState(runtimeEnv?.VITE_MOTION_PACK_URL || '');
   const [masterUrl, setMasterUrl] = useState(MASTER_URL);
   const [pack, setPack] = useState<MotionPack | null>(null);
   const [now, setNow] = useState(0);
