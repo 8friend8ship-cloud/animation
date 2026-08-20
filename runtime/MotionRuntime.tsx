@@ -76,6 +76,7 @@ export default function MotionRuntime() {
   const [transitionFrames, setTransitionFrames] = useState(6);
   const [voiceDurationMs, setVoiceDurationMs] = useState(5000);
   const [scriptText, setScriptText] = useState('안녕하세요. 좋은 하루예요.');
+  const [styleId, setStyleId] = useState('REAL_PERSONA');
   const [pack, setPack] = useState<MotionPack | null>(null);
   const [packSource, setPackSource] = useState<'NONE'|'BRIDGE'|'TEST_RIG'>('NONE');
   const [now, setNow] = useState(0);
@@ -151,9 +152,21 @@ export default function MotionRuntime() {
   }
 
   function applyVoiceAutoPlan() {
-    const totalFrames = Math.max(1, Math.round(voiceDurationMs * fps / 1000));
-    const keyCount = Math.max(4, Math.min(16, Math.ceil(voiceDurationMs / 625)));
-    const nextTransition = Math.max(2, Math.min(12, Math.round(fps * 0.25)));
+    const policies: Record<string,{interval:number,minKeys:number,maxKeys:number,transition:number,outputFps:number}> = {
+      REAL_PERSONA:{interval:575,minKeys:6,maxKeys:16,transition:8,outputFps:24},
+      WEBTOON:{interval:1000,minKeys:4,maxKeys:10,transition:3,outputFps:24},
+      STICKMAN:{interval:675,minKeys:5,maxKeys:14,transition:3,outputFps:24},
+      WHITEBOARD:{interval:1000,minKeys:4,maxKeys:10,transition:1,outputFps:30},
+      TEXT_MOTION:{interval:500,minKeys:6,maxKeys:18,transition:6,outputFps:30},
+      GENERAL_BACKGROUND:{interval:1250,minKeys:3,maxKeys:8,transition:8,outputFps:24}
+    };
+    const policy = policies[styleId];
+    if (!policy) { setError('이 스타일은 ContentOS 샘플과 테스트가 필요합니다: '+styleId); return; }
+    const planFps = policy.outputFps;
+    setFps(planFps);
+    const totalFrames = Math.max(1, Math.round(voiceDurationMs * planFps / 1000));
+    const keyCount = Math.max(policy.minKeys, Math.min(policy.maxKeys, Math.ceil(voiceDurationMs / policy.interval)));
+    const nextTransition = policy.transition;
     const holdTotal = Math.max(keyCount, totalFrames - (keyCount - 1) * nextTransition);
     const baseHold = Math.floor(holdTotal / keyCount);
     let remainder = holdTotal % keyCount;
@@ -240,9 +253,15 @@ export default function MotionRuntime() {
           {['EXPLAIN','GREETING','THINK','POINT','DANCE','LISTEN'].map(type=><option key={type}>{type}</option>)}
         </select>
         <div className="mb-3 rounded-xl bg-slate-800 p-3 text-xs">
+          <label className="mb-2 block">Animation Style
+            <select value={styleId} onChange={e=>setStyleId(e.target.value)} className="mt-1 w-full rounded bg-slate-700 p-2">
+              {['REAL_PERSONA','WEBTOON','STICKMAN','WHITEBOARD','TEXT_MOTION','GENERAL_BACKGROUND','BLUE_TIE'].map(style=><option key={style}>{style}</option>)}
+            </select>
+          </label>
           <label className="mb-2 block">음성/텍스트<input value={scriptText} onChange={e=>setScriptText(e.target.value)} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
           <label className="mb-2 block">음성 길이(ms)<input type="number" min="500" value={voiceDurationMs} onChange={e=>setVoiceDurationMs(Math.max(500,Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
-          <button onClick={applyVoiceAutoPlan} className="mb-3 w-full rounded bg-fuchsia-500 p-2 font-bold text-white">음성 길이로 동작·프레임 자동 계산</button>
+          <button onClick={applyVoiceAutoPlan} className="mb-3 w-full rounded bg-fuchsia-500 p-2 font-bold text-white">스타일·음성 길이로 후보 프레임 계산</button>
+          <p className="mb-2 text-amber-300">CANDIDATE · 시험 렌더 2회 PASS 후 템플릿 승격</p>
           <div className="grid grid-cols-2 gap-2">
             <label>FPS<input type="number" min="8" max="60" value={fps} onChange={e=>setFps(Math.max(8, Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
             <label>전환 프레임<input type="number" min="0" max="30" value={transitionFrames} onChange={e=>setTransitionFrames(Math.max(0, Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
