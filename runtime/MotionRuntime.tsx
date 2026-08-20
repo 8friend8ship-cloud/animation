@@ -18,8 +18,8 @@ type MotionPack = {
 };
 type ControlState = { viseme: string; expression: string; gesture: string; motion: string };
 
-const PERSONA_ID = 'P-TEST-DRYWRITER-001';
-const MASTER_URL = 'https://drive.google.com/uc?export=download&id=1rai10e1leGvjXjY2jVZo45Wb94b5pFFl';
+const DEFAULT_PERSONA_ID = 'P-TEST-F20-GREETING-001';
+const MASTER_URL = 'https://drive.google.com/uc?export=download&id=1sDCOum2hVwkcFNCnqMtXAmiZIinlNAwB';
 
 function ms(v: unknown) { return Number(v || 0); }
 function text(v: unknown, fallback = '') { return typeof v === 'string' && v ? v : fallback; }
@@ -33,7 +33,7 @@ function mouthShape(viseme: string) {
 }
 
 const CONTROL_TEST_PACK: MotionPack = {
-  schema: 'MOTION_CONNECTION_PACK_V1', personaId: PERSONA_ID, locale: 'ko-KR',
+  schema: 'MOTION_CONNECTION_PACK_V1', personaId: DEFAULT_PERSONA_ID, locale: 'ko-KR',
   primitives: [{ MOTION_ID: 'MOTION_SPEAK_IDLE' }, { MOTION_ID: 'MOTION_HEAD_NOD' }],
   cues: [
     { START_MS: 0, END_MS: 1200, MOTION_ID: 'MOTION_SPEAK_IDLE', VISEME_ID: 'M', EXPRESSION_ID: 'EXPLAIN_CALM', GESTURE_ID: 'MICRO_GESTURE', CAPTION_TEXT: '입술 닫힘 / 차분한 표정' },
@@ -69,7 +69,11 @@ export default function MotionRuntime() {
   const runtimeEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
   const [packUrl, setPackUrl] = useState(runtimeEnv?.VITE_MOTION_PACK_URL || '');
   const [masterUrl, setMasterUrl] = useState(MASTER_URL);
-  const [templateType, setTemplateType] = useState('EXPLAIN');
+  const [personaId, setPersonaId] = useState(DEFAULT_PERSONA_ID);
+  const [templateType, setTemplateType] = useState('GREETING');
+  const [fps, setFps] = useState(24);
+  const [stepFrames, setStepFrames] = useState([18, 24, 30, 24]);
+  const [transitionFrames, setTransitionFrames] = useState(6);
   const [pack, setPack] = useState<MotionPack | null>(null);
   const [packSource, setPackSource] = useState<'NONE'|'BRIDGE'|'TEST_RIG'>('NONE');
   const [now, setNow] = useState(0);
@@ -88,9 +92,21 @@ export default function MotionRuntime() {
     return () => speechSynthesis?.removeEventListener?.('voiceschanged', onVoices);
   }, []);
 
-  const cues = useMemo(() => (pack?.cues || []).slice().sort((a,b) => ms(a.START_MS)-ms(b.START_MS)), [pack]);
+  const rawCues = useMemo(() => (pack?.cues || []).slice().sort((a,b) => ms(a.START_MS)-ms(b.START_MS)), [pack]);
+  const cues = useMemo(() => {
+    let cursor = 0;
+    return rawCues.map((cue, index) => {
+      const frames = Math.max(1, stepFrames[index % 4] || 1);
+      const start = cursor * 1000 / fps;
+      cursor += frames;
+      return { ...cue, START_MS: start, END_MS: cursor * 1000 / fps };
+    });
+  }, [rawCues, fps, stepFrames]);
   const activeCues = cues.filter(c => now >= ms(c.START_MS) && now <= ms(c.END_MS)).sort((a,b) => ms(a.Z_INDEX)-ms(b.Z_INDEX));
   const active = activeCues.at(-1);
+  const stageIndex = Math.max(0, active ? cues.indexOf(active) : 0) % 4;
+  const spritePositions = ['0% 0%', '100% 0%', '0% 100%', '100% 100%'];
+  const transitionMs = Math.round(transitionFrames * 1000 / fps);
   const controls: ControlState = {
     motion: text(active?.MOTION_ID, 'MOTION_SPEAK_IDLE'),
     viseme: text(active?.VISEME_ID, 'VISEME_MISSING'),
@@ -117,8 +133,8 @@ export default function MotionRuntime() {
     if (!packUrl) { setError('Apps Script Web App URL을 입력하세요.'); return; }
     try {
       const url = new URL(packUrl);
-      url.searchParams.set('projectId', templateType === 'DANCE' ? 'DRYWRITER_DANCE_TEST_001' : 'DRYWRITER_PERSONA_EXPLAIN_001');
-      url.searchParams.set('personaId', PERSONA_ID);
+      url.searchParams.set('projectId', personaId === 'P-TEST-F20-GREETING-001' ? 'F20_GREETING_TEST_001' : templateType === 'DANCE' ? 'DRYWRITER_DANCE_TEST_001' : 'DRYWRITER_PERSONA_EXPLAIN_001');
+      url.searchParams.set('personaId', personaId);
       url.searchParams.set('locale', 'ko-KR');
       url.searchParams.set('mode', 'AVATAR');
       url.searchParams.set('templateType', templateType);
@@ -126,7 +142,7 @@ export default function MotionRuntime() {
       if (!res.ok) throw new Error('Motion Pack HTTP ' + res.status);
       const data = await res.json();
       if (data.schema !== 'MOTION_CONNECTION_PACK_V1') throw new Error('지원하지 않는 Motion Pack schema');
-      if (data.personaId && data.personaId !== PERSONA_ID) throw new Error('Persona ID 불일치');
+      if (data.personaId && data.personaId !== personaId) throw new Error('Persona ID 불일치');
       setPack(data); setPackSource('BRIDGE'); setNow(0);
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }
@@ -142,17 +158,28 @@ export default function MotionRuntime() {
   const motionClass = controls.motion.toLowerCase().replace(/^motion_/, '').replaceAll('_','-');
   return <section className="motion-runtime rounded-3xl border border-cyan-800 bg-slate-950 p-6 text-slate-100 shadow-2xl">
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-      <div><p className="text-xs uppercase tracking-[0.25em] text-cyan-300">Motion Connection Runtime</p><h2 className="text-2xl font-black">P-TEST-DRYWRITER-001 Control Check</h2></div>
+      <div><p className="text-xs uppercase tracking-[0.25em] text-cyan-300">Motion Connection Runtime</p><h2 className="text-2xl font-black">{personaId} Frame Control</h2></div>
       <span className="rounded-full bg-amber-900/60 px-3 py-1 text-xs">{packSource} · {faceStatus} · {pack?.validation?.ok === false ? 'PACK_INVALID' : pack ? 'PACK_VALID' : 'PACK_PENDING'}</span>
     </div>
     <div className="grid gap-4 lg:grid-cols-[.9fr_1.25fr_.8fr]">
       <div className="rounded-2xl bg-slate-900 p-4">
         <label className="mb-2 block text-xs text-slate-400">Motion Pack Web App URL</label>
         <input value={packUrl} onChange={e=>setPackUrl(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm" placeholder="https://script.google.com/macros/s/.../exec" />
+        <label className="mb-2 block text-xs text-slate-400">Persona ID</label>
+        <input value={personaId} onChange={e=>setPersonaId(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm" />
         <label className="mb-2 block text-xs text-slate-400">Animation Template Type</label>
         <select value={templateType} onChange={e=>setTemplateType(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm">
           {['EXPLAIN','GREETING','THINK','POINT','DANCE','LISTEN'].map(type=><option key={type}>{type}</option>)}
         </select>
+        <div className="mb-3 rounded-xl bg-slate-800 p-3 text-xs">
+          <div className="grid grid-cols-2 gap-2">
+            <label>FPS<input type="number" min="8" max="60" value={fps} onChange={e=>setFps(Math.max(8, Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
+            <label>전환 프레임<input type="number" min="0" max="30" value={transitionFrames} onChange={e=>setTransitionFrames(Math.max(0, Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
+          </div>
+          <p className="mb-1 mt-3 text-slate-400">4개 키 상태 프레임 수</p>
+          <div className="grid grid-cols-4 gap-1">{stepFrames.map((value,index)=><input aria-label={`step-${index+1}-frames`} key={index} type="number" min="1" max="240" value={value} onChange={e=>setStepFrames(current=>current.map((v,i)=>i===index?Math.max(1,Number(e.target.value)):v))} className="w-full rounded bg-slate-700 p-2"/>)}</div>
+          <p className="mt-2 text-cyan-300">총 {stepFrames.reduce((a,b)=>a+b,0)} frames · {(stepFrames.reduce((a,b)=>a+b,0)/fps).toFixed(2)}s</p>
+        </div>
         <label className="mb-2 block text-xs text-slate-400">FULLBODY_REF_URL</label>
         <input value={masterUrl} onChange={e=>setMasterUrl(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm" />
         <div className="flex flex-wrap gap-2">
@@ -172,7 +199,9 @@ export default function MotionRuntime() {
         </div>}
       </div>
       <div className="relative min-h-[420px] overflow-hidden rounded-2xl bg-gradient-to-b from-cyan-950 to-slate-900">
-        <img src={masterUrl} alt="DryWriter fullbody persona" className={'persona '+motionClass} />
+        {personaId === 'P-TEST-F20-GREETING-001'
+          ? <div aria-label="F20 greeting sprite persona" className={'persona-sprite '+motionClass} style={{backgroundImage:`url("${masterUrl}")`,backgroundPosition:spritePositions[stageIndex],transitionDuration:transitionMs+'ms'}} />
+          : <img src={masterUrl} alt="Fullbody persona" className={'persona '+motionClass} />}
         <div className="absolute bottom-5 left-5 right-5 rounded-xl bg-black/70 p-3 text-center text-lg font-bold">{text(active?.CAPTION_TEXT, text(active?.CAPTION_ID, 'Motion Pack을 로드하세요.'))}</div>
         <div className="absolute left-4 top-4 rounded-full bg-black/60 px-3 py-1 text-xs">{controls.motion} · {Math.round(now)}ms</div>
       </div>
@@ -180,6 +209,7 @@ export default function MotionRuntime() {
     </div>
     <style>{`
       .motion-runtime .persona{display:block;max-height:390px;max-width:82%;margin:18px auto 42px;object-fit:contain;transform-origin:50% 85%;transition:transform 180ms ease,filter 180ms ease}
+      .motion-runtime .persona-sprite{height:390px;width:min(390px,82%);margin:18px auto 42px;background-size:200% 200%;background-repeat:no-repeat;transform-origin:50% 85%;transition-property:opacity,transform,filter;transition-timing-function:ease-in-out}
       .motion-runtime .body-lean{transform:rotate(-3deg) translateX(-8px)}
       .motion-runtime .arm-sweep,.motion-runtime .hand-explain{transform:rotate(2deg) translateX(10px) scale(1.015)}
       .motion-runtime .head-turn{transform:rotate(1deg) translateX(5px)}
