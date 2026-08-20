@@ -8,8 +8,10 @@ type MotionCue = {
   [key: string]: unknown;
 };
 type MotionPack = {
-  schema?: string; personaId?: string; locale?: string;
+  schema?: string; extensionSchema?: string; personaId?: string; locale?: string;
   primitives?: MotionPrimitive[]; cues?: MotionCue[];
+  visemes?: Record<string, unknown>[]; expressions?: Record<string, unknown>[];
+  capability?: Record<string, boolean>; validation?: { ok?: boolean; errors?: string[] };
 };
 type ControlState = { viseme: string; expression: string; gesture: string; motion: string };
 
@@ -131,7 +133,7 @@ export default function MotionRuntime() {
   return <section className="motion-runtime rounded-3xl border border-cyan-800 bg-slate-950 p-6 text-slate-100 shadow-2xl">
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
       <div><p className="text-xs uppercase tracking-[0.25em] text-cyan-300">Motion Connection Runtime</p><h2 className="text-2xl font-black">P-TEST-DRYWRITER-001 Control Check</h2></div>
-      <span className="rounded-full bg-amber-900/60 px-3 py-1 text-xs">{packSource} · {faceStatus}</span>
+      <span className="rounded-full bg-amber-900/60 px-3 py-1 text-xs">{packSource} · {faceStatus} · {pack?.validation?.ok === false ? 'PACK_INVALID' : pack ? 'PACK_VALID' : 'PACK_PENDING'}</span>
     </div>
     <div className="grid gap-4 lg:grid-cols-[.9fr_1.25fr_.8fr]">
       <div className="rounded-2xl bg-slate-900 p-4">
@@ -147,6 +149,8 @@ export default function MotionRuntime() {
         </div>
         {error && <p className="mt-3 text-sm text-rose-300">{error}</p>}
         <p className="mt-4 text-xs text-slate-400">TEST_RIG는 제어 엔진 검증용이며 실제 Persona 얼굴 합성 판정이 아닙니다. 실제 판정에는 viseme/expression 매핑과 얼굴 rig 또는 레이어 자산이 필요합니다.</p>
+        {pack?.capability && <div className="mt-3 grid grid-cols-2 gap-1 text-xs">{Object.entries(pack.capability).map(([key,value])=><span key={key} className={value ? 'text-emerald-300' : 'text-rose-300'}>{key}: {value ? 'READY' : 'HOLD'}</span>)}</div>}
+        {!!pack?.validation?.errors?.length && <p className="mt-2 text-xs text-rose-300">{pack.validation.errors.join(' · ')}</p>}
       </div>
       <div className="relative min-h-[420px] overflow-hidden rounded-2xl bg-gradient-to-b from-cyan-950 to-slate-900">
         <img src={masterUrl} alt="DryWriter fullbody persona" className={'persona '+motionClass} />
@@ -162,6 +166,12 @@ export default function MotionRuntime() {
       .motion-runtime .head-turn{transform:rotate(1deg) translateX(5px)}
       .motion-runtime .head-nod{transform:translateY(4px) scaleY(.99)}
       .motion-runtime .speak-idle{filter:drop-shadow(0 0 12px rgba(34,211,238,.25))}
+      .motion-runtime .dance-bounce{animation:motion-dance-bounce .8s ease-in-out infinite}
+      .motion-runtime .dance-step-side{animation:motion-dance-step 1s ease-in-out infinite}
+      .motion-runtime .dance-arm-wave{animation:motion-dance-wave .9s ease-in-out infinite}
+      @keyframes motion-dance-bounce{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-14px) rotate(1deg) scale(1.02)}}
+      @keyframes motion-dance-step{0%,100%{transform:translateX(-16px) rotate(-2deg)}50%{transform:translateX(16px) rotate(2deg)}}
+      @keyframes motion-dance-wave{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(3deg) translateY(-8px)}}
     `}</style>
   </section>;
 }
