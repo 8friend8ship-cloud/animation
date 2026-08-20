@@ -12,6 +12,9 @@ type MotionPack = {
   primitives?: MotionPrimitive[]; cues?: MotionCue[];
   visemes?: Record<string, unknown>[]; expressions?: Record<string, unknown>[];
   capability?: Record<string, boolean>; validation?: { ok?: boolean; errors?: string[] };
+  animationTemplate?: Record<string, unknown> | null;
+  animationAssets?: Record<string, unknown>[];
+  assetReadiness?: { required?: string[]; ready?: string[]; missing?: string[]; needsGeneration?: string[]; renderReady?: boolean };
 };
 type ControlState = { viseme: string; expression: string; gesture: string; motion: string };
 
@@ -66,6 +69,7 @@ export default function MotionRuntime() {
   const runtimeEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
   const [packUrl, setPackUrl] = useState(runtimeEnv?.VITE_MOTION_PACK_URL || '');
   const [masterUrl, setMasterUrl] = useState(MASTER_URL);
+  const [templateType, setTemplateType] = useState('EXPLAIN');
   const [pack, setPack] = useState<MotionPack | null>(null);
   const [packSource, setPackSource] = useState<'NONE'|'BRIDGE'|'TEST_RIG'>('NONE');
   const [now, setNow] = useState(0);
@@ -112,7 +116,13 @@ export default function MotionRuntime() {
     setError('');
     if (!packUrl) { setError('Apps Script Web App URL을 입력하세요.'); return; }
     try {
-      const res = await fetch(packUrl);
+      const url = new URL(packUrl);
+      url.searchParams.set('projectId', templateType === 'DANCE' ? 'DRYWRITER_DANCE_TEST_001' : 'DRYWRITER_PERSONA_EXPLAIN_001');
+      url.searchParams.set('personaId', PERSONA_ID);
+      url.searchParams.set('locale', 'ko-KR');
+      url.searchParams.set('mode', 'AVATAR');
+      url.searchParams.set('templateType', templateType);
+      const res = await fetch(url.toString());
       if (!res.ok) throw new Error('Motion Pack HTTP ' + res.status);
       const data = await res.json();
       if (data.schema !== 'MOTION_CONNECTION_PACK_V1') throw new Error('지원하지 않는 Motion Pack schema');
@@ -139,6 +149,10 @@ export default function MotionRuntime() {
       <div className="rounded-2xl bg-slate-900 p-4">
         <label className="mb-2 block text-xs text-slate-400">Motion Pack Web App URL</label>
         <input value={packUrl} onChange={e=>setPackUrl(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm" placeholder="https://script.google.com/macros/s/.../exec" />
+        <label className="mb-2 block text-xs text-slate-400">Animation Template Type</label>
+        <select value={templateType} onChange={e=>setTemplateType(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm">
+          {['EXPLAIN','GREETING','THINK','POINT','DANCE','LISTEN'].map(type=><option key={type}>{type}</option>)}
+        </select>
         <label className="mb-2 block text-xs text-slate-400">FULLBODY_REF_URL</label>
         <input value={masterUrl} onChange={e=>setMasterUrl(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm" />
         <div className="flex flex-wrap gap-2">
@@ -151,6 +165,11 @@ export default function MotionRuntime() {
         <p className="mt-4 text-xs text-slate-400">TEST_RIG는 제어 엔진 검증용이며 실제 Persona 얼굴 합성 판정이 아닙니다. 실제 판정에는 viseme/expression 매핑과 얼굴 rig 또는 레이어 자산이 필요합니다.</p>
         {pack?.capability && <div className="mt-3 grid grid-cols-2 gap-1 text-xs">{Object.entries(pack.capability).map(([key,value])=><span key={key} className={value ? 'text-emerald-300' : 'text-rose-300'}>{key}: {value ? 'READY' : 'HOLD'}</span>)}</div>}
         {!!pack?.validation?.errors?.length && <p className="mt-2 text-xs text-rose-300">{pack.validation.errors.join(' · ')}</p>}
+        {pack?.assetReadiness && <div className="mt-3 rounded-xl bg-slate-800 p-2 text-xs">
+          <b>Asset Pack: {pack.assetReadiness.renderReady ? 'READY' : 'NEEDS_GENERATION'}</b>
+          <p className="mt-1 text-emerald-300">Ready: {(pack.assetReadiness.ready || []).join(', ') || '없음'}</p>
+          <p className="mt-1 text-amber-300">Missing: {(pack.assetReadiness.missing || []).join(', ') || '없음'}</p>
+        </div>}
       </div>
       <div className="relative min-h-[420px] overflow-hidden rounded-2xl bg-gradient-to-b from-cyan-950 to-slate-900">
         <img src={masterUrl} alt="DryWriter fullbody persona" className={'persona '+motionClass} />
