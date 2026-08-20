@@ -74,6 +74,8 @@ export default function MotionRuntime() {
   const [fps, setFps] = useState(24);
   const [stepFrames, setStepFrames] = useState([18, 24, 30, 24]);
   const [transitionFrames, setTransitionFrames] = useState(6);
+  const [voiceDurationMs, setVoiceDurationMs] = useState(5000);
+  const [scriptText, setScriptText] = useState('안녕하세요. 좋은 하루예요.');
   const [pack, setPack] = useState<MotionPack | null>(null);
   const [packSource, setPackSource] = useState<'NONE'|'BRIDGE'|'TEST_RIG'>('NONE');
   const [now, setNow] = useState(0);
@@ -96,12 +98,13 @@ export default function MotionRuntime() {
   const cues = useMemo(() => {
     let cursor = 0;
     return rawCues.map((cue, index) => {
-      const frames = Math.max(1, stepFrames[index % 4] || 1);
+      const hold = Math.max(1, stepFrames[index] || stepFrames[index % stepFrames.length] || 1);
+      const frames = hold + (index < rawCues.length - 1 ? transitionFrames : 0);
       const start = cursor * 1000 / fps;
       cursor += frames;
       return { ...cue, START_MS: start, END_MS: cursor * 1000 / fps };
     });
-  }, [rawCues, fps, stepFrames]);
+  }, [rawCues, fps, stepFrames, transitionFrames]);
   const activeCues = cues.filter(c => now >= ms(c.START_MS) && now <= ms(c.END_MS)).sort((a,b) => ms(a.Z_INDEX)-ms(b.Z_INDEX));
   const active = activeCues.at(-1);
   const stageIndex = Math.max(0, active ? cues.indexOf(active) : 0) % 4;
@@ -145,6 +148,30 @@ export default function MotionRuntime() {
       if (data.personaId && data.personaId !== personaId) throw new Error('Persona ID 불일치');
       setPack(data); setPackSource('BRIDGE'); setNow(0);
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+  }
+
+  function applyVoiceAutoPlan() {
+    const totalFrames = Math.max(1, Math.round(voiceDurationMs * fps / 1000));
+    const keyCount = Math.max(4, Math.min(16, Math.ceil(voiceDurationMs / 625)));
+    const nextTransition = Math.max(2, Math.min(12, Math.round(fps * 0.25)));
+    const holdTotal = Math.max(keyCount, totalFrames - (keyCount - 1) * nextTransition);
+    const baseHold = Math.floor(holdTotal / keyCount);
+    let remainder = holdTotal % keyCount;
+    const holds = Array.from({length:keyCount},()=>baseHold + (remainder-- > 0 ? 1 : 0));
+    const source = (pack?.cues?.length ? pack.cues : CONTROL_TEST_PACK.cues) || [];
+    const danceMotions = ['MOTION_DANCE_BOUNCE','MOTION_DANCE_STEP_SIDE','MOTION_DANCE_ARM_WAVE','MOTION_DANCE_STEP_SIDE','MOTION_DANCE_ARM_WAVE','MOTION_DANCE_BOUNCE','MOTION_HAND_EXPLAIN','MOTION_SPEAK_IDLE'];
+    const visemes = ['VIS-KO-SIL','VIS-KO-A','VIS-KO-I','VIS-KO-MBP','VIS-KO-U','VIS-KO-A','VIS-KO-I','VIS-KO-SIL'];
+    const expanded = Array.from({length:keyCount},(_,index)=>{
+      const sourceIndex = keyCount === 1 ? 0 : Math.round(index * Math.max(0,source.length-1) / (keyCount-1));
+      return { ...(source[sourceIndex] || {}), MOTION_ID:danceMotions[index % danceMotions.length],
+        VISEME_ID:visemes[index % visemes.length], EXPRESSION_ID:index===0||index===keyCount-1?'HAPPY':'DANCE_HAPPY',
+        GESTURE_ID:['DANCE_READY','STEP_LEFT','WAVE_LEFT','STEP_RIGHT','WAVE_RIGHT','BOUNCE','OPEN_HANDS','SMILE_END'][index % 8],
+        CAPTION_TEXT:scriptText };
+    });
+    setTransitionFrames(nextTransition);
+    setStepFrames(holds);
+    setPack({...(pack || CONTROL_TEST_PACK),cues:expanded});
+    setNow(0);
   }
 
   async function loadPhotoBackdata() {
@@ -213,13 +240,17 @@ export default function MotionRuntime() {
           {['EXPLAIN','GREETING','THINK','POINT','DANCE','LISTEN'].map(type=><option key={type}>{type}</option>)}
         </select>
         <div className="mb-3 rounded-xl bg-slate-800 p-3 text-xs">
+          <label className="mb-2 block">음성/텍스트<input value={scriptText} onChange={e=>setScriptText(e.target.value)} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
+          <label className="mb-2 block">음성 길이(ms)<input type="number" min="500" value={voiceDurationMs} onChange={e=>setVoiceDurationMs(Math.max(500,Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
+          <button onClick={applyVoiceAutoPlan} className="mb-3 w-full rounded bg-fuchsia-500 p-2 font-bold text-white">음성 길이로 동작·프레임 자동 계산</button>
           <div className="grid grid-cols-2 gap-2">
             <label>FPS<input type="number" min="8" max="60" value={fps} onChange={e=>setFps(Math.max(8, Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
             <label>전환 프레임<input type="number" min="0" max="30" value={transitionFrames} onChange={e=>setTransitionFrames(Math.max(0, Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
           </div>
-          <p className="mb-1 mt-3 text-slate-400">4개 키 상태 프레임 수</p>
+          <p className="mb-1 mt-3 text-slate-400">{stepFrames.length}개 키 이미지 유지 프레임</p>
           <div className="grid grid-cols-4 gap-1">{stepFrames.map((value,index)=><input aria-label={`step-${index+1}-frames`} key={index} type="number" min="1" max="240" value={value} onChange={e=>setStepFrames(current=>current.map((v,i)=>i===index?Math.max(1,Number(e.target.value)):v))} className="w-full rounded bg-slate-700 p-2"/>)}</div>
-          <p className="mt-2 text-cyan-300">총 {stepFrames.reduce((a,b)=>a+b,0)} frames · {(stepFrames.reduce((a,b)=>a+b,0)/fps).toFixed(2)}s</p>
+          <p className="mt-2 text-cyan-300">총 {stepFrames.reduce((a,b)=>a+b,0) + Math.max(0,stepFrames.length-1)*transitionFrames} frames · {((stepFrames.reduce((a,b)=>a+b,0) + Math.max(0,stepFrames.length-1)*transitionFrames)/fps).toFixed(2)}s</p>
+          <p className="mt-1 text-slate-400">키 이미지 {stepFrames.length}개 · 구간당 연결 {transitionFrames}프레임</p>
         </div>
         <label className="mb-2 block text-xs text-slate-400">FULLBODY_REF_URL</label>
         <input value={masterUrl} onChange={e=>setMasterUrl(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm" />
