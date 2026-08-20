@@ -77,6 +77,9 @@ export default function MotionRuntime() {
   const [voiceDurationMs, setVoiceDurationMs] = useState(5000);
   const [scriptText, setScriptText] = useState('안녕하세요. 좋은 하루예요.');
   const [styleId, setStyleId] = useState('REAL_PERSONA');
+  const [dynamicDensity, setDynamicDensity] = useState<'AUTO'|'LOW'|'MEDIUM'|'HIGH'>('AUTO');
+  const [sectionMode, setSectionMode] = useState<'AUTO'|'MANUAL'>('AUTO');
+  const [sectionPlan, setSectionPlan] = useState<{text:string;durationMs:number;density:string;keyCount:number;frames:number}[]>([]);
   const [pack, setPack] = useState<MotionPack | null>(null);
   const [packSource, setPackSource] = useState<'NONE'|'BRIDGE'|'TEST_RIG'>('NONE');
   const [now, setNow] = useState(0);
@@ -152,6 +155,7 @@ export default function MotionRuntime() {
   }
 
   function applyVoiceAutoPlan() {
+    setError('');
     const policies: Record<string,{interval:number,minKeys:number,maxKeys:number,transition:number,outputFps:number}> = {
       REAL_PERSONA:{interval:575,minKeys:6,maxKeys:16,transition:8,outputFps:24},
       WEBTOON:{interval:1000,minKeys:4,maxKeys:10,transition:3,outputFps:24},
@@ -162,29 +166,53 @@ export default function MotionRuntime() {
     };
     const policy = policies[styleId];
     if (!policy) { setError('이 스타일은 ContentOS 샘플과 테스트가 필요합니다: '+styleId); return; }
-    const planFps = policy.outputFps;
-    setFps(planFps);
-    const totalFrames = Math.max(1, Math.round(voiceDurationMs * planFps / 1000));
-    const keyCount = Math.max(policy.minKeys, Math.min(policy.maxKeys, Math.ceil(voiceDurationMs / policy.interval)));
-    const nextTransition = policy.transition;
-    const holdTotal = Math.max(keyCount, totalFrames - (keyCount - 1) * nextTransition);
-    const baseHold = Math.floor(holdTotal / keyCount);
-    let remainder = holdTotal % keyCount;
-    const holds = Array.from({length:keyCount},()=>baseHold + (remainder-- > 0 ? 1 : 0));
-    const source = (pack?.cues?.length ? pack.cues : CONTROL_TEST_PACK.cues) || [];
-    const danceMotions = ['MOTION_DANCE_BOUNCE','MOTION_DANCE_STEP_SIDE','MOTION_DANCE_ARM_WAVE','MOTION_DANCE_STEP_SIDE','MOTION_DANCE_ARM_WAVE','MOTION_DANCE_BOUNCE','MOTION_HAND_EXPLAIN','MOTION_SPEAK_IDLE'];
-    const visemes = ['VIS-KO-SIL','VIS-KO-A','VIS-KO-I','VIS-KO-MBP','VIS-KO-U','VIS-KO-A','VIS-KO-I','VIS-KO-SIL'];
-    const expanded = Array.from({length:keyCount},(_,index)=>{
-      const sourceIndex = keyCount === 1 ? 0 : Math.round(index * Math.max(0,source.length-1) / (keyCount-1));
-      return { ...(source[sourceIndex] || {}), MOTION_ID:danceMotions[index % danceMotions.length],
-        VISEME_ID:visemes[index % visemes.length], EXPRESSION_ID:index===0||index===keyCount-1?'HAPPY':'DANCE_HAPPY',
-        GESTURE_ID:['DANCE_READY','STEP_LEFT','WAVE_LEFT','STEP_RIGHT','WAVE_RIGHT','BOUNCE','OPEN_HANDS','SMILE_END'][index % 8],
-        CAPTION_TEXT:scriptText };
+    const clauses = scriptText.trim().split(/(?<=[.!?。！？])/).map(value=>value.trim()).filter(Boolean);
+    const source = clauses.length ? clauses : [scriptText || ''];
+    const weights = source.map(value=>Math.max(1,value.replace(/\s/g,'').length));
+    const totalWeight = weights.reduce((a,b)=>a+b,0);
+    const merged: string[] = [];
+    let buffer = '', bufferWeight = 0;
+    source.forEach((value,index)=>{
+      buffer += (buffer ? ' ' : '') + value; bufferWeight += weights[index];
+      const estimated = voiceDurationMs * bufferWeight / totalWeight;
+      if (estimated >= 2500 || estimated >= 12000 || index === source.length-1) { merged.push(buffer); buffer=''; bufferWeight=0; }
     });
-    setTransitionFrames(nextTransition);
-    setStepFrames(holds);
-    setPack({...(pack || CONTROL_TEST_PACK),cues:expanded});
-    setNow(0);
+    const mergedWeights = merged.map(value=>Math.max(1,value.replace(/\s/g,'').length));
+    const mergedTotal = mergedWeights.reduce((a,b)=>a+b,0);
+    const planFps = policy.outputFps;
+    const nextTransition = policy.transition;
+    const sections = merged.map((value,index)=>{
+      const durationMs = index === merged.length-1
+        ? voiceDurationMs - mergedWeights.slice(0,index).reduce((sum,w)=>sum+Math.round(voiceDurationMs*w/mergedTotal),0)
+        : Math.round(voiceDurationMs*mergedWeights[index]/mergedTotal);
+      const actions = (value.match(/춤|걷|뛰|가리|돌|인사|손|고개|표정|웃|놀라|등장|전환/g)||[]).length;
+      const density = dynamicDensity === 'AUTO' ? (actions >= 3 ? 'HIGH' : actions === 0 ? 'LOW' : 'MEDIUM') : dynamicDensity;
+      const densityFactor = density === 'HIGH' ? 0.72 : density === 'LOW' ? 1.45 : 1;
+      const interval = policy.interval * densityFactor;
+      const localMin = density === 'LOW' ? Math.max(2,Math.ceil(policy.minKeys*0.5)) : policy.minKeys;
+      const keyCount = Math.max(localMin,Math.min(policy.maxKeys,Math.ceil(durationMs/interval)));
+      return {text:value,durationMs,density,keyCount,frames:Math.max(1,Math.round(durationMs*planFps/1000))};
+    });
+    const holds: number[] = [];
+    const expanded: MotionCue[] = [];
+    const sourceCues = (pack?.cues?.length ? pack.cues : CONTROL_TEST_PACK.cues) || [];
+    const motions = ['MOTION_SPEAK_IDLE','MOTION_BODY_LEAN','MOTION_HEAD_NOD','MOTION_HAND_EXPLAIN','MOTION_ARM_SWEEP','MOTION_HEAD_TURN'];
+    const visemes = ['VIS-KO-SIL','VIS-KO-A','VIS-KO-I','VIS-KO-MBP','VIS-KO-U'];
+    sections.forEach(section=>{
+      const transitionTotal = Math.max(0,section.keyCount-1)*nextTransition;
+      const holdTotal = Math.max(section.keyCount,section.frames-transitionTotal);
+      const base = Math.floor(holdTotal/section.keyCount);
+      let remainder = holdTotal%section.keyCount;
+      for(let index=0;index<section.keyCount;index++){
+        holds.push(base+(remainder-- > 0 ? 1 : 0));
+        const cue = sourceCues[index%Math.max(1,sourceCues.length)] || {};
+        expanded.push({...cue,MOTION_ID:motions[index%motions.length],VISEME_ID:visemes[index%visemes.length],
+          EXPRESSION_ID:section.density==='LOW'?'EXPLAIN_CALM':'EXPLAIN',GESTURE_ID:section.density+'_DYNAMIC',
+          CAPTION_TEXT:section.text,SECTION_INDEX:sections.indexOf(section)+1});
+      }
+    });
+    setFps(planFps); setTransitionFrames(nextTransition); setStepFrames(holds); setSectionPlan(sections);
+    setPack({...((pack || CONTROL_TEST_PACK)),cues:expanded}); setNow(0);
   }
 
   async function loadPhotoBackdata() {
@@ -260,8 +288,13 @@ export default function MotionRuntime() {
           </label>
           <label className="mb-2 block">음성/텍스트<input value={scriptText} onChange={e=>setScriptText(e.target.value)} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
           <label className="mb-2 block">음성 길이(ms)<input type="number" min="500" value={voiceDurationMs} onChange={e=>setVoiceDurationMs(Math.max(500,Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
+          <div className="mb-2 grid grid-cols-2 gap-2">
+            <label>섹션 설정<select value={sectionMode} onChange={e=>setSectionMode(e.target.value as 'AUTO'|'MANUAL')} className="mt-1 w-full rounded bg-slate-700 p-2"><option value="AUTO">자동 분할</option><option value="MANUAL">자동 후 수동조정</option></select></label>
+            <label>동적 요소량<select value={dynamicDensity} onChange={e=>setDynamicDensity(e.target.value as 'AUTO'|'LOW'|'MEDIUM'|'HIGH')} className="mt-1 w-full rounded bg-slate-700 p-2">{['AUTO','LOW','MEDIUM','HIGH'].map(v=><option key={v}>{v}</option>)}</select></label>
+          </div>
           <button onClick={applyVoiceAutoPlan} className="mb-3 w-full rounded bg-fuchsia-500 p-2 font-bold text-white">스타일·음성 길이로 후보 프레임 계산</button>
           <p className="mb-2 text-amber-300">CANDIDATE · 시험 렌더 2회 PASS 후 템플릿 승격</p>
+          {sectionPlan.length > 0 && <div className="mb-3 rounded bg-slate-950 p-2 text-xs"><b>자동 섹션 {sectionPlan.length}개</b>{sectionPlan.map((section,index)=><p key={index} className="mt-1 text-slate-300">#{index+1} · {(section.durationMs/1000).toFixed(1)}초 · {section.density} · 키 이미지 {section.keyCount}개 · {section.frames}프레임</p>)}</div>}
           <div className="grid grid-cols-2 gap-2">
             <label>FPS<input type="number" min="8" max="60" value={fps} onChange={e=>setFps(Math.max(8, Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
             <label>전환 프레임<input type="number" min="0" max="30" value={transitionFrames} onChange={e=>setTransitionFrames(Math.max(0, Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
