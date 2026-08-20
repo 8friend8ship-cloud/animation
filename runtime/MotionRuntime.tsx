@@ -147,6 +147,47 @@ export default function MotionRuntime() {
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }
 
+  async function loadPhotoBackdata() {
+    setError('');
+    if (!packUrl) { setError('Apps Script Web App URL을 입력하세요.'); return; }
+    try {
+      const url = new URL(packUrl);
+      url.searchParams.set('action', 'photoToVideoPlan');
+      url.searchParams.set('photoAssetId', 'PHOTO-F20-GREETING-SPRITE-001');
+      url.searchParams.set('templateType', 'GREETING_4_STATE');
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error('Photo Backdata HTTP ' + res.status);
+      const data = await res.json();
+      if (data.schema !== 'PHOTO_TO_VIDEO_BACKDATA_V1') throw new Error('지원하지 않는 Photo Backdata schema');
+      if (!data.validation?.ok) throw new Error((data.validation?.errors || ['PHOTO_PLAN_INVALID']).join(' · '));
+      const planFps = Number(data.renderPlan?.FPS || 24);
+      setFps(planFps);
+      const nextFrames = (data.keyStates || []).slice(0,4).map((state: Record<string, unknown>)=>Number(state.FRAME_COUNT || 1));
+      if (nextFrames.length === 4) setStepFrames(nextFrames);
+      setTransitionFrames(Number(data.renderPlan?.TRANSITION_FRAMES || 0));
+      setPersonaId(String(data.photo?.PERSONA_ID || DEFAULT_PERSONA_ID));
+      if (data.photo?.PHOTO_URL) setMasterUrl(String(data.photo.PHOTO_URL));
+      let cursor = 0;
+      const nextCues = (data.keyStates || []).map((state: Record<string, unknown>) => {
+        const start = cursor * 1000 / planFps;
+        cursor += Number(state.FRAME_COUNT || 1);
+        return {
+          START_MS:start, END_MS:cursor * 1000 / planFps,
+          MOTION_ID:String(state.MOTION_ID || ''), EXPRESSION_ID:String(state.EXPRESSION_ID || ''),
+          VISEME_ID:String(state.VISEME_ID || ''), GESTURE_ID:String(state.STATE_ID || ''),
+          CAPTION_TEXT:String(data.renderPlan?.SCRIPT_TEXT || '')
+        };
+      });
+      setPack({
+        schema:'MOTION_CONNECTION_PACK_V1', extensionSchema:'PHOTO_TO_VIDEO_BACKDATA_V1',
+        personaId:String(data.photo?.PERSONA_ID || ''), locale:String(data.renderPlan?.LOCALE || 'ko-KR'),
+        cues:nextCues, primitives:[], validation:{ok:true,errors:[]},
+        capability:{photoBackdata:true,queensAnalysis:true,template1:true,template2:true,renderPlan:true}
+      });
+      setPackSource('BRIDGE'); setNow(0);
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+  }
+
   function loadControlTest() { setPack(CONTROL_TEST_PACK); setPackSource('TEST_RIG'); setNow(0); setError(''); }
   function play() { started.current = performance.now() - now; setPlaying(true); }
   function speak() {
@@ -183,7 +224,8 @@ export default function MotionRuntime() {
         <label className="mb-2 block text-xs text-slate-400">FULLBODY_REF_URL</label>
         <input value={masterUrl} onChange={e=>setMasterUrl(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm" />
         <div className="flex flex-wrap gap-2">
-          <button onClick={loadPack} className="rounded-xl bg-cyan-500 px-3 py-2 font-bold text-slate-950">Load Bridge</button>
+          <button onClick={loadPhotoBackdata} className="rounded-xl bg-sky-400 px-3 py-2 font-bold text-slate-950">Load Photo Backdata</button>
+          <button onClick={loadPack} className="rounded-xl bg-cyan-500 px-3 py-2 font-bold text-slate-950">Load Motion Pack</button>
           <button onClick={loadControlTest} className="rounded-xl bg-amber-400 px-3 py-2 font-bold text-slate-950">Load Control Test</button>
           <button onClick={play} disabled={!pack} className="rounded-xl bg-emerald-500 px-3 py-2 font-bold text-slate-950 disabled:opacity-40">Play</button>
           <button onClick={speak} className="rounded-xl bg-violet-500 px-3 py-2 font-bold text-white">한국어 음성</button>
