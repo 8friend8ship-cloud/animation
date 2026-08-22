@@ -1,0 +1,7 @@
+{
+  "appId": "APP_ANIMATION",
+  "writerT1Template": "PTPL-VIDEO-DIRECTOR-V1",
+  "t2Template": "T2_ANIMATION_RENDER_PACKAGE_V2",
+  "requiredOutputs": ["scene_list","hook","cut_plan","caption_lines","audio_text","asset_ids","transition_rules"],
+  "runtimeStatus": "RENDER_X2_PENDING"
+}
