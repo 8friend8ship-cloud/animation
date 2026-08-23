@@ -45,7 +45,23 @@ For this reference the workflow delta is:
 → `COMPOSE`
 → `FRAME/CAPTION/AUDIO QA`
 → `PLATFORM EXPORT`
+→ `ENGAGEMENT CAMPAIGN`
 → `LEARNING WRITEBACK`
+
+## Dedicated workflow-agent apps
+
+Every learned video template becomes a dedicated agent mode inside `?mode=video-agents` rather than remaining a passive template:
+
+- `SIMPLE_EXPLAINER`
+- `PRESENTER_TOPLIST`
+- `TOOL_DEMO`
+- `AGENT_DASHBOARD_PROMO`
+- `APP_INTRO_COMPARISON`
+- `UGC_AD`
+- `BEFORE_AFTER`
+- `WORKFLOW_MAP_EXPLAINER`
+
+Each agent owns its input contract, workflow map, T1 template, T2 front adapters, render policy, QA gate and distribution hook.
 
 ## Front-app contract
 
@@ -87,6 +103,39 @@ Never expose credentials, API keys, private customer data, or internal secrets.
 - creates a 10-minute queue trigger,
 - keeps `SIMPLE_FIRST` and approved-API-on-quality-gap policy.
 
+`apps-script/EngagementDistributionWorkflow.gs` handles participation campaigns after publishing.
+
+## Comment participation -> free app/resource delivery
+
+A promo agent may attach CTA such as:
+
+- `댓글에 무료앱이라고 남기면 링크를 보내드립니다.`
+- `댓글에 견적이라고 남기면 무료 도구를 안내합니다.`
+- `댓글에 여행이라고 남기면 무료 앱 링크를 보냅니다.`
+
+Runtime chain:
+
+`PUBLISHED CONTENT -> OFFICIAL COMMENT/REPLY EVENT -> KEYWORD MATCH -> PLATFORM CAPABILITY ROUTER -> OFFICIAL DM/PRIVATE REPLY WHEN PERMITTED -> OTHERWISE PUBLIC REPLY/LANDING LINK/MANUAL QUEUE -> DELIVERY LOG -> CONVERSION/LEARNING WRITEBACK`
+
+Policy:
+
+- `OFFICIAL_API_ONLY`.
+- no scraping, credential reuse, simulated-user DM, spam loop or permission bypass.
+- direct/private messaging is enabled only after current official platform capability + account permission readback.
+- unsupported private messaging falls back to public reply + landing link, pinned comment/description, or manual queue.
+- participant events must be deduplicated and rate limited before Production activation.
+
+## Central DataHub tabs
+
+- `VIDEO_TEMPLATE_AGENTS`
+- `ENGAGEMENT_CAMPAIGNS`
+- `ENGAGEMENT_EVENTS`
+- `VIDEO_WORKFLOW_MAP`
+- `MEDIA_QUEENS_SEED_SCHEMA`
+- `ASSET_INDEX`
+- `BRIDGE_TASKS`
+- `TASK_QUEUE`
+
 ## Template modes
 
 1. `SIMPLE`: cards/screenshots + TTS/captions.
@@ -109,3 +158,7 @@ A template is not VERIFIED until two representative app inputs pass:
 - CTA clarity
 - 9:16 export
 - no unnecessary API escalation
+- comment keyword event x2
+- dedupe/rate-limit check
+- platform capability route check
+- delivery/writeback evidence
