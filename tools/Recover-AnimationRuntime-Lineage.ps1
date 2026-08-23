@@ -5,38 +5,59 @@ param(
 $ErrorActionPreference = 'Stop'
 $repo = '8friend8ship-cloud/animation'
 $targetSpreadsheetIds = @(
-  '1dgLhQnFnOOZgI2K_vxtWbFrTUnvduhQT_OqJmlkJmT4', # Animation-BSH-VTubeTest-1
-  '1b0VkG1lttudtgctqRQCC2ZydjwrPLu2cA3vxSBUD7_g'  # ANIMATION_SEED_LIBRARY
+  '1dgLhQnFnOOZgI2K_vxtWbFrTUnvduhQT_OqJmlkJmT4',
+  '1b0VkG1lttudtgctqRQCC2ZydjwrPLu2cA3vxSBUD7_g'
 )
 
-Write-Host 'Animation runtime lineage recovery (NO NEW PROJECT / NO NEW DEPLOYMENT)'
-Write-Host "Repository: $repo"
-Write-Host "DryRun: $DryRun"
-
-if (-not (Get-Command clasp -ErrorAction SilentlyContinue)) {
-  throw 'clasp is not installed or not on PATH.'
-}
-
-$who = clasp login --status 2>&1
-Write-Host $who
-
-$root = Join-Path $env:TEMP ('animation-runtime-recovery-' + [guid]::NewGuid().ToString('N'))
-New-Item -ItemType Directory -Path $root | Out-Null
-
-# Do not create a new Apps Script project. Search only already-authorized projects.
-$listRaw = clasp list 2>&1 | Out-String
-Set-Content -Path (Join-Path $root 'clasp-list.txt') -Value $listRaw -Encoding UTF8
-Write-Host $listRaw
-
-$matches = @()
-foreach ($line in ($listRaw -split "`r?`n")) {
-  if ($line -match '(?<name>.+?)\s+-\s+(?<id>[A-Za-z0-9_-]{20,})\s*$') {
-    $matches += [pscustomobject]@{ Name=$Matches.name.Trim(); ScriptId=$Matches.id.Trim() }
+function Invoke-NativeText {
+  param([string]$Command, [string[]]$Arguments = @())
+  $oldPreference = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    $text = (& $Command @Arguments 2>&1 | Out-String)
+    $code = $LASTEXITCODE
+    return [pscustomobject]@{ Text=$text; ExitCode=$code }
+  } finally {
+    $ErrorActionPreference = $oldPreference
   }
 }
 
+Write-Host 'Animation runtime lineage recovery V2 (NO NEW PROJECT / NO NEW DEPLOYMENT)'
+Write-Host "Repository: $repo"
+Write-Host "DryRun: $DryRun"
+
+$claspCmd = Get-Command clasp -ErrorAction SilentlyContinue
+if (-not $claspCmd) { throw 'clasp is not installed or not on PATH.' }
+Write-Host ('CLASP_PATH=' + $claspCmd.Source)
+
+# Do not use `clasp login --status`: recent/older clasp builds differ on this option.
+# `clasp list` itself is the read-only authentication/probe step.
+$listProbe = Invoke-NativeText -Command $claspCmd.Source -Arguments @('list')
+Write-Host $listProbe.Text
+if ($listProbe.ExitCode -ne 0) {
+  throw ('clasp list failed with exit code ' + $listProbe.ExitCode + '. Existing login may need inspection; no OAuth action was attempted.')
+}
+
+$root = Join-Path $env:TEMP ('animation-runtime-recovery-' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $root | Out-Null
+Set-Content -Path (Join-Path $root 'clasp-list.txt') -Value $listProbe.Text -Encoding UTF8
+
+$matches = @()
+foreach ($line in ($listProbe.Text -split "`r?`n")) {
+  # clasp list output varies by version. Accept common `name - id`, URL/id, and bare-id forms.
+  if ($line -match '(?<name>.+?)\s+-\s+(?<id>[A-Za-z0-9_-]{20,})\s*$') {
+    $matches += [pscustomobject]@{ Name=$Matches.name.Trim(); ScriptId=$Matches.id.Trim() }
+  } elseif ($line -match 'script\.google\.com/.+?/(?<id>[A-Za-z0-9_-]{20,})') {
+    $matches += [pscustomobject]@{ Name=$line.Trim(); ScriptId=$Matches.id.Trim() }
+  } elseif ($line -match '^\s*(?<id>[A-Za-z0-9_-]{30,})\s*$') {
+    $matches += [pscustomobject]@{ Name='UNKNOWN'; ScriptId=$Matches.id.Trim() }
+  }
+}
+$matches = $matches | Sort-Object ScriptId -Unique
+
 if (-not $matches.Count) {
   Write-Warning 'No authorized clasp projects could be parsed. Stop without creating anything.'
+  Write-Host ('OUTPUT_DIR=' + $root)
   exit 2
 }
 
@@ -47,14 +68,26 @@ foreach ($m in $matches) {
   Push-Location $dir
   try {
     Set-Content .clasp.json ('{"scriptId":"' + $m.ScriptId + '"}') -Encoding UTF8
-    clasp clone $m.ScriptId 2>&1 | Out-File clone.log -Encoding UTF8
-    $hit = $false
-    foreach ($sid in $targetSpreadsheetIds) {
-      if (Get-ChildItem -Recurse -File | Select-String -SimpleMatch $sid -Quiet) { $hit = $true }
+    $cloneProbe = Invoke-NativeText -Command $claspCmd.Source -Arguments @('clone', $m.ScriptId)
+    Set-Content clone.log $cloneProbe.Text -Encoding UTF8
+    if ($cloneProbe.ExitCode -ne 0) {
+      Write-Warning ("Failed to inspect " + $m.ScriptId + ': clasp clone exit ' + $cloneProbe.ExitCode)
+      continue
     }
-    $videoHit = Get-ChildItem -Recurse -File | Select-String -Pattern 'Animation|VTube|QUEENS_SCENE|PERSONA_STORYBOARD_PACK|ASSET_AUTOMATION_TRIGGER' -Quiet
-    if ($hit -or $videoHit) {
-      $results += [pscustomobject]@{ ScriptId=$m.ScriptId; Name=$m.Name; SpreadsheetHit=$hit; AnimationCodeHit=$videoHit; Snapshot=$dir }
+    $files = @(Get-ChildItem -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne '.clasp.json' })
+    $spreadsheetHit = $false
+    foreach ($sid in $targetSpreadsheetIds) {
+      if ($files | Select-String -SimpleMatch $sid -Quiet) { $spreadsheetHit = $true; break }
+    }
+    $videoHit = $false
+    if ($files.Count) {
+      $videoHit = [bool]($files | Select-String -Pattern 'Animation|VTube|QUEENS_SCENE|PERSONA_STORYBOARD_PACK|ASSET_AUTOMATION_TRIGGER' -Quiet)
+    }
+    if ($spreadsheetHit -or $videoHit) {
+      $results += [pscustomobject]@{
+        ScriptId=$m.ScriptId; Name=$m.Name; SpreadsheetHit=$spreadsheetHit;
+        AnimationCodeHit=$videoHit; Snapshot=$dir
+      }
     }
   } catch {
     Write-Warning ("Failed to inspect " + $m.ScriptId + ': ' + $_.Exception.Message)
@@ -65,18 +98,17 @@ foreach ($m in $matches) {
 
 $results | Format-Table -AutoSize
 $results | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $root 'animation-runtime-candidates.json') -Encoding UTF8
+Write-Host ('OUTPUT_DIR=' + $root)
 
 if ($results.Count -eq 1) {
   Write-Host ('UNIQUE_CANDIDATE=' + $results[0].ScriptId)
   Write-Host ('SNAPSHOT=' + $results[0].Snapshot)
-  Write-Host 'Next safe step: diff live snapshot against apps-script/VideoAgentDispatcher.gs, VideoPromoWorkflow.gs and EngagementDistributionWorkflow.gs. Do not push until the diff is reviewed.'
+  Write-Host 'SAFE_NEXT=DIFF_ONLY_EXISTING_SCRIPT'
   exit 0
 }
-
 if ($results.Count -gt 1) {
   Write-Warning 'Multiple candidates found. Stop and compare before any push.'
   exit 3
 }
-
 Write-Warning 'No matching existing Animation bound Apps Script was found. Stop. Do not create a new project.'
 exit 4
