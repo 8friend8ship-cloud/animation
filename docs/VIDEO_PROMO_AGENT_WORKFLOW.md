@@ -48,9 +48,36 @@ For this reference the workflow delta is:
 → `ENGAGEMENT CAMPAIGN`
 → `LEARNING WRITEBACK`
 
-## Dedicated workflow-agent apps
+## Two-layer application architecture
 
-Every learned video template becomes a dedicated agent mode inside `?mode=video-agents` rather than remaining a passive template:
+The learned workflow now has two connected product surfaces.
+
+### Layer 1 — Shared Workflow Front Shell
+
+`?mode=workflow-shell`
+
+The shell is a common operational UI for:
+
+- Content OS
+- Travel
+- Interior / Estimate
+- DryWriter
+- Persona / VTube
+- Central Agent
+
+Each app uses the same shell but supplies a different adapter (`workflow-shell/appAdapters.ts`) containing its workflow nodes, metrics, output types and eligible video templates.
+
+Runtime contract:
+
+`APP FRONT -> /api/video-agent-bridge -> canonical Apps Script web-app router -> handleVideoAgentRequest() -> TASK_QUEUE/BRIDGE_TASKS -> APP BACKEND/QUEENS/SEED/T1/T2 -> TEMPLATE AGENT -> QA/PUBLISH -> WRITEBACK`
+
+The shell can queue a full E2E workflow or route directly to one of the app's eligible video-agent templates.
+
+### Layer 2 — Dedicated Video Template Agents
+
+`?mode=video-agents`
+
+Every learned video template becomes a dedicated agent mode instead of remaining a passive template:
 
 - `SIMPLE_EXPLAINER`
 - `PRESENTER_TOPLIST`
@@ -94,16 +121,33 @@ Never expose credentials, API keys, private customer data, or internal secrets.
 
 ## Apps Script bridge
 
-`apps-script/VideoPromoWorkflow.gs` is the orchestration source. It:
-
-- queues new reference media,
-- writes/links asset records,
-- builds Queens/Seed/T1/T2 records,
-- uses `BRIDGE_TASKS` for work Apps Script cannot perform directly (frame extraction, rendering, advanced audio/video QA),
-- creates a 10-minute queue trigger,
-- keeps `SIMPLE_FIRST` and approved-API-on-quality-gap policy.
+`apps-script/VideoPromoWorkflow.gs` performs reference → Queens → Seed → T1 → T2 promo orchestration.
 
 `apps-script/EngagementDistributionWorkflow.gs` handles participation campaigns after publishing.
+
+`apps-script/VideoAgentDispatcher.gs` is the shared request dispatcher for both front surfaces. It accepts only the allowlisted actions:
+
+- `STATUS`
+- `QUEUE_APP_WORKFLOW`
+- `QUEUE_TEMPLATE_AGENT`
+- `REGISTER_ENGAGEMENT_CAMPAIGN`
+- `INGEST_ENGAGEMENT_EVENT`
+- `PROCESS_VIDEO_PROMO_QUEUE`
+- `PROCESS_ENGAGEMENT_EVENTS`
+
+It intentionally does **not** declare `doPost(e)`. During runtime integration the existing canonical Apps Script web-app router must delegate only these actions to `handleVideoAgentRequest(input)`. This avoids creating a duplicate deployment or overriding an already verified `doPost` path.
+
+## Server-side front bridge
+
+`api/video-agent-bridge.js` is the Vercel/server-side proxy used by the React front.
+
+- Browser calls `/api/video-agent-bridge` by default.
+- Server reads `VIDEO_AGENT_APPS_SCRIPT_URL` and forwards only allowlisted actions.
+- Front-end API keys/secrets are rejected.
+- Optional server-only `VIDEO_AGENT_BRIDGE_TOKEN` can be forwarded to the canonical Apps Script router after that router supports token validation.
+- `workflow-shell/bridgeClient.ts` is shared by Workflow Shell and Video Agent Hub.
+
+This means the Apps Script deployment URL does not need to be hardcoded into the browser bundle.
 
 ## Comment participation -> free app/resource delivery
 
@@ -144,6 +188,21 @@ Policy:
 4. `UGC`: persona/model advertising.
 5. `ANIMATION`: explanatory motion graphics.
 6. `CINEMATIC`: highest-cost visual generation; use only on justified quality gap.
+
+## Runtime promotion rule
+
+Code or CI PASS is not runtime verification. The feature stays `CODE_STAGED_RUNTIME_PENDING` until all of the following are read back:
+
+1. branch CI/build PASS,
+2. Preview route opens for both `?mode=workflow-shell` and `?mode=video-agents`,
+3. canonical Apps Script source contains the three orchestration files and dispatcher,
+4. `CENTRAL_DATAHUB_ID` resolves,
+5. `STATUS` round-trip returns the expected DataHub sheets/functions,
+6. Content OS and Travel workflow events x2 write to `TASK_QUEUE/BRIDGE_TASKS`,
+7. template-agent events x2 route through Queens/Seed/T1/T2,
+8. comment-keyword events x2 pass matching/dedupe/rate-limit checks,
+9. platform capability router uses only official supported delivery or fallback,
+10. final Frame/Caption/Audio QA and writeback evidence pass.
 
 ## QA gate
 
