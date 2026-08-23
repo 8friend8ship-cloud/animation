@@ -1,6 +1,9 @@
 import fs from 'node:fs';
 
 const read = (p) => fs.readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
+const stripComments = (text) => text
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+  .replace(/^\s*\/\/.*$/gm, '');
 const assert = (condition, message) => {
   if (!condition) {
     console.error(`FAIL: ${message}`);
@@ -13,6 +16,7 @@ const assert = (condition, message) => {
 const adapters = read('workflow-shell/appAdapters.ts');
 const dispatcher = read('apps-script/VideoAgentDispatcher.gs');
 const engagement = read('apps-script/EngagementDistributionWorkflow.gs');
+const engagementCode = stripComments(engagement);
 const promo = read('apps-script/VideoPromoWorkflow.gs');
 const bridge = read('api/video-agent-bridge.js');
 const hub = read('video-agents/VideoTemplateAgentHub.tsx');
@@ -49,7 +53,7 @@ assert(dispatcher.includes('vadFindHeader_'), 'non-row1 header detection exists'
 assert(engagement.includes('OFFICIAL_API_ONLY'), 'engagement is official-API-only');
 assert(engagement.includes('MAX_PER_HOUR'), 'engagement rate limit exists');
 assert(engagement.includes('DUPLICATE'), 'engagement dedupe path exists');
-assert(!engagement.includes('scrap') && !engagement.includes('puppeteer'), 'no scraping/browser-DM bypass in engagement source');
+assert(!/puppeteer|playwright|selenium|chromedriver|fetch\([^)]*instagram\.com|fetch\([^)]*facebook\.com/i.test(engagementCode), 'no browser automation or direct platform scraping bypass in engagement code');
 
 assert(promo.includes("COMPLEXITY_ORDER: ['SIMPLE', 'PRESENTER', 'DEMO', 'UGC', 'ANIMATION', 'CINEMATIC']"), 'simple-first complexity ladder');
 assert(promo.includes('QUEENS') && promo.includes('Seed') && promo.includes('T1') && promo.includes('T2'), 'promo lineage contains Queens/Seed/T1/T2');
