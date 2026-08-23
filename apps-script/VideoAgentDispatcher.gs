@@ -5,7 +5,7 @@
 // do not create a competing deployment or break an already verified endpoint.
 
 const VIDEO_AGENT_DISPATCHER = Object.freeze({
-  VERSION: 'VIDEO_AGENT_DISPATCHER_V1_20260823',
+  VERSION: 'VIDEO_AGENT_DISPATCHER_V2_20260823',
   DATAHUB_ID: PropertiesService.getScriptProperties().getProperty('CENTRAL_DATAHUB_ID') || '',
   SHEETS: {
     TASKS: 'TASK_QUEUE',
@@ -27,11 +27,6 @@ const VIDEO_AGENT_DISPATCHER = Object.freeze({
   ]
 });
 
-/**
- * Canonical router entrypoint.
- * Existing Apps Script doPost/router should call this function only for the
- * actions listed in VIDEO_AGENT_DISPATCHER.ACTIONS.
- */
 function handleVideoAgentRequest(input) {
   input = input || {};
   const action = String(input.action || 'STATUS').trim().toUpperCase();
@@ -73,11 +68,17 @@ function getVideoAgentDispatcherStatus() {
     const name = VIDEO_AGENT_DISPATCHER.SHEETS[k];
     sheets[name] = !!ss.getSheetByName(name);
   });
+  const taskHeader = vadFindHeader_(ss.getSheetByName(VIDEO_AGENT_DISPATCHER.SHEETS.TASKS), ['TASK_ID','PROJECT_ID','TITLE','TASK_TYPE']);
+  const bridgeHeader = vadFindHeader_(ss.getSheetByName(VIDEO_AGENT_DISPATCHER.SHEETS.BRIDGE), ['TASK_ID','TARGET','ACTION','PAYLOAD_JSON']);
   return {
     ok: true,
     version: VIDEO_AGENT_DISPATCHER.VERSION,
     spreadsheetId: ss.getId(),
     sheets,
+    headers: {
+      taskQueue: taskHeader ? {row: taskHeader.row, values: taskHeader.values} : null,
+      bridgeTasks: bridgeHeader ? {row: bridgeHeader.row, values: bridgeHeader.values} : null
+    },
     functions: {
       videoPromo: typeof processVideoPromoQueue === 'function',
       engagement: typeof processEngagementEvents === 'function',
@@ -103,33 +104,27 @@ function vadQueueAppWorkflow_(input) {
     qa: input.qa !== false,
     writeback: input.writeback !== false,
     requestedAt: now.toISOString(),
-    lineage: {
-      queens: 'AUTO',
-      seed: 'AUTO',
-      t1: 'AUTO',
-      t2: 'APP_ADAPTER',
-      final: 'VIDEO_AGENT'
-    }
+    lineage: {queens:'AUTO', seed:'AUTO', t1:'AUTO', t2:'APP_ADAPTER', final:'VIDEO_AGENT'}
   };
 
   vadAppendByHeader_(VIDEO_AGENT_DISPATCHER.SHEETS.TASKS, {
     TASK_ID: taskId,
-    PROJECT: projectId,
+    PROJECT_ID: projectId,
     TITLE: appId + ' 영상/워크플로우 자동 실행',
-    TYPE: 'APP_WORKFLOW_VIDEO_AGENT',
+    TASK_TYPE: 'APP_WORKFLOW_VIDEO_AGENT',
     PRIORITY: input.priority || 'HIGH',
     STATUS: 'READY_TO_EXECUTE',
     OWNER: 'CENTRAL_AGENT',
-    BLOCKER: '',
+    DUE_DATE: '',
     OUTPUT: 'Workflow Shell → Template Router → Video Agent → QA/Publish/Writeback',
-    NEXT_ACTION: 'Dispatch ' + kind + ' using ' + templates,
-    SOURCE: input.source || 'WORKFLOW_SHELL',
+    NEXT_ACTION: 'Dispatch ' + kind + (templates ? ' using ' + templates : ''),
+    SOURCE_REF: input.source || 'WORKFLOW_SHELL',
     UPDATED_AT: now
-  });
+  }, ['TASK_ID','PROJECT_ID','TITLE','TASK_TYPE']);
 
   const bridgeTaskId = vadAppendBridgeTask_('APP_WORKFLOW_DISPATCH', payload, 'READY', input.priority || 'HIGH');
   vadWriteAuditBridgeEvent_('QUEUE_APP_WORKFLOW', payload, 'QUEUED', bridgeTaskId);
-  return {ok: true, taskId, bridgeTaskId, appId, projectId, kind, templates: vadArray_(input.templateCandidates)};
+  return {ok:true, taskId, bridgeTaskId, appId, projectId, kind, templates:vadArray_(input.templateCandidates)};
 }
 
 function vadQueueTemplateAgent_(input) {
@@ -150,56 +145,74 @@ function vadQueueTemplateAgent_(input) {
   const bridgeTaskId = vadAppendBridgeTask_('VIDEO_TEMPLATE_AGENT_RUN', payload, 'READY', input.priority || 'HIGH');
   vadAppendByHeader_(VIDEO_AGENT_DISPATCHER.SHEETS.TASKS, {
     TASK_ID: taskId,
-    PROJECT: 'PRJ-CONTENT-OS / VIDEO-ANIMATION',
+    PROJECT_ID: 'PRJ-CONTENT-OS / VIDEO-ANIMATION',
     TITLE: templateAgentId + ' 전용 Video Agent 실행',
-    TYPE: 'VIDEO_TEMPLATE_AGENT_RUN',
+    TASK_TYPE: 'VIDEO_TEMPLATE_AGENT_RUN',
     PRIORITY: input.priority || 'HIGH',
     STATUS: 'READY_TO_EXECUTE',
     OWNER: 'CENTRAL_AGENT',
-    BLOCKER: '',
+    DUE_DATE: '',
     OUTPUT: 'Queens→Seed→T1→T2→Render→QA→Publish→Learning',
     NEXT_ACTION: 'Process bridge task ' + bridgeTaskId,
-    SOURCE: input.source || 'VIDEO_TEMPLATE_AGENT_HUB',
+    SOURCE_REF: input.source || 'VIDEO_TEMPLATE_AGENT_HUB',
     UPDATED_AT: now
-  });
+  }, ['TASK_ID','PROJECT_ID','TITLE','TASK_TYPE']);
   vadWriteAuditBridgeEvent_('QUEUE_TEMPLATE_AGENT', payload, 'QUEUED', bridgeTaskId);
-  return {ok: true, taskId, bridgeTaskId, templateAgentId};
+  return {ok:true, taskId, bridgeTaskId, templateAgentId};
 }
 
 function vadAppendBridgeTask_(action, payload, status, priority) {
   const taskId = 'BRIDGE-VIDEO-' + Utilities.getUuid();
   vadAppendByHeader_(VIDEO_AGENT_DISPATCHER.SHEETS.BRIDGE, {
     TASK_ID: taskId,
-    DOMAIN: 'VIDEO_AGENT',
+    TARGET: 'VIDEO_AGENT',
     ACTION: action,
     PAYLOAD_JSON: JSON.stringify(payload),
     STATUS: status || 'READY',
     PRIORITY: priority || 'HIGH',
+    RUNNER_ID: '',
+    CLAIMED_AT: '',
+    UPDATED_AT: new Date(),
     RESULT_JSON: '',
-    ERROR: '',
-    CREATED_AT: new Date(),
-    UPDATED_AT: '',
-    NOTE: ''
-  });
+    ERROR: ''
+  }, ['TASK_ID','TARGET','ACTION','PAYLOAD_JSON']);
   return taskId;
 }
 
 /**
- * Append by header name so this code tolerates canonical sheet column order.
- * Unknown fields are ignored. Missing sheet/header is a hard failure.
+ * Appends by canonical header names and auto-detects the header row.
+ * DataHub TASK_QUEUE currently has its real headers on row 4 while most newer
+ * tables have them on row 1, so assuming row 1 is unsafe.
  */
-function vadAppendByHeader_(sheetName, record) {
+function vadAppendByHeader_(sheetName, record, requiredHeaders) {
   const ss = vadDataHub_();
   const sheet = ss.getSheetByName(sheetName);
   if (!sheet) throw new Error('Missing canonical sheet: ' + sheetName);
-  const lastCol = Math.max(sheet.getLastColumn(), 1);
-  const header = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
-  if (!header.some(v => String(v).trim())) throw new Error('Missing headers: ' + sheetName);
-  const row = header.map(h => {
+  const headerInfo = vadFindHeader_(sheet, requiredHeaders || Object.keys(record).slice(0, 1));
+  if (!headerInfo) throw new Error('Canonical headers not found: ' + sheetName);
+  const row = headerInfo.values.map(h => {
     const key = String(h).trim();
     return Object.prototype.hasOwnProperty.call(record, key) ? record[key] : '';
   });
-  sheet.appendRow(row);
+  const targetRow = Math.max(sheet.getLastRow() + 1, headerInfo.row + 1);
+  sheet.getRange(targetRow, 1, 1, row.length).setValues([row]);
+  return targetRow;
+}
+
+function vadFindHeader_(sheet, requiredHeaders) {
+  if (!sheet) return null;
+  const lastCol = Math.max(sheet.getLastColumn(), 1);
+  const scanRows = Math.min(Math.max(sheet.getLastRow(), 1), 10);
+  const values = sheet.getRange(1, 1, scanRows, lastCol).getValues();
+  const required = (requiredHeaders || []).map(v => String(v).trim());
+  for (let r = 0; r < values.length; r++) {
+    const normalized = values[r].map(v => String(v).trim());
+    const nonEmpty = normalized.filter(Boolean);
+    if (!nonEmpty.length) continue;
+    const ok = required.every(h => normalized.indexOf(h) >= 0);
+    if (ok) return {row:r + 1, values:values[r]};
+  }
+  return null;
 }
 
 function vadWriteAuditBridgeEvent_(action, payload, status, note) {
@@ -207,19 +220,19 @@ function vadWriteAuditBridgeEvent_(action, payload, status, note) {
     const ss = vadDataHub_();
     const sheet = ss.getSheetByName('BRIDGE_EVENTS');
     if (!sheet) return;
-    const lastCol = Math.max(sheet.getLastColumn(), 1);
-    const headers = sheet.getRange(1,1,1,lastCol).getValues()[0];
+    const headerInfo = vadFindHeader_(sheet, ['TIMESTAMP','TYPE','RUNNER_ID','TASK_ID','DETAIL']);
+    if (!headerInfo) return;
+    const taskId = payload && (payload.taskId || payload.eventId || payload.campaignId) || '';
     const record = {
-      EVENT_ID: 'EVT-VIDEO-' + Utilities.getUuid(),
-      DOMAIN: 'VIDEO_AGENT',
-      EVENT: action,
-      STATUS: status,
-      PAYLOAD: JSON.stringify({payload: vadSanitizeForAudit_(payload), note: note || ''}),
-      CREATED_AT: new Date(),
-      UPDATED_AT: new Date()
+      TIMESTAMP: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss z'),
+      TYPE: 'VIDEO_AGENT_' + status + '_' + action,
+      RUNNER_ID: 'APPS_SCRIPT_VIDEO_AGENT',
+      TASK_ID: taskId,
+      DETAIL: JSON.stringify({payload:vadSanitizeForAudit_(payload), note:note || ''})
     };
-    const row = headers.map(h => Object.prototype.hasOwnProperty.call(record, String(h).trim()) ? record[String(h).trim()] : '');
-    sheet.appendRow(row);
+    const row = headerInfo.values.map(h => Object.prototype.hasOwnProperty.call(record, String(h).trim()) ? record[String(h).trim()] : '');
+    const targetRow = Math.max(sheet.getLastRow() + 1, headerInfo.row + 1);
+    sheet.getRange(targetRow, 1, 1, row.length).setValues([row]);
   } catch (_) {
     // Audit must never break the primary queue path.
   }
@@ -228,7 +241,7 @@ function vadWriteAuditBridgeEvent_(action, payload, status, note) {
 function vadSanitizeForAudit_(value) {
   if (!value || typeof value !== 'object') return value;
   const clone = JSON.parse(JSON.stringify(value));
-  ['apiKey','token','secret','password','authorization','cookie'].forEach(k => {
+  ['apiKey','api_key','token','secret','password','authorization','cookie','accessToken','refreshToken'].forEach(k => {
     if (Object.prototype.hasOwnProperty.call(clone, k)) clone[k] = '[REDACTED]';
   });
   return clone;
@@ -254,12 +267,5 @@ function vadArray_(value) {
 function vadCsv_(value) { return vadArray_(value).join(','); }
 
 function vadResult_(ok, action, data, message) {
-  return {
-    ok: !!ok,
-    action: action || '',
-    message: message || '',
-    data: data || null,
-    version: VIDEO_AGENT_DISPATCHER.VERSION,
-    at: new Date().toISOString()
-  };
+  return {ok:!!ok, action:action || '', message:message || '', data:data || null, version:VIDEO_AGENT_DISPATCHER.VERSION, at:new Date().toISOString()};
 }
