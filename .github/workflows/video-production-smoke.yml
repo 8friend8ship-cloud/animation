@@ -1,0 +1,74 @@
+name: Video Production Smoke
+
+on:
+  pull_request:
+    paths:
+      - 'tools/Render-VideoProductionManifest.ps1'
+      - 'tools/Run-VideoFrameQA.ps1'
+      - '.github/workflows/video-production-smoke.yml'
+  workflow_dispatch:
+
+jobs:
+  render-frame-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          sudo ln -sf "$(command -v ffmpeg)" /usr/local/bin/ffmpeg.exe
+          sudo ln -sf "$(command -v ffprobe)" /usr/local/bin/ffprobe.exe
+          ffmpeg -version | head -n 1
+
+      - name: Build synthetic production manifest
+        shell: pwsh
+        run: |
+          $manifest = [ordered]@{
+            manifestVersion = 'VIDEO_PRODUCTION_MANIFEST_V1'
+            assetId = 'CI-AGENT-DASHBOARD-PROMO-SMOKE'
+            aspect = '9:16'
+            fps = 30
+            voicePlan = @{ language = 'ko-KR'; lines = @() }
+            captionPlan = @{ items = @(
+              @{ startSec = 0; endSec = 2; text = 'AI workflow proof' },
+              @{ startSec = 2; endSec = 4; text = 'Result and CTA' }
+            ) }
+            shots = @(
+              @{ shotId='HOOK'; blockId='HOOK'; startSec=0; endSec=2; captionText='AI workflow proof'; voiceLine=''; screenProofRequired=$false; sourceCandidates=@(); visualRule='SYNTHETIC_SMOKE' },
+              @{ shotId='CTA'; blockId='CTA'; startSec=2; endSec=4; captionText='Result and CTA'; voiceLine=''; screenProofRequired=$false; sourceCandidates=@(); visualRule='SYNTHETIC_SMOKE' }
+            )
+          }
+          $json = $manifest | ConvertTo-Json -Depth 20 -Compress
+          Set-Content -LiteralPath manifest.json -Value $json -Encoding UTF8
+
+      - name: Render MP4
+        shell: pwsh
+        run: |
+          $manifest = Get-Content manifest.json -Raw
+          ./tools/Render-VideoProductionManifest.ps1 -ManifestJson $manifest -OutputDir "$PWD/render-out" -OutputName 'smoke.mp4' -DisableVoice -DisableCaptions
+          if (!(Test-Path "$PWD/render-out/smoke.mp4")) { throw 'smoke.mp4 missing' }
+          Get-Content "$PWD/render-out/render-result.json" -Raw
+
+      - name: Run technical frame QA
+        shell: pwsh
+        run: |
+          $manifest = Get-Content manifest.json -Raw
+          ./tools/Run-VideoFrameQA.ps1 -VideoPath "$PWD/render-out/smoke.mp4" -ManifestJson $manifest -PassNumber 1 -OutputDir "$PWD/frame-qa"
+          $qa = Get-Content "$PWD/frame-qa/00_FRAME_QA_SUMMARY.json" -Raw | ConvertFrom-Json
+          if (-not $qa.ok) { throw ('Frame QA failed: ' + (($qa.issues + $qa.failedShotIds) -join ',')) }
+          if ($qa.width -ne 1080 -or $qa.height -ne 1920) { throw 'Unexpected canvas size' }
+          if (-not $qa.hasAudio) { throw 'Audio stream missing' }
+          Write-Host ("PASS duration=" + $qa.durationSec + " size=" + $qa.width + "x" + $qa.height)
+
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-production-smoke
+          path: |
+            manifest.json
+            render-out/
+            frame-qa/
