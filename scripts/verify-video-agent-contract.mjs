@@ -55,7 +55,8 @@ assert(engagement.includes('MAX_PER_HOUR'), 'engagement rate limit exists');
 assert(engagement.includes('DUPLICATE'), 'engagement dedupe path exists');
 assert(!/puppeteer|playwright|selenium|chromedriver|fetch\([^)]*instagram\.com|fetch\([^)]*facebook\.com/i.test(engagementCode), 'no browser automation or direct platform scraping bypass in engagement code');
 
-assert(promo.includes("COMPLEXITY_ORDER: ['SIMPLE', 'PRESENTER', 'DEMO', 'UGC', 'ANIMATION', 'CINEMATIC']"), 'simple-first complexity ladder');
+const compactPromo = promo.replace(/\s+/g, '');
+assert(compactPromo.includes("COMPLEXITY_ORDER:['SIMPLE','PRESENTER','DEMO','UGC','ANIMATION','CINEMATIC']"), 'simple-first complexity ladder');
 assert(promo.includes('QUEENS') && promo.includes('Seed') && promo.includes('T1') && promo.includes('T2'), 'promo lineage contains Queens/Seed/T1/T2');
 
 assert(bridge.includes('VIDEO_AGENT_APPS_SCRIPT_URL'), 'server-only upstream URL contract');
