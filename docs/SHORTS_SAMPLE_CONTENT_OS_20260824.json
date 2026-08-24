@@ -1,0 +1,25 @@
+{
+  "content_id": "CONTENT_OS_SHORTS_SAMPLE_20260824_001",
+  "format": "shorts",
+  "aspect_ratio": "9:16",
+  "duration_sec": 25,
+  "render_mode": "deterministic_fallback",
+  "asset_policy": "reuse_existing_first",
+  "flow_bridge": "HOLD_BRG_002",
+  "scenes": [
+    {"scene_id":"S01","duration":2,"caption":"아직도 검색만 해?","visual_role":"hook_closeup_or_kinetic","motion":"zoom_pop"},
+    {"scene_id":"S02","duration":3,"caption":"키워드 1개 입력","visual_role":"search_ui_asset","motion":"typing_slide"},
+    {"scene_id":"S03","duration":3,"caption":"영상 자동 수집","visual_role":"result_cards","motion":"card_slide"},
+    {"scene_id":"S04","duration":4,"caption":"제목·주제·특징 분석","visual_role":"analysis_cards","motion":"highlight"},
+    {"scene_id":"S05","duration":4,"caption":"분석 → 아이디어","visual_role":"idea_transform","motion":"sparkle_transform"},
+    {"scene_id":"S06","duration":4,"caption":"블로그·쇼츠·릴스 확장","visual_role":"channel_branch","motion":"branch"},
+    {"scene_id":"S07","duration":3,"caption":"시간은 줄이고 효율은 올리고","visual_role":"result_success","motion":"success_pop"},
+    {"scene_id":"S08","duration":2,"caption":"Content OS 지금 시작","visual_role":"cta","motion":"pulse"}
+  ],
+  "output": {
+    "container":"mp4",
+    "codec":"h264",
+    "target":"MEDIA_OUTPUT",
+    "qa_readback":2
+  }
+}
