@@ -23,45 +23,79 @@ jobs:
           sudo ln -sf "$(command -v ffprobe)" /usr/local/bin/ffprobe.exe
           ffmpeg -version | head -n 1
 
-      - name: Build synthetic production manifest
+      - name: Build black-placeholder manifest
         shell: pwsh
         run: |
           $manifest = [ordered]@{
             manifestVersion = 'VIDEO_PRODUCTION_MANIFEST_V1'
-            assetId = 'CI-AGENT-DASHBOARD-PROMO-SMOKE'
+            assetId = 'CI-BLACK-PLACEHOLDER-GUARD'
             aspect = '9:16'
             fps = 30
             voicePlan = @{ language = 'ko-KR'; lines = @() }
-            captionPlan = @{ items = @(
-              @{ startSec = 0; endSec = 2; text = 'AI workflow proof' },
-              @{ startSec = 2; endSec = 4; text = 'Result and CTA' }
-            ) }
+            captionPlan = @{ items = @() }
             shots = @(
-              @{ shotId='HOOK'; blockId='HOOK'; startSec=0; endSec=2; captionText='AI workflow proof'; voiceLine=''; screenProofRequired=$false; sourceCandidates=@(); visualRule='SYNTHETIC_SMOKE' },
-              @{ shotId='CTA'; blockId='CTA'; startSec=2; endSec=4; captionText='Result and CTA'; voiceLine=''; screenProofRequired=$false; sourceCandidates=@(); visualRule='SYNTHETIC_SMOKE' }
+              @{ shotId='HOOK'; blockId='HOOK'; startSec=0; endSec=2; captionText='AI workflow proof'; voiceLine=''; screenProofRequired=$false; sourceCandidates=@(); visualRule='SYNTHETIC_BLACK_GUARD' },
+              @{ shotId='CTA'; blockId='CTA'; startSec=2; endSec=4; captionText='Result and CTA'; voiceLine=''; screenProofRequired=$false; sourceCandidates=@(); visualRule='SYNTHETIC_BLACK_GUARD' }
             )
           }
-          $json = $manifest | ConvertTo-Json -Depth 20 -Compress
-          Set-Content -LiteralPath manifest.json -Value $json -Encoding UTF8
+          $manifest | ConvertTo-Json -Depth 20 -Compress | Set-Content -LiteralPath black-manifest.json -Encoding UTF8
 
-      - name: Render MP4
+      - name: Render black placeholder
         shell: pwsh
         run: |
-          $manifest = Get-Content manifest.json -Raw
-          ./tools/Render-VideoProductionManifest.ps1 -ManifestJson $manifest -OutputDir "$PWD/render-out" -OutputName 'smoke.mp4' -DisableVoice -DisableCaptions
-          if (!(Test-Path "$PWD/render-out/smoke.mp4")) { throw 'smoke.mp4 missing' }
-          Get-Content "$PWD/render-out/render-result.json" -Raw
+          $manifest = Get-Content black-manifest.json -Raw
+          ./tools/Render-VideoProductionManifest.ps1 -ManifestJson $manifest -OutputDir "$PWD/render-black" -OutputName 'black.mp4' -DisableVoice -DisableCaptions
+          if (!(Test-Path "$PWD/render-black/black.mp4")) { throw 'black.mp4 missing' }
 
-      - name: Run technical frame QA
+      - name: Verify black-frame guard
         shell: pwsh
         run: |
-          $manifest = Get-Content manifest.json -Raw
-          ./tools/Run-VideoFrameQA.ps1 -VideoPath "$PWD/render-out/smoke.mp4" -ManifestJson $manifest -PassNumber 1 -OutputDir "$PWD/frame-qa"
-          $qa = Get-Content "$PWD/frame-qa/00_FRAME_QA_SUMMARY.json" -Raw | ConvertFrom-Json
-          if (-not $qa.ok) { throw ('Frame QA failed: ' + (($qa.issues + $qa.failedShotIds) -join ',')) }
+          $manifest = Get-Content black-manifest.json -Raw
+          ./tools/Run-VideoFrameQA.ps1 -VideoPath "$PWD/render-black/black.mp4" -ManifestJson $manifest -PassNumber 1 -OutputDir "$PWD/frame-qa-black"
+          $qa = Get-Content "$PWD/frame-qa-black/00_FRAME_QA_SUMMARY.json" -Raw | ConvertFrom-Json
+          if ($qa.ok) { throw 'Black placeholder incorrectly passed Frame QA' }
+          if (@($qa.failedShotIds).Count -lt 2) { throw 'Expected both black placeholder shots to fail' }
+          $guardHits = @($qa.shotFrames | Where-Object { @($_.technicalIssues) -contains 'BLACK_FRAME_OR_PLACEHOLDER' }).Count
+          if ($guardHits -lt 2) { throw 'BLACK_FRAME_OR_PLACEHOLDER guard did not fire on both shots' }
+          Write-Host ('PASS black-frame guard hits=' + $guardHits)
+
+      - name: Build positive visual asset and manifest
+        shell: pwsh
+        run: |
+          & ffmpeg.exe -y -f lavfi -i 'color=c=0x336699:s=1080x1920:r=30:d=1' -frames:v 1 "$PWD/positive.png"
+          if (!(Test-Path "$PWD/positive.png")) { throw 'positive.png missing' }
+          $source = "$PWD/positive.png"
+          $manifest = [ordered]@{
+            manifestVersion = 'VIDEO_PRODUCTION_MANIFEST_V1'
+            assetId = 'CI-POSITIVE-VISUAL-SMOKE'
+            aspect = '9:16'
+            fps = 30
+            voicePlan = @{ language = 'ko-KR'; lines = @() }
+            captionPlan = @{ items = @() }
+            shots = @(
+              @{ shotId='HOOK'; blockId='HOOK'; startSec=0; endSec=2; captionText='AI workflow proof'; voiceLine=''; screenProofRequired=$false; sourceCandidates=@($source); visualRule='VISIBLE_COLOR_ASSET' },
+              @{ shotId='CTA'; blockId='CTA'; startSec=2; endSec=4; captionText='Result and CTA'; voiceLine=''; screenProofRequired=$false; sourceCandidates=@($source); visualRule='VISIBLE_COLOR_ASSET' }
+            )
+          }
+          $manifest | ConvertTo-Json -Depth 20 -Compress | Set-Content -LiteralPath positive-manifest.json -Encoding UTF8
+
+      - name: Render positive MP4
+        shell: pwsh
+        run: |
+          $manifest = Get-Content positive-manifest.json -Raw
+          ./tools/Render-VideoProductionManifest.ps1 -ManifestJson $manifest -OutputDir "$PWD/render-positive" -OutputName 'positive.mp4' -DisableVoice -DisableCaptions
+          if (!(Test-Path "$PWD/render-positive/positive.mp4")) { throw 'positive.mp4 missing' }
+
+      - name: Verify positive technical Frame QA
+        shell: pwsh
+        run: |
+          $manifest = Get-Content positive-manifest.json -Raw
+          ./tools/Run-VideoFrameQA.ps1 -VideoPath "$PWD/render-positive/positive.mp4" -ManifestJson $manifest -PassNumber 1 -OutputDir "$PWD/frame-qa-positive"
+          $qa = Get-Content "$PWD/frame-qa-positive/00_FRAME_QA_SUMMARY.json" -Raw | ConvertFrom-Json
+          if (-not $qa.ok) { throw ('Positive Frame QA failed: ' + (($qa.issues + $qa.failedShotIds) -join ',')) }
           if ($qa.width -ne 1080 -or $qa.height -ne 1920) { throw 'Unexpected canvas size' }
           if (-not $qa.hasAudio) { throw 'Audio stream missing' }
-          Write-Host ("PASS duration=" + $qa.durationSec + " size=" + $qa.width + "x" + $qa.height)
+          Write-Host ("PASS positive duration=" + $qa.durationSec + " size=" + $qa.width + "x" + $qa.height)
 
       - name: Upload smoke artifacts
         if: always()
@@ -69,6 +103,10 @@ jobs:
         with:
           name: video-production-smoke
           path: |
-            manifest.json
-            render-out/
-            frame-qa/
+            black-manifest.json
+            positive-manifest.json
+            positive.png
+            render-black/
+            frame-qa-black/
+            render-positive/
+            frame-qa-positive/
