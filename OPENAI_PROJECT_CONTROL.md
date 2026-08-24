@@ -4,7 +4,7 @@
 - Actual package: `gemini-animation-studio`
 - Project role: **이미지 시퀀스를 GIF·MP4·ZIP으로 만드는 미디어 렌더링 엔진**
 - Management status: `ACTIVE_MEDIA_ENGINE`
-- Last reviewed: `2026-07-30 KST`
+- Last reviewed: `2026-08-24 KST`
 
 ## 1. 활용 방향
 
@@ -68,7 +68,11 @@ Drive URL·ID는 공개 저장소에 넣지 않고 중앙 운영대장에서 별
 4. 대용량 파일은 GitHub에 커밋하지 않고 Drive `MEDIA_OUTPUT`에 저장한다.
 5. 코드 변경은 작업 브랜치와 Draft PR로 진행한다.
 6. 모바일 브라우저 메모리와 실패 복구를 항상 테스트한다.
+7. Flow/BRG_002가 검증 전이거나 연결 불가일 때는 **기존 scene-pack / 기존 이미지 에셋 → SHORTS/kinetic renderer → Animation Studio → MP4** 순서의 결정형 우회경로를 사용한다.
+8. 우회경로에서도 `CONTENT_ID`, `SCENE_ID`, `STYLE_ID`, `ASSET_ID` 계보를 유지하여 Flow가 복구되면 생성 컷만 교체할 수 있게 한다.
+9. 신규 유료 생성은 승인 경계를 유지하고, 우회경로는 기존 에셋 재사용을 우선한다.
 
 ## 7. 결정 기록
 
 - `2026-07-30`: animation을 프로젝트 공통 미디어 렌더링 엔진으로 지정함.
+- `2026-08-24`: Flow BRG_002는 노트북에서 별도 검증·개선하기로 하고, 샘플 쇼츠 제작은 결정형 우회경로(scene-pack/assets → SHORTS/kinetic → Animation Studio → MP4)로 즉시 진행하도록 확정.
