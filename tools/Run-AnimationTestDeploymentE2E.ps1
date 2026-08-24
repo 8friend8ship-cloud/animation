@@ -9,11 +9,23 @@ $ResultDir=Join-Path $Root 'result'
 $WorkDir=Join-Path $Root 'work'
 New-Item -ItemType Directory -Force -Path $ResultDir,$WorkDir|Out-Null
 
-function Native([string]$cmd,[string[]]$args,[string]$cwd){
-  Push-Location $cwd
-  $old=$ErrorActionPreference;$ErrorActionPreference='Continue'
-  try{$text=(& $cmd @args 2>&1|Out-String);$code=$LASTEXITCODE;return [pscustomobject]@{text=$text;code=$code}}
-  finally{$ErrorActionPreference=$old;Pop-Location}
+function Quote-NativeArg([string]$s){if($s -match '[\s"]'){return '"'+($s -replace '"','\"')+'"'};return $s}
+function Native([string]$cmd,[string[]]$args,[string]$cwd,[int]$timeoutSec=120){
+  $exe=$cmd;$nativeArgs=@($args)
+  if([IO.Path]::GetExtension($cmd).ToLowerInvariant() -eq '.ps1'){$exe='powershell.exe';$nativeArgs=@('-NoProfile','-ExecutionPolicy','Bypass','-File',$cmd)+@($args)}
+  $psi=New-Object Diagnostics.ProcessStartInfo
+  $psi.FileName=$exe;$psi.WorkingDirectory=$cwd;$psi.UseShellExecute=$false;$psi.RedirectStandardOutput=$true;$psi.RedirectStandardError=$true;$psi.CreateNoWindow=$true
+  $psi.Arguments=(@($nativeArgs)|ForEach-Object{Quote-NativeArg ([string]$_)})-join ' '
+  $p=New-Object Diagnostics.Process;$p.StartInfo=$psi;[void]$p.Start()
+  $outTask=$p.StandardOutput.ReadToEndAsync();$errTask=$p.StandardError.ReadToEndAsync()
+  $finished=$p.WaitForExit($timeoutSec*1000)
+  if(-not $finished){
+    try{& taskkill.exe /PID $p.Id /T /F 2>$null|Out-Null}catch{try{Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue}catch{}}
+    try{[void]$p.WaitForExit(5000)}catch{}
+    $out='';$err='';try{$out=$outTask.Result}catch{};try{$err=$errTask.Result}catch{}
+    return [pscustomobject]@{text=("TIMEOUT after ${timeoutSec}s`n"+$out+"`n"+$err);code=124;timedOut=$true}
+  }
+  $p.WaitForExit();return [pscustomobject]@{text=($outTask.Result+"`n"+$errTask.Result);code=$p.ExitCode;timedOut=$false}
 }
 function PostJson([string]$url,$obj){
   $json=$obj|ConvertTo-Json -Depth 20 -Compress
@@ -21,8 +33,8 @@ function PostJson([string]$url,$obj){
 }
 
 $clasp=(Get-Command clasp -ErrorAction Stop).Source
-$clone=Native $clasp @('clone',$ScriptId) $WorkDir
-if($clone.code -ne 0){throw "clasp clone failed: $($clone.code)"}
+$clone=Native $clasp @('clone',$ScriptId) $WorkDir 120
+if($clone.code -ne 0){throw "clasp clone failed: $($clone.code) $($clone.text)"}
 $backup=Join-Path $ResultDir "BEFORE_ROUTER_PATCH_$ScriptId.zip"
 Compress-Archive -Path (Join-Path $WorkDir '*') -DestinationPath $backup -Force
 
@@ -48,12 +60,12 @@ $after=Get-Content $codeFile.FullName -Raw
 if(([regex]::Matches($after,$marker)).Count -ne 1){throw 'router bridge marker safety check failed'}
 if(([regex]::Matches($after,'(?m)^\s*function\s+doPost\s*\(')).Count -ne $posts.Count){throw 'doPost count changed unexpectedly'}
 
-$push=Native $clasp @('push','-f') $WorkDir
-if($push.code -ne 0){throw "clasp push failed: $($push.code)"}
+$push=Native $clasp @('push','-f') $WorkDir 120
+if($push.code -ne 0){throw "clasp push failed: $($push.code) $($push.text)"}
 
 $sourcePass=$true
 for($i=1;$i -le 2;$i++){
-  $pull=Native $clasp @('pull') $WorkDir
+  $pull=Native $clasp @('pull') $WorkDir 120
   $all='';Get-ChildItem $WorkDir -File -Recurse|ForEach-Object{try{$all+="`n"+(Get-Content $_.FullName -Raw)}catch{}}
   if($pull.code -ne 0 -or $all -notmatch $marker -or $all -notmatch 'VIDEO_AGENT_DISPATCHER_V3_20260824'){$sourcePass=$false}
   Start-Sleep -Seconds 2
@@ -61,12 +73,12 @@ for($i=1;$i -le 2;$i++){
 if(-not $sourcePass){throw 'source readback x2 failed'}
 
 $desc='animation-video-agent-central-e2e-'+$Stamp
-$dep=Native $clasp @('deploy','--description',$desc) $WorkDir
-if($dep.code -ne 0){throw "test deploy failed: $($dep.code)"}
+$dep=Native $clasp @('deploy','--description',$desc) $WorkDir 180
+if($dep.code -ne 0){throw "test deploy failed: $($dep.code) $($dep.text)"}
 $deploymentId=''
 if($dep.text -match '(AKfycb[A-Za-z0-9_-]+)'){$deploymentId=$Matches[1]}
 if(-not $deploymentId){
-  $deps=Native $clasp @('deployments') $WorkDir
+  $deps=Native $clasp @('deployments') $WorkDir 60
   foreach($line in ($deps.text -split "`r?`n")){if($line -match '(AKfycb[A-Za-z0-9_-]+).*'+[regex]::Escape($desc)){$deploymentId=$Matches[1];break}}
 }
 if(-not $deploymentId){throw 'test deployment ID not found'}
@@ -103,6 +115,7 @@ $summary=[ordered]@{
   oldDeploymentsUpdated=$false
   oldDeploymentsDeleted=$false
   backup=$backup
+  nativeTimeoutPolicy='clone/push/pull=120s deploy=180s deployments=60s'
   at=(Get-Date).ToString('o')
 }
 $summary|ConvertTo-Json -Depth 20|Set-Content (Join-Path $ResultDir '00_TEST_DEPLOY_SUMMARY.json') -Encoding UTF8
