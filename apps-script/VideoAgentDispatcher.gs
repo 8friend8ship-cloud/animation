@@ -5,8 +5,8 @@
 // do not create a competing deployment or break an already verified endpoint.
 
 const VIDEO_AGENT_DISPATCHER = Object.freeze({
-  VERSION: 'VIDEO_AGENT_DISPATCHER_V2_20260823',
-  DATAHUB_ID: PropertiesService.getScriptProperties().getProperty('CENTRAL_DATAHUB_ID') || '',
+  VERSION: 'VIDEO_AGENT_DISPATCHER_V3_20260824',
+  DATAHUB_ID: PropertiesService.getScriptProperties().getProperty('CENTRAL_DATAHUB_ID') || '1bpilaFQ9vMNF9lKL76sKbD-08Xupz3KKsGS7C04om4M',
   SHEETS: {
     TASKS: 'TASK_QUEUE',
     BRIDGE: 'BRIDGE_TASKS',
@@ -248,7 +248,6 @@ function vadSanitizeForAudit_(value) {
 }
 
 function vadDataHub_() {
-  if (!VIDEO_AGENT_DISPATCHER.DATAHUB_ID) throw new Error('Set Script Property CENTRAL_DATAHUB_ID');
   return SpreadsheetApp.openById(VIDEO_AGENT_DISPATCHER.DATAHUB_ID);
 }
 
