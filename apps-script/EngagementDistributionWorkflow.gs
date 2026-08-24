@@ -1,229 +1,46 @@
 // EngagementDistributionWorkflow.gs
-// Comment/reply participation -> offer delivery router.
-// Policy: official platform APIs only; no scraping/bot-DM bypass. Unsupported capabilities fall back to public reply/landing page/manual queue.
+// Comment/reply -> offer delivery router. Official platform capabilities only.
 
-const ENGAGEMENT_AGENT = Object.freeze({
-  DATAHUB_ID: PropertiesService.getScriptProperties().getProperty('CENTRAL_DATAHUB_ID') || '',
-  CAMPAIGN_SHEET: 'ENGAGEMENT_CAMPAIGNS',
-  EVENT_SHEET: 'ENGAGEMENT_EVENTS',
-  TASK_SHEET: 'BRIDGE_TASKS',
-  VERSION: 'ENGAGEMENT_AGENT_V2_20260823',
-  MAX_PER_HOUR: Number(PropertiesService.getScriptProperties().getProperty('ENGAGEMENT_MAX_PER_HOUR') || 50)
+const ENGAGEMENT_AGENT=Object.freeze({
+  DATAHUB_ID:PropertiesService.getScriptProperties().getProperty('CENTRAL_DATAHUB_ID')||'1bpilaFQ9vMNF9lKL76sKbD-08Xupz3KKsGS7C04om4M',
+  CAMPAIGN_SHEET:'ENGAGEMENT_CAMPAIGNS',EVENT_SHEET:'ENGAGEMENT_EVENTS',TASK_SHEET:'BRIDGE_TASKS',
+  VERSION:'ENGAGEMENT_AGENT_V3_20260824',MAX_PER_HOUR:Number(PropertiesService.getScriptProperties().getProperty('ENGAGEMENT_MAX_PER_HOUR')||50)
 });
 
-function setupEngagementDistributionWorkflow() {
-  const ss = getEngagementDataHub_();
-  ensureEngagementSheet_(ss, ENGAGEMENT_AGENT.CAMPAIGN_SHEET, [
-    'CAMPAIGN_ID','APP_ID','TEMPLATE_AGENT_ID','PLATFORMS','TRIGGER_TYPE','KEYWORD','OFFER_NAME','OFFER_URL','CTA_TEXT','DELIVERY_POLICY','FALLBACK_POLICY','STATUS','CREATED_AT','UPDATED_AT'
-  ]);
-  ensureEngagementSheet_(ss, ENGAGEMENT_AGENT.EVENT_SHEET, [
-    'EVENT_ID','CAMPAIGN_ID','PLATFORM','CONTENT_ID','USER_REF','EVENT_TYPE','TEXT','MATCHED','DELIVERY_MODE','STATUS','RESULT','CREATED_AT','UPDATED_AT'
-  ]);
-  ensureEngagementTrigger_();
-  return getEngagementDistributionStatus();
+function setupEngagementDistributionWorkflow(){
+  const ss=getEngagementDataHub_();
+  ensureEngagementSheet_(ss,ENGAGEMENT_AGENT.CAMPAIGN_SHEET,['CAMPAIGN_ID','APP_ID','TEMPLATE_AGENT_ID','PLATFORMS','TRIGGER_TYPE','KEYWORD','OFFER_NAME','OFFER_URL','CTA_TEXT','DELIVERY_POLICY','FALLBACK_POLICY','STATUS','CREATED_AT','UPDATED_AT']);
+  ensureEngagementSheet_(ss,ENGAGEMENT_AGENT.EVENT_SHEET,['EVENT_ID','CAMPAIGN_ID','PLATFORM','CONTENT_ID','USER_REF','EVENT_TYPE','TEXT','MATCHED','DELIVERY_MODE','STATUS','RESULT','CREATED_AT','UPDATED_AT']);
+  ensureEngagementTrigger_(); return getEngagementDistributionStatus();
 }
+function getEngagementDistributionStatus(){const ss=getEngagementDataHub_();return{ok:true,version:ENGAGEMENT_AGENT.VERSION,maxPerHour:ENGAGEMENT_AGENT.MAX_PER_HOUR,campaignSheet:!!ss.getSheetByName(ENGAGEMENT_AGENT.CAMPAIGN_SHEET),eventSheet:!!ss.getSheetByName(ENGAGEMENT_AGENT.EVENT_SHEET),schedulerPolicy:'REUSE_EXISTING_BY_DEFAULT',triggers:ScriptApp.getProjectTriggers().filter(t=>t.getHandlerFunction()==='processEngagementEvents').map(t=>({handler:t.getHandlerFunction(),type:String(t.getEventType())}))};}
 
-function getEngagementDistributionStatus() {
-  const ss = getEngagementDataHub_();
-  return {
-    ok: true,
-    version: ENGAGEMENT_AGENT.VERSION,
-    maxPerHour: ENGAGEMENT_AGENT.MAX_PER_HOUR,
-    campaignSheet: !!ss.getSheetByName(ENGAGEMENT_AGENT.CAMPAIGN_SHEET),
-    eventSheet: !!ss.getSheetByName(ENGAGEMENT_AGENT.EVENT_SHEET),
-    triggers: ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'processEngagementEvents').map(t => ({handler:t.getHandlerFunction(),type:String(t.getEventType())}))
-  };
+function registerEngagementCampaign(input){input=input||{};const ss=getEngagementDataHub_(),sheet=ss.getSheetByName(ENGAGEMENT_AGENT.CAMPAIGN_SHEET);if(!sheet)throw new Error('Run setupEngagementDistributionWorkflow first');const now=new Date(),id=input.campaignId||('CMP-'+Utilities.formatDate(now,Session.getScriptTimeZone(),'yyyyMMdd-HHmmss')),keyword=String(input.keyword||'무료앱').trim(),offerUrl=String(input.offerUrl||'').trim();if(!keyword)throw new Error('Campaign keyword is required');if(!offerUrl)throw new Error('Campaign offerUrl is required');sheet.appendRow([id,input.appId||'ALL_FRONT_APPS',input.templateAgentId||'AGENT_DASHBOARD_PROMO',toCsvEng_(input.platforms||['Instagram','Facebook','YouTube','TikTok','Threads']),input.triggerType||'COMMENT_KEYWORD',keyword,input.offerName||'FREE_APP_OR_RESOURCE',offerUrl,input.ctaText||'댓글에 키워드를 남기면 무료 링크를 보내드립니다.',input.deliveryPolicy||'OFFICIAL_API_ONLY',input.fallbackPolicy||'PUBLIC_REPLY_OR_LANDING_LINK',input.status||'ACTIVE',now,now]);return{ok:true,campaignId:id};}
+function ingestEngagementEvent(event){event=event||{};const sheet=getEngagementDataHub_().getSheetByName(ENGAGEMENT_AGENT.EVENT_SHEET);if(!sheet)throw new Error('Run setupEngagementDistributionWorkflow first');const id=event.eventId||('EVT-'+Utilities.getUuid()),userRef=String(event.userRef||'').trim(),campaignId=String(event.campaignId||'').trim();if(!campaignId)throw new Error('campaignId is required');if(!userRef)throw new Error('userRef is required for dedupe/delivery');sheet.appendRow([id,campaignId,event.platform||'',event.contentId||'',userRef,event.eventType||'COMMENT',event.text||'',false,'','READY','',new Date(),new Date()]);return{ok:true,eventId:id};}
+
+function processEngagementEvents(){
+  const ss=getEngagementDataHub_(),events=ss.getSheetByName(ENGAGEMENT_AGENT.EVENT_SHEET),campaigns=ss.getSheetByName(ENGAGEMENT_AGENT.CAMPAIGN_SHEET);if(!events||!campaigns)throw new Error('Missing engagement sheets');
+  const ev=events.getDataRange().getValues(),cp=campaigns.getDataRange().getValues();if(ev.length<2||cp.length<2)return{ok:true,processed:0,suppressed:0};
+  const eh=headerMapEng_(ev[0]),ch=headerMapEng_(cp[0]),campaignMap={};for(let i=1;i<cp.length;i++)campaignMap[String(cp[i][ch.CAMPAIGN_ID])]=cp[i];let processed=0,suppressed=0;
+  for(let r=1;r<ev.length;r++){
+    if(String(ev[r][eh.STATUS])!=='READY')continue;const campaignId=String(ev[r][eh.CAMPAIGN_ID]),campaign=campaignMap[campaignId];
+    if(!campaign||String(campaign[ch.STATUS])!=='ACTIVE'){setEngagementEventStatus_(events,eh,r,'NO_ACTIVE_CAMPAIGN',{reason:'NO_ACTIVE_CAMPAIGN'});continue;}
+    const keyword=String(campaign[ch.KEYWORD]||'').trim().toLowerCase(),text=String(ev[r][eh.TEXT]||'').toLowerCase(),matched=!!keyword&&text.indexOf(keyword)!==-1;events.getRange(r+1,eh.MATCHED+1).setValue(matched);
+    if(!matched){setEngagementEventStatus_(events,eh,r,'IGNORED',{reason:'KEYWORD_NOT_MATCHED'});continue;}
+    if(isDuplicateEngagement_(ev,eh,r)){setEngagementEventStatus_(events,eh,r,'DUPLICATE_SUPPRESSED',{reason:'ONE_DELIVERY_PER_PARTICIPANT_CAMPAIGN'});suppressed++;continue;}
+    const platform=String(ev[r][eh.PLATFORM]||'');if(isCampaignRateLimited_(ev,eh,campaignId,platform,new Date())){setEngagementEventStatus_(events,eh,r,'RATE_LIMITED',{reason:'CAMPAIGN_PLATFORM_HOURLY_LIMIT',maxPerHour:ENGAGEMENT_AGENT.MAX_PER_HOUR});suppressed++;continue;}
+    const route=resolveEngagementDeliveryRoute_(platform,campaign[ch.DELIVERY_POLICY],campaign[ch.FALLBACK_POLICY]);events.getRange(r+1,eh.DELIVERY_MODE+1).setValue(route.mode);
+    const payload={eventId:ev[r][eh.EVENT_ID],campaignId,platform,contentId:ev[r][eh.CONTENT_ID],userRef:ev[r][eh.USER_REF],offerName:campaign[ch.OFFER_NAME],offerUrl:campaign[ch.OFFER_URL],ctaText:campaign[ch.CTA_TEXT],mode:route.mode,policy:'OFFICIAL_API_ONLY'};
+    const bridgeTaskId=enqueueEngagementBridgeTask_(route.action,payload,route.requiresApproval?'WAITING_CAPABILITY_OR_APPROVAL':'READY');setEngagementEventStatus_(events,eh,r,'ROUTED',Object.assign({},route,{bridgeTaskId}));processed++;
+  }return{ok:true,processed,suppressed};
 }
-
-function registerEngagementCampaign(input) {
-  input = input || {};
-  const ss = getEngagementDataHub_();
-  const sheet = ss.getSheetByName(ENGAGEMENT_AGENT.CAMPAIGN_SHEET);
-  if (!sheet) throw new Error('Run setupEngagementDistributionWorkflow first');
-  const now = new Date();
-  const id = input.campaignId || ('CMP-' + Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyyMMdd-HHmmss'));
-  const keyword = String(input.keyword || '무료앱').trim();
-  const offerUrl = String(input.offerUrl || '').trim();
-  if (!keyword) throw new Error('Campaign keyword is required');
-  if (!offerUrl) throw new Error('Campaign offerUrl is required');
-  sheet.appendRow([
-    id,
-    input.appId || 'ALL_FRONT_APPS',
-    input.templateAgentId || 'AGENT_DASHBOARD_PROMO',
-    toCsvEng_(input.platforms || ['Instagram','Facebook','YouTube','TikTok','Threads']),
-    input.triggerType || 'COMMENT_KEYWORD',
-    keyword,
-    input.offerName || 'FREE_APP_OR_RESOURCE',
-    offerUrl,
-    input.ctaText || '댓글에 키워드를 남기면 무료 링크를 보내드립니다.',
-    input.deliveryPolicy || 'OFFICIAL_API_ONLY',
-    input.fallbackPolicy || 'PUBLIC_REPLY_OR_LANDING_LINK',
-    input.status || 'ACTIVE',
-    now, now
-  ]);
-  return {ok:true,campaignId:id};
-}
-
-function ingestEngagementEvent(event) {
-  event = event || {};
-  const ss = getEngagementDataHub_();
-  const sheet = ss.getSheetByName(ENGAGEMENT_AGENT.EVENT_SHEET);
-  if (!sheet) throw new Error('Run setupEngagementDistributionWorkflow first');
-  const id = event.eventId || ('EVT-' + Utilities.getUuid());
-  const userRef = String(event.userRef || '').trim();
-  const campaignId = String(event.campaignId || '').trim();
-  if (!campaignId) throw new Error('campaignId is required');
-  if (!userRef) throw new Error('userRef is required for dedupe/delivery');
-  sheet.appendRow([
-    id,campaignId,event.platform || '',event.contentId || '',userRef,event.eventType || 'COMMENT',event.text || '',false,'','READY','',new Date(),new Date()
-  ]);
-  return {ok:true,eventId:id};
-}
-
-function processEngagementEvents() {
-  const ss = getEngagementDataHub_();
-  const events = ss.getSheetByName(ENGAGEMENT_AGENT.EVENT_SHEET);
-  const campaigns = ss.getSheetByName(ENGAGEMENT_AGENT.CAMPAIGN_SHEET);
-  if (!events || !campaigns) throw new Error('Missing engagement sheets');
-  const ev = events.getDataRange().getValues();
-  const cp = campaigns.getDataRange().getValues();
-  if (ev.length < 2 || cp.length < 2) return {ok:true,processed:0,suppressed:0};
-  const eh = headerMapEng_(ev[0]);
-  const ch = headerMapEng_(cp[0]);
-  const campaignMap = {};
-  for (let i=1;i<cp.length;i++) campaignMap[String(cp[i][ch.CAMPAIGN_ID])] = cp[i];
-  let processed = 0;
-  let suppressed = 0;
-
-  for (let r=1;r<ev.length;r++) {
-    if (String(ev[r][eh.STATUS]) !== 'READY') continue;
-    const campaignId = String(ev[r][eh.CAMPAIGN_ID]);
-    const campaign = campaignMap[campaignId];
-    if (!campaign || String(campaign[ch.STATUS]) !== 'ACTIVE') {
-      setEngagementEventStatus_(events, eh, r, 'NO_ACTIVE_CAMPAIGN', {reason:'NO_ACTIVE_CAMPAIGN'});
-      continue;
-    }
-
-    const keyword = String(campaign[ch.KEYWORD] || '').trim().toLowerCase();
-    const text = String(ev[r][eh.TEXT] || '').toLowerCase();
-    const matched = !!keyword && text.indexOf(keyword) !== -1;
-    events.getRange(r+1, eh.MATCHED+1).setValue(matched);
-    if (!matched) {
-      setEngagementEventStatus_(events, eh, r, 'IGNORED', {reason:'KEYWORD_NOT_MATCHED'});
-      continue;
-    }
-
-    if (isDuplicateEngagement_(ev, eh, r)) {
-      setEngagementEventStatus_(events, eh, r, 'DUPLICATE_SUPPRESSED', {reason:'ONE_DELIVERY_PER_PARTICIPANT_CAMPAIGN'});
-      suppressed++;
-      continue;
-    }
-
-    const platform = String(ev[r][eh.PLATFORM] || '');
-    if (isCampaignRateLimited_(ev, eh, campaignId, platform, new Date())) {
-      setEngagementEventStatus_(events, eh, r, 'RATE_LIMITED', {reason:'CAMPAIGN_PLATFORM_HOURLY_LIMIT',maxPerHour:ENGAGEMENT_AGENT.MAX_PER_HOUR});
-      suppressed++;
-      continue;
-    }
-
-    const route = resolveEngagementDeliveryRoute_(platform, campaign[ch.DELIVERY_POLICY], campaign[ch.FALLBACK_POLICY]);
-    events.getRange(r+1, eh.DELIVERY_MODE+1).setValue(route.mode);
-    const payload = {
-      eventId: ev[r][eh.EVENT_ID], campaignId,
-      platform, contentId: ev[r][eh.CONTENT_ID], userRef: ev[r][eh.USER_REF],
-      offerName: campaign[ch.OFFER_NAME], offerUrl: campaign[ch.OFFER_URL],
-      ctaText: campaign[ch.CTA_TEXT], mode: route.mode, policy: 'OFFICIAL_API_ONLY'
-    };
-    const bridgeTaskId = enqueueEngagementBridgeTask_(route.action, payload, route.requiresApproval ? 'WAITING_CAPABILITY_OR_APPROVAL' : 'READY');
-    setEngagementEventStatus_(events, eh, r, 'ROUTED', Object.assign({}, route, {bridgeTaskId}));
-    processed++;
-  }
-  return {ok:true,processed,suppressed};
-}
-
-function isDuplicateEngagement_(rows, h, currentIndex) {
-  const current = rows[currentIndex];
-  const campaignId = String(current[h.CAMPAIGN_ID] || '');
-  const platform = String(current[h.PLATFORM] || '').toUpperCase();
-  const userRef = String(current[h.USER_REF] || '');
-  if (!campaignId || !userRef) return false;
-  const terminal = {'ROUTED':1,'DELIVERED':1,'DELIVERY_CONFIRMED':1,'WAITING_CAPABILITY_OR_APPROVAL':1};
-  for (let i=1;i<currentIndex;i++) {
-    const row = rows[i];
-    if (String(row[h.CAMPAIGN_ID] || '') !== campaignId) continue;
-    if (String(row[h.PLATFORM] || '').toUpperCase() !== platform) continue;
-    if (String(row[h.USER_REF] || '') !== userRef) continue;
-    if (terminal[String(row[h.STATUS] || '')]) return true;
-  }
-  return false;
-}
-
-function isCampaignRateLimited_(rows, h, campaignId, platform, now) {
-  const max = ENGAGEMENT_AGENT.MAX_PER_HOUR;
-  if (!max || max < 1) return false;
-  const cutoff = now.getTime() - 60 * 60 * 1000;
-  let count = 0;
-  for (let i=1;i<rows.length;i++) {
-    const row = rows[i];
-    if (String(row[h.CAMPAIGN_ID] || '') !== String(campaignId)) continue;
-    if (String(row[h.PLATFORM] || '').toUpperCase() !== String(platform || '').toUpperCase()) continue;
-    if (String(row[h.STATUS] || '') !== 'ROUTED') continue;
-    const updated = row[h.UPDATED_AT] instanceof Date ? row[h.UPDATED_AT].getTime() : new Date(row[h.UPDATED_AT] || row[h.CREATED_AT]).getTime();
-    if (updated >= cutoff) count++;
-    if (count >= max) return true;
-  }
-  return false;
-}
-
-function setEngagementEventStatus_(sheet, h, zeroBasedDataIndex, status, result) {
-  sheet.getRange(zeroBasedDataIndex+1, h.STATUS+1).setValue(status);
-  if (h.RESULT != null) sheet.getRange(zeroBasedDataIndex+1, h.RESULT+1).setValue(JSON.stringify(result || {}));
-  if (h.UPDATED_AT != null) sheet.getRange(zeroBasedDataIndex+1, h.UPDATED_AT+1).setValue(new Date());
-}
-
-function resolveEngagementDeliveryRoute_(platform, deliveryPolicy, fallbackPolicy) {
-  // Conservative until official platform/account capability is read back at runtime.
-  if (String(deliveryPolicy || '').toUpperCase() !== 'OFFICIAL_API_ONLY') {
-    return {mode:'POLICY_BLOCKED',action:'PLATFORM_FALLBACK_REPLY',requiresApproval:true,reason:'DELIVERY_POLICY_MUST_BE_OFFICIAL_API_ONLY'};
-  }
-  const p = String(platform || '').toUpperCase();
-  const base = {requiresApproval:false};
-  if (p === 'YOUTUBE') return Object.assign(base,{mode:'PUBLIC_COMMENT_REPLY_WITH_LANDING_LINK',action:'PLATFORM_PUBLIC_REPLY'});
-  if (p === 'INSTAGRAM' || p === 'FACEBOOK') return Object.assign(base,{mode:'OFFICIAL_MESSAGING_CAPABILITY_CHECK',action:'PLATFORM_DM_OR_PRIVATE_REPLY',requiresApproval:true});
-  if (p === 'TIKTOK' || p === 'THREADS') return Object.assign(base,{mode:'OFFICIAL_CAPABILITY_CHECK_THEN_FALLBACK',action:'PLATFORM_CAPABILITY_ROUTE',requiresApproval:true});
-  return Object.assign(base,{mode:String(fallbackPolicy || 'PUBLIC_REPLY_OR_LANDING_LINK'),action:'PLATFORM_FALLBACK_REPLY',requiresApproval:true});
-}
-
-function enqueueEngagementBridgeTask_(action, payload, status) {
-  const ss = getEngagementDataHub_();
-  const sheet = ss.getSheetByName(ENGAGEMENT_AGENT.TASK_SHEET);
-  if (!sheet) throw new Error('Missing BRIDGE_TASKS');
-  const taskId = 'BRIDGE-ENG-' + Utilities.getUuid();
-  const headers = sheet.getRange(1,1,1,Math.max(sheet.getLastColumn(),1)).getValues()[0];
-  const record = {TASK_ID:taskId,DOMAIN:'ENGAGEMENT_DISTRIBUTION',ACTION:action,PAYLOAD_JSON:JSON.stringify(payload),STATUS:status || 'READY',PRIORITY:'HIGH',RESULT_JSON:'',ERROR:'',CREATED_AT:new Date(),UPDATED_AT:'',NOTE:''};
-  const row = headers.map(h => Object.prototype.hasOwnProperty.call(record,String(h).trim()) ? record[String(h).trim()] : '');
-  sheet.appendRow(row);
-  return taskId;
-}
-
-function ensureEngagementTrigger_() {
-  const handler = 'processEngagementEvents';
-  if (!ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === handler)) {
-    ScriptApp.newTrigger(handler).timeBased().everyMinutes(10).create();
-  }
-}
-
-function ensureEngagementSheet_(ss, name, headers) {
-  let sheet = ss.getSheetByName(name);
-  if (!sheet) sheet = ss.insertSheet(name);
-  if (sheet.getLastRow() === 0) sheet.getRange(1,1,1,headers.length).setValues([headers]);
-  return sheet;
-}
-
-function getEngagementDataHub_() {
-  if (!ENGAGEMENT_AGENT.DATAHUB_ID) throw new Error('Set Script Property CENTRAL_DATAHUB_ID');
-  return SpreadsheetApp.openById(ENGAGEMENT_AGENT.DATAHUB_ID);
-}
-
-function headerMapEng_(row) { return row.reduce((o,v,i)=>{o[String(v).trim()]=i; return o;},{}); }
-function toCsvEng_(v) { return Array.isArray(v) ? v.join(',') : String(v == null ? '' : v); }
+function isDuplicateEngagement_(rows,h,currentIndex){const c=rows[currentIndex],campaignId=String(c[h.CAMPAIGN_ID]||''),platform=String(c[h.PLATFORM]||'').toUpperCase(),userRef=String(c[h.USER_REF]||'');if(!campaignId||!userRef)return false;const terminal={ROUTED:1,DELIVERED:1,DELIVERY_CONFIRMED:1,WAITING_CAPABILITY_OR_APPROVAL:1};for(let i=1;i<currentIndex;i++){const row=rows[i];if(String(row[h.CAMPAIGN_ID]||'')===campaignId&&String(row[h.PLATFORM]||'').toUpperCase()===platform&&String(row[h.USER_REF]||'')===userRef&&terminal[String(row[h.STATUS]||'')])return true;}return false;}
+function isCampaignRateLimited_(rows,h,campaignId,platform,now){const max=ENGAGEMENT_AGENT.MAX_PER_HOUR;if(!max||max<1)return false;const cutoff=now.getTime()-3600000;let count=0;for(let i=1;i<rows.length;i++){const row=rows[i];if(String(row[h.CAMPAIGN_ID]||'')!==String(campaignId)||String(row[h.PLATFORM]||'').toUpperCase()!==String(platform||'').toUpperCase()||String(row[h.STATUS]||'')!=='ROUTED')continue;const updated=row[h.UPDATED_AT]instanceof Date?row[h.UPDATED_AT].getTime():new Date(row[h.UPDATED_AT]||row[h.CREATED_AT]).getTime();if(updated>=cutoff)count++;if(count>=max)return true;}return false;}
+function setEngagementEventStatus_(sheet,h,idx,status,result){sheet.getRange(idx+1,h.STATUS+1).setValue(status);if(h.RESULT!=null)sheet.getRange(idx+1,h.RESULT+1).setValue(JSON.stringify(result||{}));if(h.UPDATED_AT!=null)sheet.getRange(idx+1,h.UPDATED_AT+1).setValue(new Date());}
+function resolveEngagementDeliveryRoute_(platform,deliveryPolicy,fallbackPolicy){if(String(deliveryPolicy||'').toUpperCase()!=='OFFICIAL_API_ONLY')return{mode:'POLICY_BLOCKED',action:'PLATFORM_FALLBACK_REPLY',requiresApproval:true,reason:'DELIVERY_POLICY_MUST_BE_OFFICIAL_API_ONLY'};const p=String(platform||'').toUpperCase();if(p==='YOUTUBE')return{mode:'PUBLIC_COMMENT_REPLY_WITH_LANDING_LINK',action:'PLATFORM_PUBLIC_REPLY',requiresApproval:false};if(p==='INSTAGRAM'||p==='FACEBOOK')return{mode:'OFFICIAL_MESSAGING_CAPABILITY_CHECK',action:'PLATFORM_DM_OR_PRIVATE_REPLY',requiresApproval:true};if(p==='TIKTOK'||p==='THREADS')return{mode:'OFFICIAL_CAPABILITY_CHECK_THEN_FALLBACK',action:'PLATFORM_CAPABILITY_ROUTE',requiresApproval:true};return{mode:String(fallbackPolicy||'PUBLIC_REPLY_OR_LANDING_LINK'),action:'PLATFORM_FALLBACK_REPLY',requiresApproval:true};}
+function enqueueEngagementBridgeTask_(action,payload,status){const sheet=getEngagementDataHub_().getSheetByName(ENGAGEMENT_AGENT.TASK_SHEET);if(!sheet)throw new Error('Missing BRIDGE_TASKS');const taskId='BRIDGE-ENG-'+Utilities.getUuid(),headers=sheet.getRange(1,1,1,Math.max(sheet.getLastColumn(),1)).getValues()[0].map(v=>String(v).trim()),record={TASK_ID:taskId,TARGET:'ENGAGEMENT_DISTRIBUTION',ACTION:action,PAYLOAD_JSON:JSON.stringify(payload),STATUS:status||'READY',PRIORITY:'HIGH',RUNNER_ID:'',CLAIMED_AT:'',UPDATED_AT:new Date(),RESULT_JSON:'',ERROR:''};sheet.appendRow(headers.map(h=>Object.prototype.hasOwnProperty.call(record,h)?record[h]:''));return taskId;}
+function ensureEngagementTrigger_(){const allow=String(PropertiesService.getScriptProperties().getProperty('ENGAGEMENT_ALLOW_SEPARATE_TRIGGER')||'FALSE').toUpperCase()==='TRUE';if(!allow)return{created:false,policy:'REUSE_EXISTING_SCHEDULER'};const handler='processEngagementEvents',exists=ScriptApp.getProjectTriggers().some(t=>t.getHandlerFunction()===handler);if(!exists)ScriptApp.newTrigger(handler).timeBased().everyMinutes(10).create();return{created:!exists,policy:'EXPLICIT_SEPARATE_TRIGGER'};}
+function ensureEngagementSheet_(ss,name,headers){let sheet=ss.getSheetByName(name);if(!sheet)sheet=ss.insertSheet(name);if(sheet.getLastRow()===0)sheet.getRange(1,1,1,headers.length).setValues([headers]);return sheet;}
+function getEngagementDataHub_(){return SpreadsheetApp.openById(ENGAGEMENT_AGENT.DATAHUB_ID);}
+function headerMapEng_(row){return row.reduce((o,v,i)=>{o[String(v).trim()]=i;return o;},{});}
+function toCsvEng_(v){return Array.isArray(v)?v.join(','):String(v==null?'':v);}
