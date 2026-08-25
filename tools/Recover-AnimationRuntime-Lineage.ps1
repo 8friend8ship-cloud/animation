@@ -101,10 +101,10 @@ function Get-AppsScriptUrlsFromChrome {
       } catch { $readErrors.Add([pscustomobject]@{profile=$profile.Name;source=$file.FullName;error=$_.Exception.Message}) }
     }
   }
-  return [pscustomobject]@{hits=@($hits | Sort-Object scriptId,profile,source -Unique);scanned=@($scanned);readErrors=@($readErrors);root=$root}
+  return [pscustomobject]@{hits=$hits.ToArray();scanned=$scanned.ToArray();readErrors=$readErrors.ToArray();root=$root}
 }
 
-Write-Host ($label + ' runtime lineage recovery V11 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
+Write-Host ($label + ' runtime lineage recovery V11.1 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
 Write-Host "Repository: $repo"; Write-Host "DryRun: $DryRun"; Write-Host "ListOnly: $ListOnly"; Write-Host "ChromeUrlOnly: $ChromeUrlOnly"
 Write-Host ('ChromeUrlPrefix=' + $ChromeUrlPrefix); Write-Host ('TargetSpreadsheetIds=' + ($targetSpreadsheetIds -join ',')); Write-Host ('TargetCodePattern=' + $codePattern); Write-Host ('TargetNamePattern=' + $TargetNamePattern); Write-Host ('CentralReadbackName=' + $CentralReadbackName)
 
