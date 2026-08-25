@@ -57,43 +57,63 @@ function Write-CentralReadback {
   return $path
 }
 
+function Read-SharedBytes {
+  param([string]$Path)
+  $share = [IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete
+  $fs = New-Object IO.FileStream($Path,[IO.FileMode]::Open,[IO.FileAccess]::Read,$share)
+  try {
+    $ms = New-Object IO.MemoryStream
+    try { $fs.CopyTo($ms); return $ms.ToArray() } finally { $ms.Dispose() }
+  } finally { $fs.Dispose() }
+}
+
 function Get-AppsScriptUrlsFromChrome {
   param([string]$Prefix='')
   $root = Join-Path $env:LOCALAPPDATA 'Google\Chrome\User Data'
   $hits = New-Object System.Collections.Generic.List[object]
-  if (-not (Test-Path -LiteralPath $root)) { return @() }
+  $readErrors = New-Object System.Collections.Generic.List[object]
+  $scanned = New-Object System.Collections.Generic.List[string]
+  if (-not (Test-Path -LiteralPath $root)) { return [pscustomobject]@{hits=@();scanned=@();readErrors=@();root=$root} }
   $profiles = @(Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Default' -or $_.Name -like 'Profile *' })
   foreach ($profile in $profiles) {
     $candidates = New-Object System.Collections.Generic.List[System.IO.FileInfo]
-    $history = Join-Path $profile.FullName 'History'; if (Test-Path -LiteralPath $history) { $candidates.Add((Get-Item -LiteralPath $history)) }
+    foreach($name in @('History','History-journal','Current Session','Current Tabs','Last Session','Last Tabs')){
+      $p=Join-Path $profile.FullName $name;if(Test-Path -LiteralPath $p){$candidates.Add((Get-Item -LiteralPath $p))}
+    }
     $sessions = Join-Path $profile.FullName 'Sessions'
-    if (Test-Path -LiteralPath $sessions) { foreach ($f in @(Get-ChildItem -LiteralPath $sessions -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 12)) { $candidates.Add($f) } }
-    foreach ($file in $candidates) {
+    if (Test-Path -LiteralPath $sessions) { foreach ($f in @(Get-ChildItem -LiteralPath $sessions -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 24)) { $candidates.Add($f) } }
+    foreach ($file in @($candidates | Sort-Object FullName -Unique)) {
       try {
-        $bytes = [IO.File]::ReadAllBytes($file.FullName)
-        foreach ($text in @([Text.Encoding]::UTF8.GetString($bytes),[Text.Encoding]::Unicode.GetString($bytes))) {
+        $bytes = Read-SharedBytes $file.FullName
+        $scanned.Add($file.FullName)
+        foreach ($text in @([Text.Encoding]::UTF8.GetString($bytes),[Text.Encoding]::Unicode.GetString($bytes),[Text.Encoding]::ASCII.GetString($bytes))) {
           foreach ($m in [regex]::Matches($text,'https://script\.google\.com/(?:u/\d+/)?home/projects/(?<id>[A-Za-z0-9_-]{57})')) {
             $id=[string]$m.Groups['id'].Value
             if ($Prefix -and -not $id.StartsWith($Prefix,[StringComparison]::OrdinalIgnoreCase)) { continue }
             $hits.Add([pscustomobject]@{profile=$profile.Name;source=$file.Name;scriptId=$id;url=[string]$m.Value})
           }
+          foreach ($m in [regex]::Matches($text,'https://script\.google\.com/d/(?<id>[A-Za-z0-9_-]{57})(?:/|$)')) {
+            $id=[string]$m.Groups['id'].Value
+            if ($Prefix -and -not $id.StartsWith($Prefix,[StringComparison]::OrdinalIgnoreCase)) { continue }
+            $hits.Add([pscustomobject]@{profile=$profile.Name;source=$file.Name;scriptId=$id;url=[string]$m.Value})
+          }
         }
-      } catch {}
+      } catch { $readErrors.Add([pscustomobject]@{profile=$profile.Name;source=$file.FullName;error=$_.Exception.Message}) }
     }
   }
-  return @($hits | Sort-Object scriptId,profile,source -Unique)
+  return [pscustomobject]@{hits=@($hits | Sort-Object scriptId,profile,source -Unique);scanned=@($scanned);readErrors=@($readErrors);root=$root}
 }
 
-Write-Host ($label + ' runtime lineage recovery V10 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
+Write-Host ($label + ' runtime lineage recovery V11 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
 Write-Host "Repository: $repo"; Write-Host "DryRun: $DryRun"; Write-Host "ListOnly: $ListOnly"; Write-Host "ChromeUrlOnly: $ChromeUrlOnly"
 Write-Host ('ChromeUrlPrefix=' + $ChromeUrlPrefix); Write-Host ('TargetSpreadsheetIds=' + ($targetSpreadsheetIds -join ',')); Write-Host ('TargetCodePattern=' + $codePattern); Write-Host ('TargetNamePattern=' + $TargetNamePattern); Write-Host ('CentralReadbackName=' + $CentralReadbackName)
 
 if ($ChromeUrlOnly) {
-  $urls=@(Get-AppsScriptUrlsFromChrome -Prefix $ChromeUrlPrefix); $uniqueIds=@($urls|ForEach-Object{[string]$_.scriptId}|Sort-Object -Unique)
+  $diag=Get-AppsScriptUrlsFromChrome -Prefix $ChromeUrlPrefix;$urls=@($diag.hits); $uniqueIds=@($urls|ForEach-Object{[string]$_.scriptId}|Sort-Object -Unique)
   $status=if($uniqueIds.Count -eq 1){'UNIQUE_CHROME_SCRIPT_ID'}elseif($uniqueIds.Count -gt 1){'MULTIPLE_CHROME_SCRIPT_IDS'}else{'NO_CHROME_SCRIPT_ID'}
-  $readback=[ordered]@{ok=($uniqueIds.Count -eq 1);status=$status;targetLabel=$label;prefix=$ChromeUrlPrefix;matchCount=$urls.Count;uniqueScriptIds=$uniqueIds;matches=$urls;at=(Get-Date).ToString('o')}
+  $readback=[ordered]@{ok=($uniqueIds.Count -eq 1);status=$status;targetLabel=$label;prefix=$ChromeUrlPrefix;matchCount=$urls.Count;uniqueScriptIds=$uniqueIds;matches=$urls;scannedCount=@($diag.scanned).Count;scanned=@($diag.scanned);readErrorCount=@($diag.readErrors).Count;readErrors=@($diag.readErrors);at=(Get-Date).ToString('o')}
   try{$written=Write-CentralReadback ([hashtable]$readback);if($written){Write-Host ('CENTRAL_READBACK='+$written)}}catch{}
-  Write-Output ('CHROME_APPS_SCRIPT_URLS_JSON='+($readback|ConvertTo-Json -Depth 8 -Compress))
+  Write-Output ('CHROME_APPS_SCRIPT_URLS_JSON='+($readback|ConvertTo-Json -Depth 10 -Compress))
   if($uniqueIds.Count -eq 1){Write-Host ('UNIQUE_CANDIDATE='+$uniqueIds[0])}
   exit 0
 }
