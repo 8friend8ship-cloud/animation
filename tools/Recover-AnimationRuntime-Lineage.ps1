@@ -1,13 +1,19 @@
 param(
-  [switch]$DryRun = $true
+  [switch]$DryRun = $true,
+  [string]$TargetSpreadsheetId = '',
+  [string]$TargetCodePattern = '',
+  [string]$TargetLabel = 'Animation'
 )
 
 $ErrorActionPreference = 'Stop'
 $repo = '8friend8ship-cloud/animation'
-$targetSpreadsheetIds = @(
+$defaultSpreadsheetIds = @(
   '1dgLhQnFnOOZgI2K_vxtWbFrTUnvduhQT_OqJmlkJmT4',
   '1b0VkG1lttudtgctqRQCC2ZydjwrPLu2cA3vxSBUD7_g'
 )
+$targetSpreadsheetIds = if ([string]::IsNullOrWhiteSpace($TargetSpreadsheetId)) { $defaultSpreadsheetIds } else { @($TargetSpreadsheetId.Trim()) }
+$codePattern = if ([string]::IsNullOrWhiteSpace($TargetCodePattern)) { 'Animation|VTube|QUEENS_SCENE|PERSONA_STORYBOARD_PACK|ASSET_AUTOMATION_TRIGGER' } else { $TargetCodePattern }
+$label = if ([string]::IsNullOrWhiteSpace($TargetLabel)) { 'Runtime' } else { $TargetLabel.Trim() }
 
 function Invoke-NativeText {
   param([string]$Command, [string[]]$Arguments = @())
@@ -22,9 +28,11 @@ function Invoke-NativeText {
   }
 }
 
-Write-Host 'Animation runtime lineage recovery V2 (NO NEW PROJECT / NO NEW DEPLOYMENT)'
+Write-Host ($label + ' runtime lineage recovery V3 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
 Write-Host "Repository: $repo"
 Write-Host "DryRun: $DryRun"
+Write-Host ('TargetSpreadsheetIds=' + ($targetSpreadsheetIds -join ','))
+Write-Host ('TargetCodePattern=' + $codePattern)
 
 $claspCmd = Get-Command clasp -ErrorAction SilentlyContinue
 if (-not $claspCmd) { throw 'clasp is not installed or not on PATH.' }
@@ -38,7 +46,7 @@ if ($listProbe.ExitCode -ne 0) {
   throw ('clasp list failed with exit code ' + $listProbe.ExitCode + '. Existing login may need inspection; no OAuth action was attempted.')
 }
 
-$root = Join-Path $env:TEMP ('animation-runtime-recovery-' + [guid]::NewGuid().ToString('N'))
+$root = Join-Path $env:TEMP (($label -replace '[^A-Za-z0-9_.-]','_') + '-runtime-recovery-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $root | Out-Null
 Set-Content -Path (Join-Path $root 'clasp-list.txt') -Value $listProbe.Text -Encoding UTF8
 
@@ -79,14 +87,14 @@ foreach ($m in $matches) {
     foreach ($sid in $targetSpreadsheetIds) {
       if ($files | Select-String -SimpleMatch $sid -Quiet) { $spreadsheetHit = $true; break }
     }
-    $videoHit = $false
-    if ($files.Count) {
-      $videoHit = [bool]($files | Select-String -Pattern 'Animation|VTube|QUEENS_SCENE|PERSONA_STORYBOARD_PACK|ASSET_AUTOMATION_TRIGGER' -Quiet)
+    $codeHit = $false
+    if ($files.Count -and -not [string]::IsNullOrWhiteSpace($codePattern)) {
+      $codeHit = [bool]($files | Select-String -Pattern $codePattern -Quiet)
     }
-    if ($spreadsheetHit -or $videoHit) {
+    if ($spreadsheetHit -or $codeHit) {
       $results += [pscustomobject]@{
         ScriptId=$m.ScriptId; Name=$m.Name; SpreadsheetHit=$spreadsheetHit;
-        AnimationCodeHit=$videoHit; Snapshot=$dir
+        AnimationCodeHit=$codeHit; TargetLabel=$label; Snapshot=$dir
       }
     }
   } catch {
@@ -97,7 +105,7 @@ foreach ($m in $matches) {
 }
 
 $results | Format-Table -AutoSize
-$results | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $root 'animation-runtime-candidates.json') -Encoding UTF8
+$results | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $root 'runtime-candidates.json') -Encoding UTF8
 Write-Host ('OUTPUT_DIR=' + $root)
 
 if ($results.Count -eq 1) {
@@ -110,5 +118,5 @@ if ($results.Count -gt 1) {
   Write-Warning 'Multiple candidates found. Stop and compare before any push.'
   exit 3
 }
-Write-Warning 'No matching existing Animation bound Apps Script was found. Stop. Do not create a new project.'
+Write-Warning ('No matching existing ' + $label + ' Apps Script was found. Stop. Do not create a new project.')
 exit 4
