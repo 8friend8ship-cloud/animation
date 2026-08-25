@@ -1,5 +1,6 @@
 param(
   [switch]$DryRun = $true,
+  [switch]$ListOnly = $false,
   [string]$TargetSpreadsheetId = '',
   [string]$TargetCodePattern = '',
   [string]$TargetNamePattern = '',
@@ -73,9 +74,10 @@ function Write-CentralReadback {
   return $path
 }
 
-Write-Host ($label + ' runtime lineage recovery V7 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
+Write-Host ($label + ' runtime lineage recovery V8 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
 Write-Host "Repository: $repo"
 Write-Host "DryRun: $DryRun"
+Write-Host "ListOnly: $ListOnly"
 Write-Host ('TargetSpreadsheetIds=' + ($targetSpreadsheetIds -join ','))
 Write-Host ('TargetCodePattern=' + $codePattern)
 Write-Host ('TargetNamePattern=' + $TargetNamePattern)
@@ -115,6 +117,17 @@ if (-not $projectCandidates.Count) {
   Write-Warning 'No authorized clasp projects could be parsed. Stop without creating anything.'
   Write-Host ('OUTPUT_DIR=' + $root)
   exit 2
+}
+
+if ($ListOnly) {
+  $inventory = @($projectCandidates | ForEach-Object { [ordered]@{name=[string]$_.Name;scriptId=[string]$_.ScriptId} })
+  $readback = [ordered]@{ok=$true;status='CLASP_PROJECT_INVENTORY';targetLabel=$label;projectCount=$inventory.Count;projects=$inventory;outputDir=$root;at=(Get-Date).ToString('o')}
+  try {
+    $written = Write-CentralReadback ([hashtable]$readback)
+    if ($written) { Write-Host ('CENTRAL_READBACK=' + $written) } else { Write-Host 'CENTRAL_READBACK=NOT_FOUND' }
+  } catch { Write-Warning ('CENTRAL_READBACK_WRITE_FAILED: ' + $_.Exception.Message) }
+  Write-Output ('CLASP_PROJECT_INVENTORY_JSON=' + ($readback | ConvertTo-Json -Depth 8 -Compress))
+  exit 0
 }
 
 $inspectCandidates = $projectCandidates
