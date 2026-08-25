@@ -67,6 +67,58 @@ function Read-SharedBytes {
   } finally { $fs.Dispose() }
 }
 
+function Add-ScriptIdEvidence {
+  param([System.Collections.Generic.List[object]]$List,[string]$Text,[string]$Source,[string]$Profile,[string]$Prefix='',[string]$Kind='TEXT')
+  if ([string]::IsNullOrWhiteSpace($Text)) { return }
+  $seen = @{}
+  foreach ($m in [regex]::Matches($Text,'https://script\.google\.com/(?:u/\d+/)?home/projects/(?<id>[A-Za-z0-9_-]{57})')) {
+    $id=[string]$m.Groups['id'].Value;if($Prefix -and -not $id.StartsWith($Prefix,[StringComparison]::OrdinalIgnoreCase)){continue};$seen[$id]=[string]$m.Value
+  }
+  foreach ($m in [regex]::Matches($Text,'https://script\.google\.com/d/(?<id>[A-Za-z0-9_-]{57})(?:/|$)')) {
+    $id=[string]$m.Groups['id'].Value;if($Prefix -and -not $id.StartsWith($Prefix,[StringComparison]::OrdinalIgnoreCase)){continue};$seen[$id]=[string]$m.Value
+  }
+  if ($Prefix -and $Prefix.Length -lt 57) {
+    $remain=57-$Prefix.Length;$pattern='(?<id>'+[regex]::Escape($Prefix)+'[A-Za-z0-9_-]{'+$remain+'})'
+    foreach($m in [regex]::Matches($Text,$pattern)){$id=[string]$m.Groups['id'].Value;$seen[$id]=$id}
+  }
+  foreach($id in $seen.Keys){$List.Add([pscustomobject]@{profile=$Profile;source=$Source;kind=$Kind;scriptId=[string]$id;url=[string]$seen[$id]})}
+}
+
+function Get-ChromeUiEvidence {
+  param([string]$Prefix='')
+  $hits=New-Object System.Collections.Generic.List[object]
+  $tabHints=New-Object System.Collections.Generic.List[object]
+  $errors=New-Object System.Collections.Generic.List[object]
+  try { Add-Type -AssemblyName UIAutomationClient -ErrorAction Stop; Add-Type -AssemblyName UIAutomationTypes -ErrorAction Stop } catch { return [pscustomobject]@{hits=@();tabHints=@();errors=@([pscustomobject]@{stage='ADD_TYPE';error=$_.Exception.Message})} }
+  $dedicatedMarker='HomeDesignAutomationV7\ChromeUserData'
+  foreach($cim in @(Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" -ErrorAction SilentlyContinue)){
+    $cmd=[string]$cim.CommandLine;if($cmd -and $cmd -like ('*'+$dedicatedMarker+'*')){continue}
+    $p=Get-Process -Id ([int]$cim.ProcessId) -ErrorAction SilentlyContinue;if(-not $p -or $p.MainWindowHandle -eq 0){continue}
+    try{
+      $root=[System.Windows.Automation.AutomationElement]::FromHandle([IntPtr]$p.MainWindowHandle);if(-not $root){continue}
+      $editCond=New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty,[System.Windows.Automation.ControlType]::Edit)
+      foreach($el in @($root.FindAll([System.Windows.Automation.TreeScope]::Descendants,$editCond))){
+        try{$vp=$el.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern);$v=[string]$vp.Current.Value;if($v -and (($Prefix -and $v.IndexOf($Prefix,[StringComparison]::OrdinalIgnoreCase)-ge 0) -or $v -match 'script\.google\.com')){Add-ScriptIdEvidence -List $hits -Text $v -Source ('PID_'+$cim.ProcessId) -Profile 'NORMAL_CHROME_UI' -Prefix $Prefix -Kind 'ADDRESS_BAR'}}catch{}
+      }
+      $tabCond=New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty,[System.Windows.Automation.ControlType]::TabItem)
+      foreach($tab in @($root.FindAll([System.Windows.Automation.TreeScope]::Descendants,$tabCond))){
+        try{
+          $name=[string]$tab.Current.Name
+          if($name -match 'WEBAPP_TEMPLATE_03|Apps Script'){
+            $legacyValue='';$legacyDescription=''
+            try{$lp=$tab.GetCurrentPattern([System.Windows.Automation.LegacyIAccessiblePattern]::Pattern);$legacyValue=[string]$lp.Current.Value;$legacyDescription=[string]$lp.Current.Description}catch{}
+            $tabHints.Add([pscustomobject]@{pid=[int]$cim.ProcessId;name=$name;legacyValue=$(if($legacyValue -and (($Prefix -and $legacyValue -like ('*'+$Prefix+'*')) -or $legacyValue -match 'script\.google\.com')){$legacyValue}else{''});legacyDescription=$(if($legacyDescription -and (($Prefix -and $legacyDescription -like ('*'+$Prefix+'*')) -or $legacyDescription -match 'script\.google\.com')){$legacyDescription}else{''})})
+            Add-ScriptIdEvidence -List $hits -Text $legacyValue -Source ('TAB_PID_'+$cim.ProcessId) -Profile 'NORMAL_CHROME_UI' -Prefix $Prefix -Kind 'TAB_LEGACY_VALUE'
+            Add-ScriptIdEvidence -List $hits -Text $legacyDescription -Source ('TAB_PID_'+$cim.ProcessId) -Profile 'NORMAL_CHROME_UI' -Prefix $Prefix -Kind 'TAB_LEGACY_DESCRIPTION'
+          }
+        }catch{}
+      }
+    }catch{$errors.Add([pscustomobject]@{stage='WINDOW';pid=[int]$cim.ProcessId;error=$_.Exception.Message})}
+  }
+  try{$clip=[string](Get-Clipboard -Raw -ErrorAction Stop);if($clip -and $Prefix -and $clip.IndexOf($Prefix,[StringComparison]::OrdinalIgnoreCase)-ge 0){Add-ScriptIdEvidence -List $hits -Text $clip -Source 'CLIPBOARD_PREFIX_MATCH' -Profile 'LOCAL_USER' -Prefix $Prefix -Kind 'CLIPBOARD'}}catch{}
+  return [pscustomobject]@{hits=$hits.ToArray();tabHints=$tabHints.ToArray();errors=$errors.ToArray()}
+}
+
 function Get-AppsScriptUrlsFromChrome {
   param([string]$Prefix='')
   $root = Join-Path $env:LOCALAPPDATA 'Google\Chrome\User Data'
@@ -77,43 +129,32 @@ function Get-AppsScriptUrlsFromChrome {
   $profiles = @(Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Default' -or $_.Name -like 'Profile *' })
   foreach ($profile in $profiles) {
     $candidates = New-Object System.Collections.Generic.List[System.IO.FileInfo]
-    foreach($name in @('History','History-journal','Current Session','Current Tabs','Last Session','Last Tabs')){
-      $p=Join-Path $profile.FullName $name;if(Test-Path -LiteralPath $p){$candidates.Add((Get-Item -LiteralPath $p))}
-    }
+    foreach($name in @('History','History-journal','Current Session','Current Tabs','Last Session','Last Tabs')){$p=Join-Path $profile.FullName $name;if(Test-Path -LiteralPath $p){$candidates.Add((Get-Item -LiteralPath $p))}}
     $sessions = Join-Path $profile.FullName 'Sessions'
     if (Test-Path -LiteralPath $sessions) { foreach ($f in @(Get-ChildItem -LiteralPath $sessions -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 24)) { $candidates.Add($f) } }
     foreach ($file in @($candidates | Sort-Object FullName -Unique)) {
       try {
-        $bytes = Read-SharedBytes $file.FullName
-        $scanned.Add($file.FullName)
-        foreach ($text in @([Text.Encoding]::UTF8.GetString($bytes),[Text.Encoding]::Unicode.GetString($bytes),[Text.Encoding]::ASCII.GetString($bytes))) {
-          foreach ($m in [regex]::Matches($text,'https://script\.google\.com/(?:u/\d+/)?home/projects/(?<id>[A-Za-z0-9_-]{57})')) {
-            $id=[string]$m.Groups['id'].Value
-            if ($Prefix -and -not $id.StartsWith($Prefix,[StringComparison]::OrdinalIgnoreCase)) { continue }
-            $hits.Add([pscustomobject]@{profile=$profile.Name;source=$file.Name;scriptId=$id;url=[string]$m.Value})
-          }
-          foreach ($m in [regex]::Matches($text,'https://script\.google\.com/d/(?<id>[A-Za-z0-9_-]{57})(?:/|$)')) {
-            $id=[string]$m.Groups['id'].Value
-            if ($Prefix -and -not $id.StartsWith($Prefix,[StringComparison]::OrdinalIgnoreCase)) { continue }
-            $hits.Add([pscustomobject]@{profile=$profile.Name;source=$file.Name;scriptId=$id;url=[string]$m.Value})
-          }
-        }
+        $bytes = Read-SharedBytes $file.FullName;if($null -eq $bytes){throw 'READ_SHARED_BYTES_NULL'};$scanned.Add($file.FullName)
+        Add-ScriptIdEvidence -List $hits -Text ([Text.Encoding]::UTF8.GetString($bytes)) -Source $file.Name -Profile $profile.Name -Prefix $Prefix -Kind 'CHROME_FILE_UTF8'
+        Add-ScriptIdEvidence -List $hits -Text ([Text.Encoding]::ASCII.GetString($bytes)) -Source $file.Name -Profile $profile.Name -Prefix $Prefix -Kind 'CHROME_FILE_ASCII'
       } catch { $readErrors.Add([pscustomobject]@{profile=$profile.Name;source=$file.FullName;error=$_.Exception.Message}) }
     }
   }
   return [pscustomobject]@{hits=$hits.ToArray();scanned=$scanned.ToArray();readErrors=$readErrors.ToArray();root=$root}
 }
 
-Write-Host ($label + ' runtime lineage recovery V11.1 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
+Write-Host ($label + ' runtime lineage recovery V11.2 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
 Write-Host "Repository: $repo"; Write-Host "DryRun: $DryRun"; Write-Host "ListOnly: $ListOnly"; Write-Host "ChromeUrlOnly: $ChromeUrlOnly"
 Write-Host ('ChromeUrlPrefix=' + $ChromeUrlPrefix); Write-Host ('TargetSpreadsheetIds=' + ($targetSpreadsheetIds -join ',')); Write-Host ('TargetCodePattern=' + $codePattern); Write-Host ('TargetNamePattern=' + $TargetNamePattern); Write-Host ('CentralReadbackName=' + $CentralReadbackName)
 
 if ($ChromeUrlOnly) {
-  $diag=Get-AppsScriptUrlsFromChrome -Prefix $ChromeUrlPrefix;$urls=@($diag.hits); $uniqueIds=@($urls|ForEach-Object{[string]$_.scriptId}|Sort-Object -Unique)
+  $diag=Get-AppsScriptUrlsFromChrome -Prefix $ChromeUrlPrefix
+  $ui=Get-ChromeUiEvidence -Prefix $ChromeUrlPrefix
+  $urls=@($diag.hits)+@($ui.hits);$uniqueIds=@($urls|ForEach-Object{[string]$_.scriptId}|Where-Object{$_}|Sort-Object -Unique)
   $status=if($uniqueIds.Count -eq 1){'UNIQUE_CHROME_SCRIPT_ID'}elseif($uniqueIds.Count -gt 1){'MULTIPLE_CHROME_SCRIPT_IDS'}else{'NO_CHROME_SCRIPT_ID'}
-  $readback=[ordered]@{ok=($uniqueIds.Count -eq 1);status=$status;targetLabel=$label;prefix=$ChromeUrlPrefix;matchCount=$urls.Count;uniqueScriptIds=$uniqueIds;matches=$urls;scannedCount=@($diag.scanned).Count;scanned=@($diag.scanned);readErrorCount=@($diag.readErrors).Count;readErrors=@($diag.readErrors);at=(Get-Date).ToString('o')}
+  $readback=[ordered]@{ok=($uniqueIds.Count -eq 1);status=$status;targetLabel=$label;prefix=$ChromeUrlPrefix;matchCount=$urls.Count;uniqueScriptIds=$uniqueIds;matches=$urls;scannedCount=@($diag.scanned).Count;scanned=@($diag.scanned);readErrorCount=@($diag.readErrors).Count;readErrors=@($diag.readErrors);uiMatchCount=@($ui.hits).Count;uiTabHints=@($ui.tabHints);uiErrors=@($ui.errors);at=(Get-Date).ToString('o')}
   try{$written=Write-CentralReadback ([hashtable]$readback);if($written){Write-Host ('CENTRAL_READBACK='+$written)}}catch{}
-  Write-Output ('CHROME_APPS_SCRIPT_URLS_JSON='+($readback|ConvertTo-Json -Depth 10 -Compress))
+  Write-Output ('CHROME_APPS_SCRIPT_URLS_JSON='+($readback|ConvertTo-Json -Depth 12 -Compress))
   if($uniqueIds.Count -eq 1){Write-Host ('UNIQUE_CANDIDATE='+$uniqueIds[0])}
   exit 0
 }
