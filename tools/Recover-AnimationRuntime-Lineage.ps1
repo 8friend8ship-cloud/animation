@@ -2,6 +2,7 @@ param(
   [switch]$DryRun = $true,
   [string]$TargetSpreadsheetId = '',
   [string]$TargetCodePattern = '',
+  [string]$TargetNamePattern = '',
   [string]$TargetLabel = 'Animation'
 )
 
@@ -28,11 +29,12 @@ function Invoke-NativeText {
   }
 }
 
-Write-Host ($label + ' runtime lineage recovery V3 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
+Write-Host ($label + ' runtime lineage recovery V4 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
 Write-Host "Repository: $repo"
 Write-Host "DryRun: $DryRun"
 Write-Host ('TargetSpreadsheetIds=' + ($targetSpreadsheetIds -join ','))
 Write-Host ('TargetCodePattern=' + $codePattern)
+Write-Host ('TargetNamePattern=' + $TargetNamePattern)
 
 $claspCmd = Get-Command clasp -ErrorAction SilentlyContinue
 if (-not $claspCmd) { throw 'clasp is not installed or not on PATH.' }
@@ -61,7 +63,7 @@ foreach ($line in ($listProbe.Text -split "`r?`n")) {
     $matches += [pscustomobject]@{ Name='UNKNOWN'; ScriptId=$Matches.id.Trim() }
   }
 }
-$matches = $matches | Sort-Object ScriptId -Unique
+$matches = @($matches | Sort-Object ScriptId -Unique)
 
 if (-not $matches.Count) {
   Write-Warning 'No authorized clasp projects could be parsed. Stop without creating anything.'
@@ -69,8 +71,20 @@ if (-not $matches.Count) {
   exit 2
 }
 
+$inspectMatches = $matches
+if (-not [string]::IsNullOrWhiteSpace($TargetNamePattern)) {
+  $inspectMatches = @($matches | Where-Object { [string]$_.Name -match $TargetNamePattern })
+  if (-not $inspectMatches.Count) {
+    Write-Warning ('No clasp project name matched TargetNamePattern=' + $TargetNamePattern + '. Stop without broad cloning.')
+    Write-Host ('OUTPUT_DIR=' + $root)
+    exit 5
+  }
+}
+Write-Host ('PARSED_PROJECT_COUNT=' + $matches.Count)
+Write-Host ('BOUNDED_INSPECT_COUNT=' + $inspectMatches.Count)
+
 $results = @()
-foreach ($m in $matches) {
+foreach ($m in $inspectMatches) {
   $dir = Join-Path $root $m.ScriptId
   New-Item -ItemType Directory -Path $dir | Out-Null
   Push-Location $dir
