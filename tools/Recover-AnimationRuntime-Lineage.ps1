@@ -1,6 +1,8 @@
 param(
   [switch]$DryRun = $true,
   [switch]$ListOnly = $false,
+  [switch]$ChromeUrlOnly = $false,
+  [string]$ChromeUrlPrefix = '',
   [string]$TargetSpreadsheetId = '',
   [string]$TargetCodePattern = '',
   [string]$TargetNamePattern = '',
@@ -74,14 +76,60 @@ function Write-CentralReadback {
   return $path
 }
 
-Write-Host ($label + ' runtime lineage recovery V8 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
+function Get-AppsScriptUrlsFromChrome {
+  param([string]$Prefix='')
+  $root = Join-Path $env:LOCALAPPDATA 'Google\Chrome\User Data'
+  $hits = New-Object System.Collections.Generic.List[object]
+  if (-not (Test-Path -LiteralPath $root)) { return @() }
+  $profiles = @(Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Default' -or $_.Name -like 'Profile *' })
+  foreach ($profile in $profiles) {
+    $candidates = New-Object System.Collections.Generic.List[System.IO.FileInfo]
+    $history = Join-Path $profile.FullName 'History'
+    if (Test-Path -LiteralPath $history) { $candidates.Add((Get-Item -LiteralPath $history)) }
+    $sessions = Join-Path $profile.FullName 'Sessions'
+    if (Test-Path -LiteralPath $sessions) {
+      foreach ($f in @(Get-ChildItem -LiteralPath $sessions -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 12)) { $candidates.Add($f) }
+    }
+    foreach ($file in $candidates) {
+      try {
+        $bytes = [IO.File]::ReadAllBytes($file.FullName)
+        $texts = @([Text.Encoding]::UTF8.GetString($bytes), [Text.Encoding]::Unicode.GetString($bytes))
+        foreach ($text in $texts) {
+          $matches = [regex]::Matches($text, 'https://script\.google\.com/(?:u/\d+/)?home/projects/(?<id>[A-Za-z0-9_-]{20,})')
+          foreach ($m in $matches) {
+            $id = [string]$m.Groups['id'].Value
+            if ($Prefix -and -not $id.StartsWith($Prefix, [StringComparison]::OrdinalIgnoreCase)) { continue }
+            $hits.Add([pscustomobject]@{profile=$profile.Name;source=$file.Name;scriptId=$id;url=[string]$m.Value})
+          }
+        }
+      } catch {}
+    }
+  }
+  return @($hits | Sort-Object scriptId,profile,source -Unique)
+}
+
+Write-Host ($label + ' runtime lineage recovery V9 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
 Write-Host "Repository: $repo"
 Write-Host "DryRun: $DryRun"
 Write-Host "ListOnly: $ListOnly"
+Write-Host "ChromeUrlOnly: $ChromeUrlOnly"
+Write-Host ('ChromeUrlPrefix=' + $ChromeUrlPrefix)
 Write-Host ('TargetSpreadsheetIds=' + ($targetSpreadsheetIds -join ','))
 Write-Host ('TargetCodePattern=' + $codePattern)
 Write-Host ('TargetNamePattern=' + $TargetNamePattern)
 Write-Host ('CentralReadbackName=' + $CentralReadbackName)
+
+if ($ChromeUrlOnly) {
+  $urls = @(Get-AppsScriptUrlsFromChrome -Prefix $ChromeUrlPrefix)
+  $uniqueIds = @($urls | ForEach-Object { [string]$_.scriptId } | Sort-Object -Unique)
+  $status = if ($uniqueIds.Count -eq 1) { 'UNIQUE_CHROME_SCRIPT_ID' } elseif ($uniqueIds.Count -gt 1) { 'MULTIPLE_CHROME_SCRIPT_IDS' } else { 'NO_CHROME_SCRIPT_ID' }
+  $readback = [ordered]@{ok=($uniqueIds.Count -eq 1);status=$status;targetLabel=$label;prefix=$ChromeUrlPrefix;matchCount=$urls.Count;uniqueScriptIds=$uniqueIds;matches=$urls;at=(Get-Date).ToString('o')}
+  try { $written=Write-CentralReadback ([hashtable]$readback); if($written){Write-Host ('CENTRAL_READBACK='+$written)} } catch {}
+  Write-Output ('CHROME_APPS_SCRIPT_URLS_JSON=' + ($readback | ConvertTo-Json -Depth 8 -Compress))
+  if ($uniqueIds.Count -eq 1) { Write-Host ('UNIQUE_CANDIDATE=' + $uniqueIds[0]); exit 0 }
+  if ($uniqueIds.Count -gt 1) { exit 3 }
+  exit 4
+}
 
 $claspCmd = Get-Command clasp -ErrorAction SilentlyContinue
 if (-not $claspCmd) { throw 'clasp is not installed or not on PATH.' }
