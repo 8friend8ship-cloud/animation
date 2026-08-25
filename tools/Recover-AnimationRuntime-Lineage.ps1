@@ -109,7 +109,7 @@ try{
   $menu1=Invoke-UiaElementByName @('확장 프로그램','Extensions')
   if($menu1){Start-Sleep -Seconds 1;$menu2=Invoke-UiaElementByName @('Apps Script')}
   if(-not $menu2){
-    $w=@(Get-DedicatedWindows)|Where-Object{$_.title -match 'WEBAPP_TEMPLATE_03|Google Sheets|스프레드시트'}|Select-Object -First 1
+    $w=@(Get-DedicatedWindows)|Where-Object{(([string]$_.title).Contains('WEBAPP_TEMPLATE_03')) -or (([string]$_.title).Contains('Google Sheets'))}|Select-Object -First 1
     if(-not $w){$w=@(Get-DedicatedWindows)|Select-Object -First 1}
     if($w){$sh=New-Object -ComObject WScript.Shell;if($sh.AppActivate([int]$w.pid)){Start-Sleep -Milliseconds 400;$sh.SendKeys('%/');Start-Sleep -Milliseconds 700;$sh.SendKeys('Apps Script');Start-Sleep -Milliseconds 800;$sh.SendKeys('{ENTER}');$sendKeysUsed=$true}}
   }
