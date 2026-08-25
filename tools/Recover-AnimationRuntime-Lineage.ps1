@@ -73,7 +73,7 @@ function Write-CentralReadback {
   return $path
 }
 
-Write-Host ($label + ' runtime lineage recovery V6 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
+Write-Host ($label + ' runtime lineage recovery V7 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
 Write-Host "Repository: $repo"
 Write-Host "DryRun: $DryRun"
 Write-Host ('TargetSpreadsheetIds=' + ($targetSpreadsheetIds -join ','))
@@ -85,15 +85,10 @@ $claspCmd = Get-Command clasp -ErrorAction SilentlyContinue
 if (-not $claspCmd) { throw 'clasp is not installed or not on PATH.' }
 Write-Host ('CLASP_PATH=' + $claspCmd.Source)
 
-# Do not use `clasp login --status`: recent/older clasp builds differ on this option.
-# `clasp list` itself is the read-only authentication/probe step.
 $listProbe = Invoke-NativeText -Command $claspCmd.Source -Arguments @('list')
 Write-Host $listProbe.Text
 if ($listProbe.ExitCode -ne 0) {
-  $failure = [ordered]@{
-    ok = $false; status = 'CLASP_LIST_FAILED'; targetLabel = $label; exitCode = $listProbe.ExitCode;
-    detail = $listProbe.Text; at = (Get-Date).ToString('o')
-  }
+  $failure = [ordered]@{ok=$false;status='CLASP_LIST_FAILED';targetLabel=$label;exitCode=$listProbe.ExitCode;detail=$listProbe.Text;at=(Get-Date).ToString('o')}
   try { $written = Write-CentralReadback ([hashtable]$failure); if ($written) { Write-Host ('CENTRAL_READBACK=' + $written) } } catch {}
   throw ('clasp list failed with exit code ' + $listProbe.ExitCode + '. Existing login may need inspection; no OAuth action was attempted.')
 }
@@ -104,7 +99,6 @@ Set-Content -Path (Join-Path $root 'clasp-list.txt') -Value $listProbe.Text -Enc
 
 $projectCandidates = @()
 foreach ($line in ($listProbe.Text -split "`r?`n")) {
-  # clasp list output varies by version. Accept common `name - id`, URL/id, and bare-id forms.
   if ($line -match '(?<name>.+?)\s+-\s+(?<id>[A-Za-z0-9_-]{20,})\s*$') {
     $projectCandidates += [pscustomobject]@{ Name=$Matches.name.Trim(); ScriptId=$Matches.id.Trim() }
   } elseif ($line -match 'script\.google\.com/.+?/(?<id>[A-Za-z0-9_-]{20,})') {
@@ -127,10 +121,7 @@ $inspectCandidates = $projectCandidates
 if (-not [string]::IsNullOrWhiteSpace($TargetNamePattern)) {
   $inspectCandidates = @($projectCandidates | Where-Object { [string]$_.Name -match $TargetNamePattern })
   if (-not $inspectCandidates.Count) {
-    $failure = [ordered]@{
-      ok=$false;status='NO_NAME_MATCH';targetLabel=$label;targetNamePattern=$TargetNamePattern;
-      parsedProjectCount=$projectCandidates.Count;outputDir=$root;at=(Get-Date).ToString('o')
-    }
+    $failure = [ordered]@{ok=$false;status='NO_NAME_MATCH';targetLabel=$label;targetNamePattern=$TargetNamePattern;parsedProjectCount=$projectCandidates.Count;outputDir=$root;at=(Get-Date).ToString('o')}
     try { $written = Write-CentralReadback ([hashtable]$failure); if ($written) { Write-Host ('CENTRAL_READBACK=' + $written) } } catch {}
     Write-Warning ('No clasp project name matched TargetNamePattern=' + $TargetNamePattern + '. Stop without broad cloning.')
     Write-Host ('OUTPUT_DIR=' + $root)
@@ -146,7 +137,6 @@ foreach ($candidate in $inspectCandidates) {
   New-Item -ItemType Directory -Path $dir | Out-Null
   Push-Location $dir
   try {
-    Set-Content .clasp.json ('{"scriptId":"' + $candidate.ScriptId + '"}') -Encoding UTF8
     $cloneProbe = Invoke-NativeText -Command $claspCmd.Source -Arguments @('clone', $candidate.ScriptId)
     Set-Content clone.log $cloneProbe.Text -Encoding UTF8
     if ($cloneProbe.ExitCode -ne 0) {
@@ -163,10 +153,7 @@ foreach ($candidate in $inspectCandidates) {
       $codeHit = [bool]($files | Select-String -Pattern $codePattern -Quiet)
     }
     if ($spreadsheetHit -or $codeHit) {
-      $results += [pscustomobject]@{
-        ScriptId=$candidate.ScriptId; Name=$candidate.Name; SpreadsheetHit=$spreadsheetHit;
-        AnimationCodeHit=$codeHit; TargetLabel=$label; Snapshot=$dir
-      }
+      $results += [pscustomobject]@{ScriptId=$candidate.ScriptId;Name=$candidate.Name;SpreadsheetHit=$spreadsheetHit;AnimationCodeHit=$codeHit;TargetLabel=$label;Snapshot=$dir}
     }
   } catch {
     Write-Warning ("Failed to inspect " + $candidate.ScriptId + ': ' + $_.Exception.Message)
@@ -180,28 +167,11 @@ $results | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $root 'runtime-candi
 Write-Host ('OUTPUT_DIR=' + $root)
 
 $status = if ($results.Count -eq 1) { 'UNIQUE_CANDIDATE' } elseif ($results.Count -gt 1) { 'MULTIPLE_CANDIDATES' } else { 'NO_MATCHING_PROJECT' }
-$readback = [ordered]@{
-  ok = ($results.Count -eq 1)
-  status = $status
-  targetLabel = $label
-  targetSpreadsheetIds = @($targetSpreadsheetIds)
-  targetCodePattern = $codePattern
-  targetNamePattern = $TargetNamePattern
-  parsedProjectCount = $projectCandidates.Count
-  inspectedProjectCount = $inspectCandidates.Count
-  resultCount = $results.Count
-  results = @($results)
-  uniqueCandidate = $(if($results.Count -eq 1){[string]$results[0].ScriptId}else{''})
-  outputDir = $root
-  at = (Get-Date).ToString('o')
-}
+$readback = [ordered]@{ok=($results.Count -eq 1);status=$status;targetLabel=$label;targetSpreadsheetIds=@($targetSpreadsheetIds);targetCodePattern=$codePattern;targetNamePattern=$TargetNamePattern;parsedProjectCount=$projectCandidates.Count;inspectedProjectCount=$inspectCandidates.Count;resultCount=$results.Count;results=@($results);uniqueCandidate=$(if($results.Count -eq 1){[string]$results[0].ScriptId}else{''});outputDir=$root;at=(Get-Date).ToString('o')}
 try {
   $written = Write-CentralReadback ([hashtable]$readback)
-  if ($written) { Write-Host ('CENTRAL_READBACK=' + $written) }
-  else { Write-Host 'CENTRAL_READBACK=NOT_FOUND' }
-} catch {
-  Write-Warning ('CENTRAL_READBACK_WRITE_FAILED: ' + $_.Exception.Message)
-}
+  if ($written) { Write-Host ('CENTRAL_READBACK=' + $written) } else { Write-Host 'CENTRAL_READBACK=NOT_FOUND' }
+} catch { Write-Warning ('CENTRAL_READBACK_WRITE_FAILED: ' + $_.Exception.Message) }
 
 if ($results.Count -eq 1) {
   Write-Host ('UNIQUE_CANDIDATE=' + $results[0].ScriptId)
@@ -209,9 +179,6 @@ if ($results.Count -eq 1) {
   Write-Host 'SAFE_NEXT=DIFF_ONLY_EXISTING_SCRIPT'
   exit 0
 }
-if ($results.Count -gt 1) {
-  Write-Warning 'Multiple candidates found. Stop and compare before any push.'
-  exit 3
-}
+if ($results.Count -gt 1) { Write-Warning 'Multiple candidates found. Stop and compare before any push.'; exit 3 }
 Write-Warning ('No matching existing ' + $label + ' Apps Script was found. Stop. Do not create a new project.')
 exit 4
