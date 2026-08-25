@@ -29,7 +29,7 @@ function Invoke-NativeText {
   }
 }
 
-Write-Host ($label + ' runtime lineage recovery V4 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
+Write-Host ($label + ' runtime lineage recovery V5 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
 Write-Host "Repository: $repo"
 Write-Host "DryRun: $DryRun"
 Write-Host ('TargetSpreadsheetIds=' + ($targetSpreadsheetIds -join ','))
@@ -52,48 +52,48 @@ $root = Join-Path $env:TEMP (($label -replace '[^A-Za-z0-9_.-]','_') + '-runtime
 New-Item -ItemType Directory -Path $root | Out-Null
 Set-Content -Path (Join-Path $root 'clasp-list.txt') -Value $listProbe.Text -Encoding UTF8
 
-$matches = @()
+$projectCandidates = @()
 foreach ($line in ($listProbe.Text -split "`r?`n")) {
   # clasp list output varies by version. Accept common `name - id`, URL/id, and bare-id forms.
   if ($line -match '(?<name>.+?)\s+-\s+(?<id>[A-Za-z0-9_-]{20,})\s*$') {
-    $matches += [pscustomobject]@{ Name=$Matches.name.Trim(); ScriptId=$Matches.id.Trim() }
+    $projectCandidates += [pscustomobject]@{ Name=$Matches.name.Trim(); ScriptId=$Matches.id.Trim() }
   } elseif ($line -match 'script\.google\.com/.+?/(?<id>[A-Za-z0-9_-]{20,})') {
-    $matches += [pscustomobject]@{ Name=$line.Trim(); ScriptId=$Matches.id.Trim() }
+    $projectCandidates += [pscustomobject]@{ Name=$line.Trim(); ScriptId=$Matches.id.Trim() }
   } elseif ($line -match '^\s*(?<id>[A-Za-z0-9_-]{30,})\s*$') {
-    $matches += [pscustomobject]@{ Name='UNKNOWN'; ScriptId=$Matches.id.Trim() }
+    $projectCandidates += [pscustomobject]@{ Name='UNKNOWN'; ScriptId=$Matches.id.Trim() }
   }
 }
-$matches = @($matches | Sort-Object ScriptId -Unique)
+$projectCandidates = @($projectCandidates | Sort-Object ScriptId -Unique)
 
-if (-not $matches.Count) {
+if (-not $projectCandidates.Count) {
   Write-Warning 'No authorized clasp projects could be parsed. Stop without creating anything.'
   Write-Host ('OUTPUT_DIR=' + $root)
   exit 2
 }
 
-$inspectMatches = $matches
+$inspectCandidates = $projectCandidates
 if (-not [string]::IsNullOrWhiteSpace($TargetNamePattern)) {
-  $inspectMatches = @($matches | Where-Object { [string]$_.Name -match $TargetNamePattern })
-  if (-not $inspectMatches.Count) {
+  $inspectCandidates = @($projectCandidates | Where-Object { [string]$_.Name -match $TargetNamePattern })
+  if (-not $inspectCandidates.Count) {
     Write-Warning ('No clasp project name matched TargetNamePattern=' + $TargetNamePattern + '. Stop without broad cloning.')
     Write-Host ('OUTPUT_DIR=' + $root)
     exit 5
   }
 }
-Write-Host ('PARSED_PROJECT_COUNT=' + $matches.Count)
-Write-Host ('BOUNDED_INSPECT_COUNT=' + $inspectMatches.Count)
+Write-Host ('PARSED_PROJECT_COUNT=' + $projectCandidates.Count)
+Write-Host ('BOUNDED_INSPECT_COUNT=' + $inspectCandidates.Count)
 
 $results = @()
-foreach ($m in $inspectMatches) {
-  $dir = Join-Path $root $m.ScriptId
+foreach ($candidate in $inspectCandidates) {
+  $dir = Join-Path $root $candidate.ScriptId
   New-Item -ItemType Directory -Path $dir | Out-Null
   Push-Location $dir
   try {
-    Set-Content .clasp.json ('{"scriptId":"' + $m.ScriptId + '"}') -Encoding UTF8
-    $cloneProbe = Invoke-NativeText -Command $claspCmd.Source -Arguments @('clone', $m.ScriptId)
+    Set-Content .clasp.json ('{"scriptId":"' + $candidate.ScriptId + '"}') -Encoding UTF8
+    $cloneProbe = Invoke-NativeText -Command $claspCmd.Source -Arguments @('clone', $candidate.ScriptId)
     Set-Content clone.log $cloneProbe.Text -Encoding UTF8
     if ($cloneProbe.ExitCode -ne 0) {
-      Write-Warning ("Failed to inspect " + $m.ScriptId + ': clasp clone exit ' + $cloneProbe.ExitCode)
+      Write-Warning ("Failed to inspect " + $candidate.ScriptId + ': clasp clone exit ' + $cloneProbe.ExitCode)
       continue
     }
     $files = @(Get-ChildItem -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne '.clasp.json' })
@@ -107,12 +107,12 @@ foreach ($m in $inspectMatches) {
     }
     if ($spreadsheetHit -or $codeHit) {
       $results += [pscustomobject]@{
-        ScriptId=$m.ScriptId; Name=$m.Name; SpreadsheetHit=$spreadsheetHit;
+        ScriptId=$candidate.ScriptId; Name=$candidate.Name; SpreadsheetHit=$spreadsheetHit;
         AnimationCodeHit=$codeHit; TargetLabel=$label; Snapshot=$dir
       }
     }
   } catch {
-    Write-Warning ("Failed to inspect " + $m.ScriptId + ': ' + $_.Exception.Message)
+    Write-Warning ("Failed to inspect " + $candidate.ScriptId + ': ' + $_.Exception.Message)
   } finally {
     Pop-Location
   }
