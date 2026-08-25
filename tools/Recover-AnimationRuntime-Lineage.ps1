@@ -2,6 +2,7 @@ param(
   [switch]$DryRun = $true,
   [switch]$ListOnly = $false,
   [switch]$ChromeUrlOnly = $false,
+  [switch]$CftBoundScriptRecovery = $false,
   [string]$ChromeUrlPrefix = '',
   [string]$TargetSpreadsheetId = '',
   [string]$TargetCodePattern = '',
@@ -143,9 +144,96 @@ function Get-AppsScriptUrlsFromChrome {
   return [pscustomobject]@{hits=$hits.ToArray();scanned=$scanned.ToArray();readErrors=$readErrors.ToArray();root=$root}
 }
 
-Write-Host ($label + ' runtime lineage recovery V11.2 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
-Write-Host "Repository: $repo"; Write-Host "DryRun: $DryRun"; Write-Host "ListOnly: $ListOnly"; Write-Host "ChromeUrlOnly: $ChromeUrlOnly"
+function Get-DedicatedCftWindows {
+  $marker='HomeDesignAutomationV7\ChromeUserData'
+  $out=@()
+  foreach($cim in @(Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" -ErrorAction SilentlyContinue)){
+    $cmd=[string]$cim.CommandLine;if(-not $cmd -or $cmd -notlike ('*'+$marker+'*')){continue}
+    $p=Get-Process -Id ([int]$cim.ProcessId) -ErrorAction SilentlyContinue
+    if($p -and $p.MainWindowHandle -ne 0){$out += [pscustomobject]@{cim=$cim;process=$p;title=[string]$p.MainWindowTitle}}
+  }
+  return @($out)
+}
+
+function Get-DedicatedAddressEvidence {
+  param([string]$Prefix='')
+  $hits=New-Object System.Collections.Generic.List[object]
+  $values=New-Object System.Collections.Generic.List[string]
+  try{Add-Type -AssemblyName UIAutomationClient -ErrorAction Stop;Add-Type -AssemblyName UIAutomationTypes -ErrorAction Stop}catch{return [pscustomobject]@{hits=@();values=@();error=$_.Exception.Message}}
+  foreach($w in @(Get-DedicatedCftWindows)){
+    try{
+      $root=[System.Windows.Automation.AutomationElement]::FromHandle([IntPtr]$w.process.MainWindowHandle);if(-not $root){continue}
+      $cond=New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty,[System.Windows.Automation.ControlType]::Edit)
+      foreach($el in @($root.FindAll([System.Windows.Automation.TreeScope]::Descendants,$cond))){
+        try{$vp=$el.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern);$v=[string]$vp.Current.Value;if($v){$values.Add($v);Add-ScriptIdEvidence -List $hits -Text $v -Source ('CFT_PID_'+$w.process.Id) -Profile 'DEDICATED_CFT_UI' -Prefix $Prefix -Kind 'ADDRESS_BAR'}}catch{}
+      }
+    }catch{}
+  }
+  return [pscustomobject]@{hits=$hits.ToArray();values=$values.ToArray();error=''}
+}
+
+function Start-DedicatedCftUrl {
+  param([string]$Url)
+  $base=Join-Path $env:LOCALAPPDATA 'HomeDesignAutomationV7'
+  $userData=Join-Path $base 'ChromeUserData'
+  $ext=Join-Path $base 'Extension\NotebookLM-WebApp-Bridge'
+  $cftRoot=Join-Path $base 'ChromeForTesting'
+  $chrome=Get-ChildItem -LiteralPath $cftRoot -Recurse -Filter chrome.exe -File -ErrorAction SilentlyContinue|Sort-Object FullName -Descending|Select-Object -First 1
+  if(-not $chrome){throw 'CFT_CHROME_EXE_NOT_FOUND'}
+  $args=@("--user-data-dir=$userData",'--profile-directory=Default',"--load-extension=$ext",'--new-window','--no-first-run','--no-default-browser-check','--disable-session-crashed-bubble',$Url)
+  $psi=New-Object Diagnostics.ProcessStartInfo;$psi.FileName=$chrome.FullName;$psi.WorkingDirectory=$chrome.Directory.FullName;$psi.UseShellExecute=$false
+  $psi.Arguments=($args|ForEach-Object{if($_ -match '\s'){'"'+$_+'"'}else{$_}})-join ' '
+  [void][Diagnostics.Process]::Start($psi)
+  return $chrome.FullName
+}
+
+function Invoke-DedicatedAppsScriptMenu {
+  $windows=@(Get-DedicatedCftWindows)
+  $target=$windows|Where-Object{$_.title -match 'WEBAPP_TEMPLATE_03|Google Sheets|스프레드시트'}|Select-Object -First 1
+  if(-not $target){$target=$windows|Select-Object -First 1}
+  if(-not $target){throw 'DEDICATED_CFT_WINDOW_NOT_FOUND'}
+  $shell=New-Object -ComObject WScript.Shell
+  $activated=$false
+  try{$activated=[bool]$shell.AppActivate([int]$target.process.Id)}catch{}
+  if(-not $activated){throw 'DEDICATED_CFT_APPACTIVATE_FAILED'}
+  Start-Sleep -Milliseconds 500
+  $shell.SendKeys('%/')
+  Start-Sleep -Milliseconds 700
+  $shell.SendKeys('Apps Script')
+  Start-Sleep -Milliseconds 1000
+  $shell.SendKeys('{ENTER}')
+  return [ordered]@{pid=[int]$target.process.Id;title=[string]$target.title;activated=[bool]$activated}
+}
+
+function Recover-BoundScriptIdWithDedicatedCft {
+  param([string]$SpreadsheetId,[string]$Prefix='')
+  if([string]::IsNullOrWhiteSpace($SpreadsheetId)){throw 'BOUND_SPREADSHEET_ID_REQUIRED'}
+  $sheetUrl='https://docs.google.com/spreadsheets/d/'+$SpreadsheetId+'/edit'
+  $chromePath=Start-DedicatedCftUrl -Url $sheetUrl
+  Start-Sleep -Seconds 10
+  $before=Get-DedicatedAddressEvidence -Prefix $Prefix
+  $menu=$null;$menuError=''
+  try{$menu=Invoke-DedicatedAppsScriptMenu}catch{$menuError=$_.Exception.Message}
+  Start-Sleep -Seconds 12
+  $after=Get-DedicatedAddressEvidence -Prefix $Prefix
+  $hits=@($before.hits)+@($after.hits)
+  $ids=@($hits|ForEach-Object{[string]$_.scriptId}|Where-Object{$_}|Sort-Object -Unique)
+  try{Start-DedicatedCftUrl -Url 'https://notebooklm-webapp-bridge.vercel.app'|Out-Null}catch{}
+  return [ordered]@{ok=($ids.Count -eq 1);status=$(if($ids.Count -eq 1){'UNIQUE_BOUND_SCRIPT_ID'}elseif($ids.Count -gt 1){'MULTIPLE_BOUND_SCRIPT_IDS'}else{'BOUND_SCRIPT_ID_NOT_FOUND'});spreadsheetId=$SpreadsheetId;sheetUrl=$sheetUrl;chromePath=$chromePath;menu=$menu;menuError=$menuError;beforeValues=@($before.values);afterValues=@($after.values);uniqueScriptIds=$ids;matches=$hits;at=(Get-Date).ToString('o')}
+}
+
+Write-Host ($label + ' runtime lineage recovery V12 (READ ONLY / NO NEW PROJECT / NO NEW DEPLOYMENT)')
+Write-Host "Repository: $repo"; Write-Host "DryRun: $DryRun"; Write-Host "ListOnly: $ListOnly"; Write-Host "ChromeUrlOnly: $ChromeUrlOnly";Write-Host "CftBoundScriptRecovery: $CftBoundScriptRecovery"
 Write-Host ('ChromeUrlPrefix=' + $ChromeUrlPrefix); Write-Host ('TargetSpreadsheetIds=' + ($targetSpreadsheetIds -join ',')); Write-Host ('TargetCodePattern=' + $codePattern); Write-Host ('TargetNamePattern=' + $TargetNamePattern); Write-Host ('CentralReadbackName=' + $CentralReadbackName)
+
+if($CftBoundScriptRecovery){
+  $sid=$(if([string]::IsNullOrWhiteSpace($TargetSpreadsheetId)){'1TbQxEcCiiibu2-EmMGEdt79v4AUpE8JL2XrDEKeVRCk'}else{$TargetSpreadsheetId.Trim()})
+  $readback=Recover-BoundScriptIdWithDedicatedCft -SpreadsheetId $sid -Prefix $ChromeUrlPrefix
+  try{$written=Write-CentralReadback ([hashtable]$readback);if($written){Write-Host ('CENTRAL_READBACK='+$written)}}catch{}
+  Write-Output ('CFT_BOUND_SCRIPT_RECOVERY_JSON='+($readback|ConvertTo-Json -Depth 12 -Compress))
+  if($readback.ok){Write-Host ('UNIQUE_CANDIDATE='+$readback.uniqueScriptIds[0]);exit 0}
+  exit 6
+}
 
 if ($ChromeUrlOnly) {
   $diag=Get-AppsScriptUrlsFromChrome -Prefix $ChromeUrlPrefix
