@@ -32,6 +32,30 @@ function Forward-Previous {
 
 if(-not $CftBoundScriptRecovery){Forward-Previous}
 
+function Find-CentralRoot {
+  $target=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('MDBf7KSR7JWZ7JeQ7J207KCE7Yq4'))
+  foreach($drive in @(Get-PSDrive -PSProvider FileSystem -ErrorAction SilentlyContinue)){
+    $r=[string]$drive.Root;if(-not $r){continue}
+    foreach($candidate in @((Join-Path $r $target),(Join-Path $r ('My Drive\'+$target)),(Join-Path $r ('내 드라이브\'+$target)),(Join-Path $r ('Google Drive\'+$target)))){
+      if(Test-Path -LiteralPath $candidate){return $candidate}
+    }
+  }
+  foreach($candidate in @((Join-Path $env:USERPROFILE ('My Drive\'+$target)),(Join-Path $env:USERPROFILE ('내 드라이브\'+$target)),(Join-Path $env:USERPROFILE ('Google Drive\'+$target)))){
+    if(Test-Path -LiteralPath $candidate){return $candidate}
+  }
+  return ''
+}
+function Write-CentralReadback {
+  param([hashtable]$Data)
+  $name=$(if($CentralReadbackName){[IO.Path]::GetFileName($CentralReadbackName)}else{'FLOW_CFT_CDP_SCRIPT_ID_LATEST.json'})
+  if($name -notmatch '^[A-Za-z0-9_.-]+\.json$'){throw 'CENTRAL_READBACK_NAME_UNSAFE'}
+  $central=Find-CentralRoot;if(-not $central){return ''}
+  $dir=Join-Path $central 'Runtime_Readback';New-Item -ItemType Directory -Force -Path $dir|Out-Null
+  $path=Join-Path $dir $name;$tmp=$path+'.tmp';$Data['centralWrittenAt']=(Get-Date).ToString('o')
+  $Data|ConvertTo-Json -Depth 24|Set-Content -LiteralPath $tmp -Encoding UTF8;Move-Item -LiteralPath $tmp -Destination $path -Force
+  return $path
+}
+
 $Base=Join-Path $env:LOCALAPPDATA 'HomeDesignAutomationV7'
 $UserData=Join-Path $Base 'ChromeUserData'
 $ExtensionRoot=Join-Path $Base 'Extension\NotebookLM-WebApp-Bridge'
@@ -114,6 +138,9 @@ try{
 $ids=@();if($result -and $result.ids){$ids=@($result.ids)}
 $prefixOk=$(if($ids.Count -eq 1 -and $ChromeUrlPrefix){([string]$ids[0]).StartsWith($ChromeUrlPrefix,[StringComparison]::OrdinalIgnoreCase)}elseif($ids.Count -eq 1){$true}else{$false})
 $out=[ordered]@{ok=($ids.Count -eq 1 -and $prefixOk);action='FLOW_CFT_CDP_BOUND_SCRIPT_RECOVERY';spreadsheetId=$SpreadsheetId;sheetUrl=$SheetUrl;knownPrefix=$ChromeUrlPrefix;prefixOk=[bool]$prefixOk;uniqueScriptIds=$ids;cdp=$result;dedicatedRestoreOk=[bool]$restoreOk;events=$events;at=(Get-Date).ToString('o')}
+$readbackPath=''
+try{$readbackPath=Write-CentralReadback ([hashtable]$out)}catch{$out['centralReadbackError']=$_.Exception.Message}
+if($readbackPath){$out['centralReadbackPath']=$readbackPath;Write-Host ('CENTRAL_READBACK='+$readbackPath)}
 Write-Output ('CFT_CDP_BOUND_SCRIPT_RECOVERY_JSON='+($out|ConvertTo-Json -Depth 20 -Compress))
 if($out.ok){Write-Host ('UNIQUE_CANDIDATE='+$ids[0])}
 exit 0
