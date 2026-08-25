@@ -97,25 +97,29 @@ const sid=process.argv[3];
 const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
 async function list(){return await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();}
 function connect(url){return new Promise((resolve,reject)=>{const ws=new WebSocket(url);let seq=0;const pending=new Map();ws.onopen=()=>resolve({ws,send:(method,params={})=>new Promise((res,rej)=>{const id=++seq;pending.set(id,{res,rej});ws.send(JSON.stringify({id,method,params}));})});ws.onerror=e=>reject(e);ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return};if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);if(m.error)p.rej(new Error(JSON.stringify(m.error)));else p.res(m.result);}};});}
-const before=await list();
-const sheet=before.find(t=>t.type==='page' && t.url.includes(`/spreadsheets/d/${sid}`));
-if(!sheet){console.log(JSON.stringify({ok:false,stage:'SHEET_TARGET_NOT_FOUND',before:before.map(x=>({title:x.title,url:x.url,type:x.type}))}));process.exit(0);}
+async function waitSheetReady(maxMs=18000){const end=Date.now()+maxMs;let last=null;while(Date.now()<end){const items=await list();const sheet=items.find(t=>t.type==='page'&&t.url.includes(`/spreadsheets/d/${sid}`));if(sheet){last=sheet;if((sheet.title||'').includes('Google Sheets'))return {sheet,items,ready:true};}await sleep(500);}const items=await list();const sheet=items.find(t=>t.type==='page'&&t.url.includes(`/spreadsheets/d/${sid}`))||last;return {sheet,items,ready:false};}
+const readiness=await waitSheetReady(18000);
+const before=readiness.items||await list();
+const sheet=readiness.sheet;
+if(!sheet){console.log(JSON.stringify({ok:false,stage:'SHEET_TARGET_NOT_FOUND',ready:readiness.ready,before:before.map(x=>({title:x.title,url:x.url,type:x.type}))}));process.exit(0);}
+if(!readiness.ready){console.log(JSON.stringify({ok:false,stage:'SHEET_NOT_READY',ready:false,before:before.map(x=>({title:x.title,url:x.url,type:x.type}))}));process.exit(0);}
 const c=await connect(sheet.webSocketDebuggerUrl);
 await c.send('Page.bringToFront');
+await sleep(500);
 await c.send('Input.dispatchKeyEvent',{type:'keyDown',key:'/',code:'Slash',modifiers:1,windowsVirtualKeyCode:191,nativeVirtualKeyCode:191});
 await c.send('Input.dispatchKeyEvent',{type:'keyUp',key:'/',code:'Slash',modifiers:1,windowsVirtualKeyCode:191,nativeVirtualKeyCode:191});
-await sleep(800);
+await sleep(1000);
 await c.send('Input.insertText',{text:'Apps Script'});
-await sleep(900);
+await sleep(1200);
 await c.send('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
 await c.send('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
-await sleep(7000);
+await sleep(8000);
 const after=await list();
 const candidates=[];
 for(const t of after){for(const re of [/script\.google\.com\/(?:u\/\d+\/)?home\/projects\/([A-Za-z0-9_-]{57})/,/script\.google\.com\/d\/([A-Za-z0-9_-]{57})(?:\/|$)/]){const m=t.url.match(re);if(m)candidates.push({id:m[1],title:t.title,url:t.url});}}
 try{c.ws.close()}catch{}
 const ids=[...new Set(candidates.map(x=>x.id))];
-console.log(JSON.stringify({ok:ids.length===1,stage:ids.length===1?'UNIQUE_BOUND_SCRIPT_ID':(ids.length?'MULTIPLE_BOUND_SCRIPT_IDS':'NO_BOUND_SCRIPT_ID'),ids,candidates,before:before.map(x=>({title:x.title,url:x.url,type:x.type})),after:after.map(x=>({title:x.title,url:x.url,type:x.type}))}));
+console.log(JSON.stringify({ok:ids.length===1,stage:ids.length===1?'UNIQUE_BOUND_SCRIPT_ID':(ids.length?'MULTIPLE_BOUND_SCRIPT_IDS':'NO_BOUND_SCRIPT_ID'),ready:readiness.ready,ids,candidates,before:before.map(x=>({title:x.title,url:x.url,type:x.type})),after:after.map(x=>({title:x.title,url:x.url,type:x.type}))}));
 '@
   Set-Content -LiteralPath $js -Value $code -Encoding UTF8
   try{
