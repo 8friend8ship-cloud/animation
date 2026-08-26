@@ -1,0 +1,112 @@
+{
+  "schema": "HD_ANIMATION_STYLE_UNIFIED_REGISTRY_V2",
+  "version": "2.0.0",
+  "effectiveAt": "2026-08-26T17:28:00+09:00",
+  "policy": {
+    "sourceOfTruth": "HISTORICAL_UNION_NOT_LATEST_ONLY",
+    "rule": "When integrating Animation Studio, inspect repository history/branches and preserve unique useful style capabilities from older versions. Do not treat latest main as the only style source.",
+    "recommendation": "Storyboard style recommendation uses scenario/TTS semantics, VTube learned history, active templates, and this full style registry. Never force fixed 5-second style changes.",
+    "promotion": "Historical styles are RESTORED_CANDIDATE until build/runtime/render QA; current verified templates retain their own status.",
+    "textRule": "Presentation/data styles use short labels, numbers, charts and concise phrases only; avoid text-heavy frames."
+  },
+  "historicalSources": [
+    {
+      "ref": "8b78cf4a25eee283aa6a1780b270615d30a15593",
+      "era": "2026-02-initial",
+      "advantages": ["blue-tie base persona", "red-tie teddy base persona", "15 direct visual styles", "simple style picker", "script/audio to scene foundation"]
+    },
+    {
+      "ref": "0c009982f7770630eef80c94b7696cf7a537c1f6",
+      "era": "2026-07-local-media",
+      "advantages": ["expanded categorized style library", "children drawing", "print/chalk styles", "IndexedDB media persistence", "MP4 export", "style persistence"]
+    },
+    {
+      "ref": "de74be7433d64498c87ea44a23a0f7a5ddf3d4d9",
+      "era": "2026-08-whiteboard",
+      "advantages": ["SRT/audio-driven whiteboard planning", "renderer integration", "completed-scene annotation workflow"]
+    },
+    {
+      "ref": "de24622fb053b6501e16ed37c4503c0edf69bf08",
+      "era": "2026-08-style-template-master",
+      "advantages": ["style template registry", "persona/camera/action/audio/subtitle rules", "T1/T2 linkage"]
+    },
+    {
+      "ref": "17d4b99754dafa8d00d0b788deb6f0a5126f37d8",
+      "era": "2026-08-hybrid",
+      "advantages": ["time-varying hybrid styles", "whiteboard+motion comic+Flow+kinetic+parallax mix", "timeline-based routing"]
+    }
+  ],
+  "styleFamilies": [
+    {
+      "family": "CHARACTER_ANIMATION",
+      "styles": [
+        {"id":"BLUE_TIE","nameKo":"블루 타이","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"RED_TIE_TEDDY","nameKo":"레드타이 테디","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"ANIME","nameKo":"애니메이션","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"CARTOON","nameKo":"카툰","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"PIXEL_ART","nameKo":"픽셀아트","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"STICK_FIGURE","nameKo":"막대인간","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"MOTION_COMIC","nameKo":"모션 코믹","source":"hybrid","status":"ACTIVE_CANDIDATE"}
+      ]
+    },
+    {
+      "family": "ART_ILLUSTRATION",
+      "styles": [
+        {"id":"CHILD_DRAWING","nameKo":"아이가 그린 그림","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"GHIBLI_LIKE","nameKo":"지브리풍","source":"historical","status":"RESTORED_CANDIDATE","rightsNote":"Use only abstract painterly/narrative traits; avoid direct imitation of protected characters/scenes."},
+        {"id":"SKETCH","nameKo":"스케치","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"WATERCOLOR","nameKo":"수채화","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"OIL_PAINT","nameKo":"유화","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"WOODBLOCK_PRINT","nameKo":"판화","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"POP_ART","nameKo":"팝아트","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"CHALKBOARD","nameKo":"칠판 낙서","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"WHITEBOARD_LIVE_DRAW","nameKo":"손그림 설명형","source":"current-template","status":"CANDIDATE"}
+      ]
+    },
+    {
+      "family": "THREED_TEXTURE_MOOD",
+      "styles": [
+        {"id":"THREE_D_RENDER","nameKo":"3D 렌더","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"CLAY","nameKo":"클레이","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"FILM_NOIR","nameKo":"필름 누아르","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"CYBERPUNK","nameKo":"사이버펑크","source":"historical","status":"RESTORED_CANDIDATE"},
+        {"id":"PHOTO_PARALLAX","nameKo":"포토 패럴랙스","source":"hybrid","status":"ACTIVE_CANDIDATE"},
+        {"id":"FLOW_CINEMATIC","nameKo":"Flow 시네마틱","source":"hybrid","status":"ACTIVE_CANDIDATE"}
+      ]
+    },
+    {
+      "family": "DATA_PRESENTATION",
+      "styles": [
+        {"id":"KINETIC_TEXT","nameKo":"키네틱 타이포","source":"hybrid","status":"ACTIVE_CANDIDATE","bestFor":["short question","number","headline","comparison"]},
+        {"id":"NOTEBOOKLM_EDU","nameKo":"NotebookLM 교육 슬라이드형","source":"new-unified","status":"NEW_CANDIDATE","bestFor":["education","brief","summary"]},
+        {"id":"PRESENTATION_PDF","nameKo":"프레젠테이션/PDF 요약형","source":"new-unified","status":"NEW_CANDIDATE","bestFor":["review","key points","before-after"]},
+        {"id":"DOCS_SHEETS_DATA","nameKo":"Docs/Sheets 데이터형","source":"new-unified","status":"NEW_CANDIDATE","bestFor":["numbers","chart","table","metric"]}
+      ]
+    },
+    {
+      "family": "DOMAIN_PRODUCTION",
+      "styles": [
+        {"id":"COOKING_CHARACTER_REAL","nameKo":"캐릭터+실사 요리","source":"current-template","status":"CANDIDATE"},
+        {"id":"DAILY_MEDITATION_SITCOM","nameKo":"일상묵상 가벼운 시트콤","source":"current-template","status":"CANDIDATE"},
+        {"id":"INTERIOR_WALKTHROUGH","nameKo":"인테리어 공간 워크스루","source":"current-template","status":"CANDIDATE"},
+        {"id":"INTERIOR_STORE_SHOWCASE","nameKo":"상업공간 쇼케이스","source":"current-template","status":"CANDIDATE"},
+        {"id":"INTERIOR_DESIGN_TO_REALITY","nameKo":"설계도→완성공간","source":"current-template","status":"CANDIDATE"}
+      ]
+    },
+    {
+      "family": "HYBRID",
+      "styles": [
+        {"id":"HYBRID_TIMELINE","nameKo":"하이브리드 타임라인","source":"hybrid","status":"ACTIVE_CANDIDATE","rule":"Mix styles by semantic/time blocks, not fixed interval."}
+      ]
+    }
+  ],
+  "storyboardSelectionRules": [
+    "Analyze full script and TTS first.",
+    "Retrieve VTube/Animation learned history and successful style combinations before recommending.",
+    "Select duration boundaries from semantic changes, narration pauses, information density, emotion and visual purpose; fixed 5-second cuts are prohibited.",
+    "Use data/presentation styles selectively for numbers, charts, comparisons, educational summaries and document-like review moments.",
+    "Keep presentation/data frames low-text: one headline or short phrase, one key number/chart/table focus, optional short label.",
+    "Allow multiple style families in one video and preserve persona/asset continuity across style transitions.",
+    "Natural-language bot and whiteboard patch modify only requested ranges/scenes; approved segments stay locked by default."
+  ]
+}
