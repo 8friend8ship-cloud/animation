@@ -1,0 +1,129 @@
+{
+  "schema": "HD_VTUBE_LEARNING_PIPELINE_V1",
+  "effectiveAt": "2026-08-26T12:00:00+09:00",
+  "canonicalSource": {
+    "kind": "DRIVE_VTUBE_JSON",
+    "rule": "Treat every production .vtube.json as immutable lineage source before derived assets.",
+    "observedFields": [
+      "id",
+      "projectName",
+      "sourceVideo.id",
+      "sourceVideo.title",
+      "sourceVideo.channelTitle",
+      "sourceVideo.thumbnailUrl",
+      "sourceVideo.statistics",
+      "sourceVideo.channelId",
+      "sourceVideo.transcript",
+      "sourceVideo.publishedAt",
+      "sourceVideo.subscriberCount",
+      "sourceVideo.performanceScore",
+      "sourceVideo.satisfactionScore",
+      "sourceVideo.cltScore",
+      "sourceVideo.tier",
+      "brief.thumbnail",
+      "brief.introScript",
+      "brief.strategy",
+      "brief.characterProposal",
+      "brief.fullScript",
+      "contentFormat",
+      "language",
+      "createdAt",
+      "characterImage",
+      "isCharacterLocked",
+      "thumbnailUrl",
+      "thumbnailStudioState.concept",
+      "thumbnailStudioState.baseImage",
+      "thumbnailStudioState.composedImage"
+    ]
+  },
+  "promotion": [
+    "VTUBE_JSON",
+    "QUEENS_RAW_OBSERVATION",
+    "SEED_REUSABLE_PATTERN",
+    "T1_GENERIC_SCENE_MOTION_IMAGE_STATE",
+    "T2_APP_PLATFORM_PERSONA_TTS_SUBTITLE_PUBLISH",
+    "VTUBE_PRODUCTION",
+    "QA_RESULT",
+    "RESEED_SUCCESS_ONLY"
+  ],
+  "queens": {
+    "keep": [
+      "source lineage",
+      "video/channel metrics with metric timestamp",
+      "transcript reference",
+      "scene timestamps",
+      "hook/problem/story/evidence/transition/CTA/ending",
+      "persona appearance/voice/gesture/gaze/face habits",
+      "shot/camera/lighting",
+      "motion combination",
+      "thumbnail visual prompt/copy/composition",
+      "style and platform observations"
+    ],
+    "rule": "Queens stores observations and evidence; it is not automatically a good template."
+  },
+  "seed": {
+    "promotionCriteria": [
+      "source lineage present",
+      "reusable across at least one new topic or project",
+      "actual result evidence present",
+      "quality/fit judged acceptable",
+      "rights/usage known",
+      "failure pattern excluded from positive seed"
+    ],
+    "types": [
+      "PERSONA",
+      "MOTION",
+      "MOTION_COMBO",
+      "STYLE",
+      "IMAGE_STATE",
+      "THUMBNAIL",
+      "SCRIPT_STRUCTURE",
+      "TTS_VOICE",
+      "LIPSYNC",
+      "EDIT",
+      "PLATFORM_OUTPUT",
+      "SERIES_CONTINUITY"
+    ]
+  },
+  "templates": {
+    "t1": "Provider-neutral generic scene/motion/image-state/story/edit pattern.",
+    "t2": "APP_ID/platform-specific persona, camera, TTS, subtitle, thumbnail, CTA, duration, aspect-ratio and publish package."
+  },
+  "imageLineage": {
+    "fields": [
+      "PROJECT_ID",
+      "SOURCE_JSON_ID",
+      "PERSONA_ID",
+      "SCENE_ID",
+      "STYLE_ID",
+      "PARENT_ASSET_ID",
+      "PROMPT",
+      "EDIT_HISTORY",
+      "QUALITY_SCORE",
+      "RIGHTS_USAGE",
+      "CONTENT_HASH",
+      "DRIVE_URL"
+    ],
+    "rule": "Embedded characterImage/base64 remains traceable to source JSON; externalize to Drive only when reuse/edit/runtime requires a standalone asset."
+  },
+  "apiTeacherPhase": {
+    "enabledForLearningTests": true,
+    "apis": {
+      "youtubeData": "metadata, metrics, channel/video verification",
+      "gemini": "analysis/QA teacher and comparison only",
+      "tts": "voice/pronunciation/timing benchmark"
+    },
+    "goal": "Measure API-vs-internal deltas, store successful methods as JSON/Seed/Templates, then move repeatable work to local/Drive/Apps Script/GitHub logic.",
+    "steadyState": "API gap/fallback only after parity verification; no front API keys."
+  },
+  "feedbackLoop": {
+    "success": "Store input, method, output, QA score, lineage and reusable guardrail; promote if criteria pass.",
+    "failure": "Store failed stage, root cause, wrong assumption, failed approach, minimal fix and retest evidence; never promote failed behavior as a positive Seed.",
+    "retest": "Same-condition x2 after a state-changing fix."
+  },
+  "series": {
+    "inherit": ["PERSONA_ID", "STYLE_ID", "VOICE_SEED_ID", "EDIT_TEMPLATE_ID", "PLATFORM_PROFILE"],
+    "vary": ["TOPIC", "HOOK", "SCENE_CONTENT", "CTA_VARIANT"],
+    "rule": "Series continuation reuses verified seeds and records episode-to-episode continuity deltas."
+  }
+}
