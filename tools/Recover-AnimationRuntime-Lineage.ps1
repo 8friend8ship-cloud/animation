@@ -4,6 +4,7 @@ param(
   [switch]$ChromeUrlOnly = $false,
   [switch]$CftBoundScriptRecovery = $false,
   [switch]$DeploymentInventory = $false,
+  [switch]$InteriorBackendE2E = $false,
   [string]$TargetDeploymentId = '',
   [string]$ChromeUrlPrefix = '',
   [string]$TargetSpreadsheetId = '',
@@ -59,6 +60,37 @@ function Invoke-DeploymentInventory {
   if($TargetDeploymentId -and $matches.Count -ne 1){exit 2}else{exit 0}
 }
 
+function Invoke-InteriorBackendE2E {
+  $endpoint='https://script.google.com/macros/s/AKfycbyuYK2lx8FY0asRtaUaGXt8ha6ayokrTdr3afDozPErnEV4E5APpJcfm3mNujpKkR65Gg/exec'
+  $fixture=[ordered]@{
+    project=[ordered]@{area=40;projectScope='full';buildingType='apartment';wants3DGeneration=$false}
+    context=[ordered]@{userRole='CONSUMER';tier='PRO';consumerMode='COMPARE';projectDomain='RESIDENTIAL_INTERIOR';buildingUse='RESIDENTIAL';templateMode='HOMEDESIGN_SIMPLE';requestId='INTERIOR_BACKEND_E2E_20260827'}
+    projectDomain='RESIDENTIAL_INTERIOR';buildingUse='RESIDENTIAL';domainPricingIsolation=$true;coverageGateRequired=$true
+  }
+  $actions=@('health','estimate','materials','schedule','render')
+  $results=@()
+  foreach($action in $actions){
+    try{
+      $payload=@{action=$action}
+      if($action -ne 'health'){foreach($k in $fixture.Keys){$payload[$k]=$fixture[$k]}}
+      $body=$payload|ConvertTo-Json -Depth 20 -Compress
+      $resp=Invoke-WebRequest -UseBasicParsing -Uri $endpoint -Method Post -ContentType 'application/json' -Body $body -TimeoutSec 30
+      $text=[string]$resp.Content
+      $json=$null;try{$json=$text|ConvertFrom-Json}catch{}
+      $results += [ordered]@{action=$action;http=[int]$resp.StatusCode;ok=([int]$resp.StatusCode -ge 200 -and [int]$resp.StatusCode -lt 300);json=$json;text=$(if($json){''}else{$text.Substring(0,[Math]::Min(1200,$text.Length))})}
+    }catch{
+      $results += [ordered]@{action=$action;http=0;ok=$false;error=$_.Exception.Message}
+    }
+  }
+  $internalNames=@('executionCost','executionUnitPrice','margin','marginRate','internalNote','subcontractorCost')
+  $leaks=@()
+  foreach($r in $results){$raw=($r|ConvertTo-Json -Depth 30 -Compress);foreach($n in $internalNames){if($raw -match ('"'+[regex]::Escape($n)+'"\s*:')){$leaks+=[ordered]@{action=$r.action;field=$n}}}}
+  $healthOk=@($results|Where-Object{$_.action -eq 'health' -and $_.ok}).Count -eq 1
+  $out=[ordered]@{ok=$healthOk;action='INTERIOR_BACKEND_LIVE_E2E';endpoint=$endpoint;fixture='40PY_CONSUMER_PRO_COMPARE';results=$results;clientInternalLeakCount=$leaks.Count;leaks=$leaks;at=(Get-Date).ToString('o')}
+  $out|ConvertTo-Json -Depth 40 -Compress
+  if($healthOk){exit 0}else{exit 2}
+}
+
 function Invoke-Previous {
   $h=@{'User-Agent'='HomeDesign-Chrome-Worker';'Accept'='application/vnd.github+json'}
   $u='https://api.github.com/repos/'+$Repo+'/contents/'+$ScriptPath+'?ref='+$PreviousCommit
@@ -84,5 +116,6 @@ function Invoke-Previous {
   exit $code
 }
 
+if($InteriorBackendE2E){Invoke-InteriorBackendE2E}
 if($DeploymentInventory){Invoke-DeploymentInventory}
 Invoke-Previous
