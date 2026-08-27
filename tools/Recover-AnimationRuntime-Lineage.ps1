@@ -4,7 +4,9 @@ param(
   [switch]$ChromeUrlOnly = $false,
   [switch]$CftBoundScriptRecovery = $false,
   [switch]$DeploymentInventory = $false,
+  [switch]$ExactScriptDeployments = $false,
   [switch]$InteriorBackendE2E = $false,
+  [string]$ExactScriptId = '',
   [string]$TargetDeploymentId = '',
   [string]$ChromeUrlPrefix = '',
   [string]$TargetSpreadsheetId = '',
@@ -34,6 +36,21 @@ function Resolve-DriveFsParent {
   try{foreach($d in [IO.DriveInfo]::GetDrives()){$r=[string]$d.RootDirectory.FullName;if($r){$roots+=@((Join-Path $r '내 드라이브'),(Join-Path $r 'My Drive'))}}}catch{}
   foreach($root in @($roots|Select-Object -Unique)){try{if(Test-Path -LiteralPath (Join-Path $root $target)){return $root}}catch{}}
   return ''
+}
+
+function Invoke-ExactScriptDeployments {
+  if(-not $ExactScriptId){throw 'EXACT_SCRIPT_ID_REQUIRED'}
+  $work=Join-Path $env:TEMP ('AppsScriptExactDeployments-'+[guid]::NewGuid().ToString('N'))
+  New-Item -ItemType Directory -Force -Path $work|Out-Null
+  Set-Content -LiteralPath (Join-Path $work '.clasp.json') -Value ('{"scriptId":"'+$ExactScriptId+'","rootDir":"."}') -Encoding UTF8
+  Push-Location $work
+  try{
+    $depText=(& npx --yes '@google/clasp@latest' deployments 2>&1 | Out-String)
+    $depRc=$LASTEXITCODE
+  } finally { Pop-Location; Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue }
+  $deploymentIds=@([regex]::Matches($depText,'AKfy[A-Za-z0-9_-]+')|ForEach-Object{$_.Value}|Select-Object -Unique)
+  [ordered]@{ok=($depRc -eq 0);action='EXACT_APPS_SCRIPT_DEPLOYMENTS';scriptId=$ExactScriptId;deploymentsExit=$depRc;deploymentIds=$deploymentIds;deployments=$depText.Trim();at=(Get-Date).ToString('o')}|ConvertTo-Json -Depth 20 -Compress
+  exit 0
 }
 
 function Invoke-DeploymentInventory {
@@ -115,6 +132,7 @@ function Invoke-Previous {
   exit $code
 }
 
+if($ExactScriptDeployments){Invoke-ExactScriptDeployments}
 if($InteriorBackendE2E){Invoke-InteriorBackendE2E}
 if($DeploymentInventory){Invoke-DeploymentInventory}
 Invoke-Previous
