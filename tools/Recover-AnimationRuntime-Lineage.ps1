@@ -3,6 +3,8 @@ param(
   [switch]$ListOnly = $false,
   [switch]$ChromeUrlOnly = $false,
   [switch]$CftBoundScriptRecovery = $false,
+  [switch]$DeploymentInventory = $false,
+  [string]$TargetDeploymentId = '',
   [string]$ChromeUrlPrefix = '',
   [string]$TargetSpreadsheetId = '',
   [string]$TargetCodePattern = '',
@@ -33,6 +35,30 @@ function Resolve-DriveFsParent {
   return ''
 }
 
+function Invoke-DeploymentInventory {
+  $listText=(& npx --yes '@google/clasp@latest' list 2>&1 | Out-String)
+  $listRc=$LASTEXITCODE
+  if($listRc -ne 0){throw ('CLASP_LIST_FAILED rc='+$listRc+' output='+$listText.Trim())}
+  $ids=@([regex]::Matches($listText,'https://script\.google\.com/d/([A-Za-z0-9_-]{20,})/edit')|ForEach-Object{$_.Groups[1].Value}|Select-Object -Unique)
+  $projects=@()
+  foreach($id in $ids){
+    $work=Join-Path $env:TEMP ('AppsScriptDeploymentInventory-'+$id.Substring(0,[Math]::Min(8,$id.Length))+'-'+[guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Force -Path $work|Out-Null
+    Set-Content -LiteralPath (Join-Path $work '.clasp.json') -Value ('{"scriptId":"'+$id+'","rootDir":"."}') -Encoding UTF8
+    Push-Location $work
+    try{
+      $depText=(& npx --yes '@google/clasp@latest' deployments 2>&1 | Out-String)
+      $depRc=$LASTEXITCODE
+    } finally { Pop-Location; Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue }
+    $match=$false
+    if($TargetDeploymentId){$match=($depText -match [regex]::Escape($TargetDeploymentId))}
+    $projects += [ordered]@{scriptId=$id;deploymentsExit=$depRc;deploymentMatch=[bool]$match;deployments=$depText.Trim()}
+  }
+  $matches=@($projects|Where-Object{$_.deploymentMatch})
+  [ordered]@{ok=($listRc -eq 0);action='APPS_SCRIPT_DEPLOYMENT_INVENTORY';targetDeploymentId=$TargetDeploymentId;projectCount=$projects.Count;matchCount=$matches.Count;matches=$matches;projects=$projects;listText=$listText.Trim();at=(Get-Date).ToString('o')}|ConvertTo-Json -Depth 20 -Compress
+  if($TargetDeploymentId -and $matches.Count -ne 1){exit 2}else{exit 0}
+}
+
 function Invoke-Previous {
   $h=@{'User-Agent'='HomeDesign-Chrome-Worker';'Accept'='application/vnd.github+json'}
   $u='https://api.github.com/repos/'+$Repo+'/contents/'+$ScriptPath+'?ref='+$PreviousCommit
@@ -58,4 +84,5 @@ function Invoke-Previous {
   exit $code
 }
 
+if($DeploymentInventory){Invoke-DeploymentInventory}
 Invoke-Previous
