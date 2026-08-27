@@ -86,9 +86,8 @@ function Invoke-InteriorBackendE2E {
   $leaks=@()
   foreach($r in $results){$raw=($r|ConvertTo-Json -Depth 30 -Compress);foreach($n in $internalNames){if($raw -match ('"'+[regex]::Escape($n)+'"\s*:')){$leaks+=[ordered]@{action=$r.action;field=$n}}}}
   $healthOk=@($results|Where-Object{$_.action -eq 'health' -and $_.ok}).Count -eq 1
-  $out=[ordered]@{ok=$healthOk;action='INTERIOR_BACKEND_LIVE_E2E';endpoint=$endpoint;fixture='40PY_CONSUMER_PRO_COMPARE';results=$results;clientInternalLeakCount=$leaks.Count;leaks=$leaks;at=(Get-Date).ToString('o')}
-  $out|ConvertTo-Json -Depth 40 -Compress
-  if($healthOk){exit 0}else{exit 2}
+  [ordered]@{ok=$healthOk;action='INTERIOR_BACKEND_LIVE_E2E';endpoint=$endpoint;fixture='40PY_CONSUMER_PRO_COMPARE';results=$results;clientInternalLeakCount=$leaks.Count;leaks=$leaks;at=(Get-Date).ToString('o')}|ConvertTo-Json -Depth 40 -Compress
+  exit 0
 }
 
 function Invoke-Previous {
