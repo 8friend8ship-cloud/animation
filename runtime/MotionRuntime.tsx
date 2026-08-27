@@ -1,0 +1,351 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+
+type MotionPrimitive = { MOTION_ID?: string; [key: string]: unknown };
+type MotionCue = {
+  START_MS?: number | string; END_MS?: number | string; MOTION_ID?: string;
+  ASSET_URL?: string; ASSET_ID?: string; CAPTION_ID?: string; CAPTION_TEXT?: string;
+  VISEME_ID?: string; EXPRESSION_ID?: string; GESTURE_ID?: string; Z_INDEX?: number | string;
+  [key: string]: unknown;
+};
+type MotionPack = {
+  schema?: string; extensionSchema?: string; personaId?: string; locale?: string;
+  primitives?: MotionPrimitive[]; cues?: MotionCue[];
+  visemes?: Record<string, unknown>[]; expressions?: Record<string, unknown>[];
+  capability?: Record<string, boolean>; validation?: { ok?: boolean; errors?: string[] };
+  animationTemplate?: Record<string, unknown> | null;
+  animationAssets?: Record<string, unknown>[];
+  assetReadiness?: { required?: string[]; ready?: string[]; missing?: string[]; needsGeneration?: string[]; renderReady?: boolean };
+};
+type ControlState = { viseme: string; expression: string; gesture: string; motion: string };
+
+const DEFAULT_PERSONA_ID = 'P-TEST-F20-GREETING-001';
+const MASTER_URL = 'https://drive.google.com/uc?export=download&id=1sDCOum2hVwkcFNCnqMtXAmiZIinlNAwB';
+
+function ms(v: unknown) { return Number(v || 0); }
+function text(v: unknown, fallback = '') { return typeof v === 'string' && v ? v : fallback; }
+function mouthShape(viseme: string) {
+  const v = viseme.toUpperCase();
+  if (v.includes('M') || v.includes('P') || v.includes('B')) return { rx: 22, ry: 3 };
+  if (v.includes('U') || v.includes('O')) return { rx: 10, ry: 15 };
+  if (v.includes('I') || v.includes('E')) return { rx: 25, ry: 8 };
+  if (v.includes('A')) return { rx: 18, ry: 18 };
+  return { rx: 18, ry: 5 };
+}
+
+const CONTROL_TEST_PACK: MotionPack = {
+  schema: 'MOTION_CONNECTION_PACK_V1', personaId: DEFAULT_PERSONA_ID, locale: 'ko-KR',
+  primitives: [{ MOTION_ID: 'MOTION_SPEAK_IDLE' }, { MOTION_ID: 'MOTION_HEAD_NOD' }],
+  cues: [
+    { START_MS: 0, END_MS: 1200, MOTION_ID: 'MOTION_SPEAK_IDLE', VISEME_ID: 'M', EXPRESSION_ID: 'EXPLAIN_CALM', GESTURE_ID: 'MICRO_GESTURE', CAPTION_TEXT: '입술 닫힘 / 차분한 표정' },
+    { START_MS: 1200, END_MS: 2400, MOTION_ID: 'MOTION_HEAD_NOD', VISEME_ID: 'A', EXPRESSION_ID: 'EXPLAIN', GESTURE_ID: 'SMALL_NOD', CAPTION_TEXT: '아 발음 / 설명 표정' },
+    { START_MS: 2400, END_MS: 3600, MOTION_ID: 'MOTION_SPEAK_IDLE', VISEME_ID: 'I', EXPRESSION_ID: 'HAPPY', GESTURE_ID: 'OPEN_PALM', CAPTION_TEXT: '이 발음 / 밝은 표정' },
+    { START_MS: 3600, END_MS: 4800, MOTION_ID: 'MOTION_HEAD_TURN', VISEME_ID: 'U', EXPRESSION_ID: 'THINKING', GESTURE_ID: 'POINT', CAPTION_TEXT: '우 발음 / 생각 표정' }
+  ]
+};
+
+function FaceControlRig({ state }: { state: ControlState }) {
+  const mouth = mouthShape(state.viseme);
+  const happy = /HAPPY|EXPLAIN/.test(state.expression.toUpperCase());
+  const thinking = state.expression.toUpperCase().includes('THINK');
+  return <div className="rounded-2xl border border-slate-700 bg-slate-900/90 p-3">
+    <div className="mb-2 flex items-center justify-between"><b className="text-sm">Face / Lip Control Test Rig</b><span className="text-xs text-amber-300">TEST_RIG</span></div>
+    <svg viewBox="0 0 220 180" className="mx-auto h-44 w-56" role="img" aria-label="표정과 입술 제어 테스트 리그">
+      <ellipse cx="110" cy="90" rx="76" ry="82" fill="#f1c7a5"/>
+      <path d={thinking ? 'M58 57 Q80 45 96 58' : 'M58 58 Q78 54 96 58'} stroke="#38251f" strokeWidth="6" fill="none"/>
+      <path d={happy ? 'M124 58 Q145 50 164 58' : 'M124 58 Q145 54 164 58'} stroke="#38251f" strokeWidth="6" fill="none"/>
+      <ellipse cx="78" cy="82" rx="8" ry={happy ? 5 : 9} fill="#222"/>
+      <ellipse cx="144" cy="82" rx="8" ry={happy ? 5 : 9} fill="#222"/>
+      <ellipse cx="110" cy="130" rx={mouth.rx} ry={mouth.ry} fill="#7f1d1d"/>
+      <text x="110" y="172" textAnchor="middle" fill="#cbd5e1" fontSize="10">{state.expression} · {state.viseme}</text>
+    </svg>
+    <div className="grid grid-cols-2 gap-2 text-xs">
+      <span>VISEME: {state.viseme}</span><span>EXPRESSION: {state.expression}</span>
+      <span>GESTURE: {state.gesture}</span><span>MOTION: {state.motion}</span>
+    </div>
+  </div>;
+}
+
+export default function MotionRuntime() {
+  const runtimeEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
+  const [packUrl, setPackUrl] = useState(runtimeEnv?.VITE_MOTION_PACK_URL || '');
+  const [masterUrl, setMasterUrl] = useState(MASTER_URL);
+  const [personaId, setPersonaId] = useState(DEFAULT_PERSONA_ID);
+  const [templateType, setTemplateType] = useState('GREETING');
+  const [fps, setFps] = useState(24);
+  const [stepFrames, setStepFrames] = useState([18, 24, 30, 24]);
+  const [transitionFrames, setTransitionFrames] = useState(6);
+  const [voiceDurationMs, setVoiceDurationMs] = useState(5000);
+  const [scriptText, setScriptText] = useState('안녕하세요. 좋은 하루예요.');
+  const [styleId, setStyleId] = useState('REAL_PERSONA');
+  const [dynamicDensity, setDynamicDensity] = useState<'AUTO'|'LOW'|'MEDIUM'|'HIGH'>('AUTO');
+  const [sectionMode, setSectionMode] = useState<'AUTO'|'MANUAL'>('AUTO');
+  const [sectionPlan, setSectionPlan] = useState<{text:string;durationMs:number;density:string;keyCount:number;frames:number}[]>([]);
+  const [pack, setPack] = useState<MotionPack | null>(null);
+  const [packSource, setPackSource] = useState<'NONE'|'BRIDGE'|'TEST_RIG'>('NONE');
+  const [now, setNow] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [voice, setVoice] = useState<SpeechSynthesisVoice | null>(null);
+  const [error, setError] = useState('');
+  const started = useRef(0);
+
+  useEffect(() => {
+    const onVoices = () => {
+      const voices = window.speechSynthesis?.getVoices?.() || [];
+      setVoice(voices.find(v => v.lang.toLowerCase().startsWith('ko')) || null);
+    };
+    onVoices();
+    speechSynthesis?.addEventListener?.('voiceschanged', onVoices);
+    return () => speechSynthesis?.removeEventListener?.('voiceschanged', onVoices);
+  }, []);
+
+  const rawCues = useMemo(() => (pack?.cues || []).slice().sort((a,b) => ms(a.START_MS)-ms(b.START_MS)), [pack]);
+  const cues = useMemo(() => {
+    let cursor = 0;
+    return rawCues.map((cue, index) => {
+      const hold = Math.max(1, stepFrames[index] || stepFrames[index % stepFrames.length] || 1);
+      const frames = hold + (index < rawCues.length - 1 ? transitionFrames : 0);
+      const start = cursor * 1000 / fps;
+      cursor += frames;
+      return { ...cue, START_MS: start, END_MS: cursor * 1000 / fps };
+    });
+  }, [rawCues, fps, stepFrames, transitionFrames]);
+  const activeCues = cues.filter(c => now >= ms(c.START_MS) && now <= ms(c.END_MS)).sort((a,b) => ms(a.Z_INDEX)-ms(b.Z_INDEX));
+  const active = activeCues.at(-1);
+  const stageIndex = Math.max(0, active ? cues.indexOf(active) : 0) % 4;
+  const spritePositions = ['0% 0%', '100% 0%', '0% 100%', '100% 100%'];
+  const transitionMs = Math.round(transitionFrames * 1000 / fps);
+  const controls: ControlState = {
+    motion: text(active?.MOTION_ID, 'MOTION_SPEAK_IDLE'),
+    viseme: text(active?.VISEME_ID, 'VISEME_MISSING'),
+    expression: text(active?.EXPRESSION_ID, 'EXPRESSION_MISSING'),
+    gesture: text(active?.GESTURE_ID, 'GESTURE_MISSING')
+  };
+  const duration = Math.max(packSource === 'TEST_RIG' ? 4800 : 12000, ...cues.map(c => ms(c.END_MS)));
+  const hasControlIds = cues.some(c => c.VISEME_ID) && cues.some(c => c.EXPRESSION_ID) && cues.some(c => c.GESTURE_ID);
+  const hasRenderableFaceMap = cues.some(c => c.VISEME_ASSET_URL || c.EXPRESSION_ASSET_URL || c.FACE_RIG_ID);
+  const faceStatus = packSource === 'TEST_RIG' ? 'CONTROL_TEST_READY' : hasControlIds && hasRenderableFaceMap ? 'PERSONA_FACE_READY' : hasControlIds ? 'ID_ONLY_NO_FACE_MAP' : 'CONTROL_DATA_MISSING';
+
+  useEffect(() => {
+    if (!playing) return;
+    const id = window.setInterval(() => {
+      const t = performance.now() - started.current;
+      if (t >= duration) { setPlaying(false); setNow(0); return; }
+      setNow(t);
+    }, 40);
+    return () => clearInterval(id);
+  }, [playing, duration]);
+
+  async function loadPack() {
+    setError('');
+    if (!packUrl) { setError('Apps Script Web App URL을 입력하세요.'); return; }
+    try {
+      const url = new URL(packUrl);
+      url.searchParams.set('projectId', personaId === 'P-TEST-F20-GREETING-001' ? 'F20_GREETING_TEST_001' : templateType === 'DANCE' ? 'DRYWRITER_DANCE_TEST_001' : 'DRYWRITER_PERSONA_EXPLAIN_001');
+      url.searchParams.set('personaId', personaId);
+      url.searchParams.set('locale', 'ko-KR');
+      url.searchParams.set('mode', 'AVATAR');
+      url.searchParams.set('templateType', templateType);
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error('Motion Pack HTTP ' + res.status);
+      const data = await res.json();
+      if (data.schema !== 'MOTION_CONNECTION_PACK_V1') throw new Error('지원하지 않는 Motion Pack schema');
+      if (data.personaId && data.personaId !== personaId) throw new Error('Persona ID 불일치');
+      setPack(data); setPackSource('BRIDGE'); setNow(0);
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+  }
+
+  function applyVoiceAutoPlan() {
+    setError('');
+    const policies: Record<string,{interval:number,minKeys:number,maxKeys:number,transition:number,outputFps:number}> = {
+      REAL_PERSONA:{interval:575,minKeys:6,maxKeys:16,transition:8,outputFps:24},
+      WEBTOON:{interval:1000,minKeys:4,maxKeys:10,transition:3,outputFps:24},
+      STICKMAN:{interval:675,minKeys:5,maxKeys:14,transition:3,outputFps:24},
+      WHITEBOARD:{interval:1000,minKeys:4,maxKeys:10,transition:1,outputFps:30},
+      TEXT_MOTION:{interval:500,minKeys:6,maxKeys:18,transition:6,outputFps:30},
+      GENERAL_BACKGROUND:{interval:1250,minKeys:3,maxKeys:8,transition:8,outputFps:24}
+    };
+    const policy = policies[styleId];
+    if (!policy) { setError('이 스타일은 ContentOS 샘플과 테스트가 필요합니다: '+styleId); return; }
+    const clauses = scriptText.trim().split(/(?<=[.!?。！？])/).map(value=>value.trim()).filter(Boolean);
+    const source = clauses.length ? clauses : [scriptText || ''];
+    const weights = source.map(value=>Math.max(1,value.replace(/\s/g,'').length));
+    const totalWeight = weights.reduce((a,b)=>a+b,0);
+    const merged: string[] = [];
+    let buffer = '', bufferWeight = 0;
+    source.forEach((value,index)=>{
+      buffer += (buffer ? ' ' : '') + value; bufferWeight += weights[index];
+      const estimated = voiceDurationMs * bufferWeight / totalWeight;
+      if (estimated >= 2500 || estimated >= 12000 || index === source.length-1) { merged.push(buffer); buffer=''; bufferWeight=0; }
+    });
+    const mergedWeights = merged.map(value=>Math.max(1,value.replace(/\s/g,'').length));
+    const mergedTotal = mergedWeights.reduce((a,b)=>a+b,0);
+    const planFps = policy.outputFps;
+    const nextTransition = policy.transition;
+    const sections = merged.map((value,index)=>{
+      const durationMs = index === merged.length-1
+        ? voiceDurationMs - mergedWeights.slice(0,index).reduce((sum,w)=>sum+Math.round(voiceDurationMs*w/mergedTotal),0)
+        : Math.round(voiceDurationMs*mergedWeights[index]/mergedTotal);
+      const actions = (value.match(/춤|걷|뛰|가리|돌|인사|손|고개|표정|웃|놀라|등장|전환/g)||[]).length;
+      const density = dynamicDensity === 'AUTO' ? (actions >= 3 ? 'HIGH' : actions === 0 ? 'LOW' : 'MEDIUM') : dynamicDensity;
+      const densityFactor = density === 'HIGH' ? 0.72 : density === 'LOW' ? 1.45 : 1;
+      const interval = policy.interval * densityFactor;
+      const localMin = density === 'LOW' ? Math.max(2,Math.ceil(policy.minKeys*0.5)) : policy.minKeys;
+      const keyCount = Math.max(localMin,Math.min(policy.maxKeys,Math.ceil(durationMs/interval)));
+      return {text:value,durationMs,density,keyCount,frames:Math.max(1,Math.round(durationMs*planFps/1000))};
+    });
+    const holds: number[] = [];
+    const expanded: MotionCue[] = [];
+    const sourceCues = (pack?.cues?.length ? pack.cues : CONTROL_TEST_PACK.cues) || [];
+    const motions = ['MOTION_SPEAK_IDLE','MOTION_BODY_LEAN','MOTION_HEAD_NOD','MOTION_HAND_EXPLAIN','MOTION_ARM_SWEEP','MOTION_HEAD_TURN'];
+    const visemes = ['VIS-KO-SIL','VIS-KO-A','VIS-KO-I','VIS-KO-MBP','VIS-KO-U'];
+    sections.forEach(section=>{
+      const transitionTotal = Math.max(0,section.keyCount-1)*nextTransition;
+      const holdTotal = Math.max(section.keyCount,section.frames-transitionTotal);
+      const base = Math.floor(holdTotal/section.keyCount);
+      let remainder = holdTotal%section.keyCount;
+      for(let index=0;index<section.keyCount;index++){
+        holds.push(base+(remainder-- > 0 ? 1 : 0));
+        const cue = sourceCues[index%Math.max(1,sourceCues.length)] || {};
+        expanded.push({...cue,MOTION_ID:motions[index%motions.length],VISEME_ID:visemes[index%visemes.length],
+          EXPRESSION_ID:section.density==='LOW'?'EXPLAIN_CALM':'EXPLAIN',GESTURE_ID:section.density+'_DYNAMIC',
+          CAPTION_TEXT:section.text,SECTION_INDEX:sections.indexOf(section)+1});
+      }
+    });
+    setFps(planFps); setTransitionFrames(nextTransition); setStepFrames(holds); setSectionPlan(sections);
+    setPack({...((pack || CONTROL_TEST_PACK)),cues:expanded}); setNow(0);
+  }
+
+  async function loadPhotoBackdata() {
+    setError('');
+    if (!packUrl) { setError('Apps Script Web App URL을 입력하세요.'); return; }
+    try {
+      const url = new URL(packUrl);
+      url.searchParams.set('action', 'photoToVideoPlan');
+      url.searchParams.set('photoAssetId', 'PHOTO-F20-GREETING-SPRITE-001');
+      url.searchParams.set('templateType', 'GREETING_4_STATE');
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error('Photo Backdata HTTP ' + res.status);
+      const data = await res.json();
+      if (data.schema !== 'PHOTO_TO_VIDEO_BACKDATA_V1') throw new Error('지원하지 않는 Photo Backdata schema');
+      if (!data.validation?.ok) throw new Error((data.validation?.errors || ['PHOTO_PLAN_INVALID']).join(' · '));
+      const planFps = Number(data.renderPlan?.FPS || 24);
+      setFps(planFps);
+      const nextFrames = (data.keyStates || []).slice(0,4).map((state: Record<string, unknown>)=>Number(state.FRAME_COUNT || 1));
+      if (nextFrames.length === 4) setStepFrames(nextFrames);
+      setTransitionFrames(Number(data.renderPlan?.TRANSITION_FRAMES || 0));
+      setPersonaId(String(data.photo?.PERSONA_ID || DEFAULT_PERSONA_ID));
+      if (data.photo?.PHOTO_URL) setMasterUrl(String(data.photo.PHOTO_URL));
+      let cursor = 0;
+      const nextCues = (data.keyStates || []).map((state: Record<string, unknown>) => {
+        const start = cursor * 1000 / planFps;
+        cursor += Number(state.FRAME_COUNT || 1);
+        return {
+          START_MS:start, END_MS:cursor * 1000 / planFps,
+          MOTION_ID:String(state.MOTION_ID || ''), EXPRESSION_ID:String(state.EXPRESSION_ID || ''),
+          VISEME_ID:String(state.VISEME_ID || ''), GESTURE_ID:String(state.STATE_ID || ''),
+          CAPTION_TEXT:String(data.renderPlan?.SCRIPT_TEXT || '')
+        };
+      });
+      setPack({
+        schema:'MOTION_CONNECTION_PACK_V1', extensionSchema:'PHOTO_TO_VIDEO_BACKDATA_V1',
+        personaId:String(data.photo?.PERSONA_ID || ''), locale:String(data.renderPlan?.LOCALE || 'ko-KR'),
+        cues:nextCues, primitives:[], validation:{ok:true,errors:[]},
+        capability:{photoBackdata:true,queensAnalysis:true,template1:true,template2:true,renderPlan:true}
+      });
+      setPackSource('BRIDGE'); setNow(0);
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+  }
+
+  function loadControlTest() { setPack(CONTROL_TEST_PACK); setPackSource('TEST_RIG'); setNow(0); setError(''); }
+  function play() { started.current = performance.now() - now; setPlaying(true); }
+  function speak() {
+    const u = new SpeechSynthesisUtterance('건조한작가입니다. 얼굴 표정과 입술 제어를 점검합니다.');
+    u.lang = 'ko-KR'; u.rate = 0.96; u.pitch = 0.98; if (voice) u.voice = voice;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }
+
+  const motionClass = controls.motion.toLowerCase().replace(/^motion_/, '').replaceAll('_','-');
+  return <section className="motion-runtime rounded-3xl border border-cyan-800 bg-slate-950 p-6 text-slate-100 shadow-2xl">
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div><p className="text-xs uppercase tracking-[0.25em] text-cyan-300">Motion Connection Runtime</p><h2 className="text-2xl font-black">{personaId} Frame Control</h2></div>
+      <span className="rounded-full bg-amber-900/60 px-3 py-1 text-xs">{packSource} · {faceStatus} · {pack?.validation?.ok === false ? 'PACK_INVALID' : pack ? 'PACK_VALID' : 'PACK_PENDING'}</span>
+    </div>
+    <div className="grid gap-4 lg:grid-cols-[.9fr_1.25fr_.8fr]">
+      <div className="rounded-2xl bg-slate-900 p-4">
+        <label className="mb-2 block text-xs text-slate-400">Motion Pack Web App URL</label>
+        <input value={packUrl} onChange={e=>setPackUrl(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm" placeholder="https://script.google.com/macros/s/.../exec" />
+        <label className="mb-2 block text-xs text-slate-400">Persona ID</label>
+        <input value={personaId} onChange={e=>setPersonaId(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm" />
+        <label className="mb-2 block text-xs text-slate-400">Animation Template Type</label>
+        <select value={templateType} onChange={e=>setTemplateType(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm">
+          {['EXPLAIN','GREETING','THINK','POINT','DANCE','LISTEN'].map(type=><option key={type}>{type}</option>)}
+        </select>
+        <div className="mb-3 rounded-xl bg-slate-800 p-3 text-xs">
+          <label className="mb-2 block">Animation Style
+            <select value={styleId} onChange={e=>setStyleId(e.target.value)} className="mt-1 w-full rounded bg-slate-700 p-2">
+              {['REAL_PERSONA','WEBTOON','STICKMAN','WHITEBOARD','TEXT_MOTION','GENERAL_BACKGROUND','BLUE_TIE'].map(style=><option key={style}>{style}</option>)}
+            </select>
+          </label>
+          <label className="mb-2 block">음성/텍스트<input value={scriptText} onChange={e=>setScriptText(e.target.value)} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
+          <label className="mb-2 block">음성 길이(ms)<input type="number" min="500" value={voiceDurationMs} onChange={e=>setVoiceDurationMs(Math.max(500,Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
+          <div className="mb-2 grid grid-cols-2 gap-2">
+            <label>섹션 설정<select value={sectionMode} onChange={e=>setSectionMode(e.target.value as 'AUTO'|'MANUAL')} className="mt-1 w-full rounded bg-slate-700 p-2"><option value="AUTO">자동 분할</option><option value="MANUAL">자동 후 수동조정</option></select></label>
+            <label>동적 요소량<select value={dynamicDensity} onChange={e=>setDynamicDensity(e.target.value as 'AUTO'|'LOW'|'MEDIUM'|'HIGH')} className="mt-1 w-full rounded bg-slate-700 p-2">{['AUTO','LOW','MEDIUM','HIGH'].map(v=><option key={v}>{v}</option>)}</select></label>
+          </div>
+          <button onClick={applyVoiceAutoPlan} className="mb-3 w-full rounded bg-fuchsia-500 p-2 font-bold text-white">스타일·음성 길이로 후보 프레임 계산</button>
+          <p className="mb-2 text-amber-300">CANDIDATE · 시험 렌더 2회 PASS 후 템플릿 승격</p>
+          {sectionPlan.length > 0 && <div className="mb-3 rounded bg-slate-950 p-2 text-xs"><b>자동 섹션 {sectionPlan.length}개</b>{sectionPlan.map((section,index)=><p key={index} className="mt-1 text-slate-300">#{index+1} · {(section.durationMs/1000).toFixed(1)}초 · {section.density} · 키 이미지 {section.keyCount}개 · {section.frames}프레임</p>)}</div>}
+          <div className="grid grid-cols-2 gap-2">
+            <label>FPS<input type="number" min="8" max="60" value={fps} onChange={e=>setFps(Math.max(8, Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
+            <label>전환 프레임<input type="number" min="0" max="30" value={transitionFrames} onChange={e=>setTransitionFrames(Math.max(0, Number(e.target.value)))} className="mt-1 w-full rounded bg-slate-700 p-2"/></label>
+          </div>
+          <p className="mb-1 mt-3 text-slate-400">{stepFrames.length}개 키 이미지 유지 프레임</p>
+          <div className="grid grid-cols-4 gap-1">{stepFrames.map((value,index)=><input aria-label={`step-${index+1}-frames`} key={index} type="number" min="1" max="240" value={value} onChange={e=>setStepFrames(current=>current.map((v,i)=>i===index?Math.max(1,Number(e.target.value)):v))} className="w-full rounded bg-slate-700 p-2"/>)}</div>
+          <p className="mt-2 text-cyan-300">총 {stepFrames.reduce((a,b)=>a+b,0) + Math.max(0,stepFrames.length-1)*transitionFrames} frames · {((stepFrames.reduce((a,b)=>a+b,0) + Math.max(0,stepFrames.length-1)*transitionFrames)/fps).toFixed(2)}s</p>
+          <p className="mt-1 text-slate-400">키 이미지 {stepFrames.length}개 · 구간당 연결 {transitionFrames}프레임</p>
+        </div>
+        <label className="mb-2 block text-xs text-slate-400">FULLBODY_REF_URL</label>
+        <input value={masterUrl} onChange={e=>setMasterUrl(e.target.value)} className="mb-3 w-full rounded-xl bg-slate-800 p-3 text-sm" />
+        <div className="flex flex-wrap gap-2">
+          <button onClick={loadPhotoBackdata} className="rounded-xl bg-sky-400 px-3 py-2 font-bold text-slate-950">Load Photo Backdata</button>
+          <button onClick={loadPack} className="rounded-xl bg-cyan-500 px-3 py-2 font-bold text-slate-950">Load Motion Pack</button>
+          <button onClick={loadControlTest} className="rounded-xl bg-amber-400 px-3 py-2 font-bold text-slate-950">Load Control Test</button>
+          <button onClick={play} disabled={!pack} className="rounded-xl bg-emerald-500 px-3 py-2 font-bold text-slate-950 disabled:opacity-40">Play</button>
+          <button onClick={speak} className="rounded-xl bg-violet-500 px-3 py-2 font-bold text-white">한국어 음성</button>
+        </div>
+        {error && <p className="mt-3 text-sm text-rose-300">{error}</p>}
+        <p className="mt-4 text-xs text-slate-400">TEST_RIG는 제어 엔진 검증용이며 실제 Persona 얼굴 합성 판정이 아닙니다. 실제 판정에는 viseme/expression 매핑과 얼굴 rig 또는 레이어 자산이 필요합니다.</p>
+        {pack?.capability && <div className="mt-3 grid grid-cols-2 gap-1 text-xs">{Object.entries(pack.capability).map(([key,value])=><span key={key} className={value ? 'text-emerald-300' : 'text-rose-300'}>{key}: {value ? 'READY' : 'HOLD'}</span>)}</div>}
+        {!!pack?.validation?.errors?.length && <p className="mt-2 text-xs text-rose-300">{pack.validation.errors.join(' · ')}</p>}
+        {pack?.assetReadiness && <div className="mt-3 rounded-xl bg-slate-800 p-2 text-xs">
+          <b>Asset Pack: {pack.assetReadiness.renderReady ? 'READY' : 'NEEDS_GENERATION'}</b>
+          <p className="mt-1 text-emerald-300">Ready: {(pack.assetReadiness.ready || []).join(', ') || '없음'}</p>
+          <p className="mt-1 text-amber-300">Missing: {(pack.assetReadiness.missing || []).join(', ') || '없음'}</p>
+        </div>}
+      </div>
+      <div className="relative min-h-[420px] overflow-hidden rounded-2xl bg-gradient-to-b from-cyan-950 to-slate-900">
+        {personaId === 'P-TEST-F20-GREETING-001'
+          ? <div aria-label="F20 greeting sprite persona" className={'persona-sprite '+motionClass} style={{backgroundImage:`url("${masterUrl}")`,backgroundPosition:spritePositions[stageIndex],transitionDuration:transitionMs+'ms'}} />
+          : <img src={masterUrl} alt="Fullbody persona" className={'persona '+motionClass} />}
+        <div className="absolute bottom-5 left-5 right-5 rounded-xl bg-black/70 p-3 text-center text-lg font-bold">{text(active?.CAPTION_TEXT, text(active?.CAPTION_ID, 'Motion Pack을 로드하세요.'))}</div>
+        <div className="absolute left-4 top-4 rounded-full bg-black/60 px-3 py-1 text-xs">{controls.motion} · {Math.round(now)}ms</div>
+      </div>
+      <FaceControlRig state={controls}/>
+    </div>
+    <style>{`
+      .motion-runtime .persona{display:block;max-height:390px;max-width:82%;margin:18px auto 42px;object-fit:contain;transform-origin:50% 85%;transition:transform 180ms ease,filter 180ms ease}
+      .motion-runtime .persona-sprite{height:390px;width:min(390px,82%);margin:18px auto 42px;background-size:200% 200%;background-repeat:no-repeat;transform-origin:50% 85%;transition-property:opacity,transform,filter;transition-timing-function:ease-in-out}
+      .motion-runtime .body-lean{transform:rotate(-3deg) translateX(-8px)}
+      .motion-runtime .arm-sweep,.motion-runtime .hand-explain{transform:rotate(2deg) translateX(10px) scale(1.015)}
+      .motion-runtime .head-turn{transform:rotate(1deg) translateX(5px)}
+      .motion-runtime .head-nod{transform:translateY(4px) scaleY(.99)}
+      .motion-runtime .speak-idle{filter:drop-shadow(0 0 12px rgba(34,211,238,.25))}
+      .motion-runtime .dance-bounce{animation:motion-dance-bounce .8s ease-in-out infinite}
+      .motion-runtime .dance-step-side{animation:motion-dance-step 1s ease-in-out infinite}
+      .motion-runtime .dance-arm-wave{animation:motion-dance-wave .9s ease-in-out infinite}
+      @keyframes motion-dance-bounce{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-14px) rotate(1deg) scale(1.02)}}
+      @keyframes motion-dance-step{0%,100%{transform:translateX(-16px) rotate(-2deg)}50%{transform:translateX(16px) rotate(2deg)}}
+      @keyframes motion-dance-wave{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(3deg) translateY(-8px)}}
+    `}</style>
+  </section>;
+}
