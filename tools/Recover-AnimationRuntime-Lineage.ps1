@@ -94,14 +94,11 @@ function Get-WorkerStageDir {
 function Invoke-InspectWorkerStaging {
   $stageDir=Get-WorkerStageDir
   $files=@()
-  if(Test-Path -LiteralPath $stageDir -PathType Container){
-    $files=@(Get-ChildItem -LiteralPath $stageDir -File -ErrorAction SilentlyContinue|ForEach-Object{[ordered]@{name=$_.Name;size=[int64]$_.Length;lastWrite=$_.LastWriteTime.ToString('o');path=$_.FullName}})
-  }
+  if(Test-Path -LiteralPath $stageDir -PathType Container){$files=@(Get-ChildItem -LiteralPath $stageDir -File -ErrorAction SilentlyContinue|ForEach-Object{[ordered]@{name=$_.Name;size=[int64]$_.Length;lastWrite=$_.LastWriteTime.ToString('o');path=$_.FullName}})}
   $result=Read-Json (Join-Path $stageDir 'result.json')
   $ack=Read-Json (Join-Path $stageDir 'ACK.json')
   $artifactFiles=@($files|Where-Object{$_.name -notin @('result.json','ACK.json') -and $_.name -notlike '*.crdownload' -and $_.size -gt 0})
-  $dedicated=@();try{$userData=Join-Path $env:LOCALAPPDATA 'HomeDesignAutomationV7\ChromeUserData';$dedicated=@(Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" -ErrorAction SilentlyContinue|Where-Object{$_.CommandLine -and ([string]$_.CommandLine).Contains($userData)}|ForEach-Object{[ordered]@{pid=[int]$_.ProcessId;commandLine=[string]$_.CommandLine}})}catch{}
-  [ordered]@{ok=$true;action='FLOW_WORKER_STAGING_READONLY';taskId=$WorkerTaskId;worker=$Worker;stageDir=$stageDir;stageExists=(Test-Path -LiteralPath $stageDir -PathType Container);files=$files;artifactFiles=$artifactFiles;result=$result;ack=$ack;dedicatedChrome=$dedicated;generationEvidence=([bool]$result -or @($artifactFiles).Count -gt 0);at=(Get-Date).ToString('o')}|ConvertTo-Json -Depth 30 -Compress
+  [ordered]@{ok=$true;action='FLOW_WORKER_STAGING_FILESYSTEM_ONLY';taskId=$WorkerTaskId;worker=$Worker;stageDir=$stageDir;stageExists=(Test-Path -LiteralPath $stageDir -PathType Container);files=$files;artifactFiles=$artifactFiles;result=$result;ack=$ack;generationEvidence=([bool]$result -or @($artifactFiles).Count -gt 0);at=(Get-Date).ToString('o')}|ConvertTo-Json -Depth 30 -Compress
   exit 0
 }
 
