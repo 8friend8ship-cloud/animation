@@ -7,6 +7,7 @@ param(
   [switch]$ExactScriptDeployments = $false,
   [switch]$InteriorBackendE2E = $false,
   [switch]$InspectWorkerStagingOnly = $false,
+  [switch]$FlowConnectivityOnly = $false,
   [string]$ExactScriptId = '',
   [string]$TargetDeploymentId = '',
   [string]$ChromeUrlPrefix = '',
@@ -32,6 +33,58 @@ $ScriptPath='tools/Recover-AnimationRuntime-Lineage.ps1'
 $PreviousCommit='b1867ff4ef0ed4c42fea2bbc5aab9d7761669beb'
 
 function Read-Json([string]$Path){if(-not(Test-Path -LiteralPath $Path)){return $null};try{return Get-Content -LiteralPath $Path -Raw -Encoding UTF8|ConvertFrom-Json}catch{return $null}}
+
+function Invoke-FlowConnectivityOnly {
+  $base=Join-Path $env:LOCALAPPDATA 'HomeDesignAutomationV7'
+  $userData=Join-Path $base 'ChromeUserData'
+  $cftRoot=Join-Path $base 'ChromeForTesting'
+  $notebookExtension=Join-Path $base 'Extension\NotebookLM-WebApp-Bridge'
+  $flowExtension=Join-Path $env:USERPROFILE 'Downloads\flow-agent-bridge-v0.1.0\flow-agent-bridge-v0.1.0'
+  $manager=Join-Path $base 'LocalAgent\capture\ManageChromeExtensionArtifacts.ps1'
+  $flowUrl='https://labs.google/fx/tools/flow'
+  $frontUrl='https://notebooklm-webapp-bridge.vercel.app'
+  $debugPort=9223
+  $task=$(if($WorkerTaskId){$WorkerTaskId}else{'FLOW_CONNECTIVITY_'+(Get-Date -Format 'yyyyMMdd_HHmmss')})
+  $killed=@();$flowChrome='';$flowPage=$null;$targets=@();$extensionLoadArg=$false;$loginRequired=$false;$captureExit=-1;$captureText='';$restoreOk=$false
+  function Find-CftChrome { return Get-ChildItem -LiteralPath $cftRoot -Recurse -Filter chrome.exe -File -ErrorAction SilentlyContinue|Sort-Object FullName -Descending|Select-Object -First 1 }
+  function Dedicated-Procs { try{return @(Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" -ErrorAction SilentlyContinue|Where-Object{$_.CommandLine -and ([string]$_.CommandLine).Contains($userData)})}catch{return @()} }
+  function Stop-Dedicated { $ids=@();foreach($p in @(Dedicated-Procs)){try{& taskkill.exe /PID ([int]$p.ProcessId) /T /F 2>$null|Out-Null;$ids += [int]$p.ProcessId}catch{}};Start-Sleep -Seconds 2;return @($ids) }
+  function Wait-Cdp([int]$Seconds=20){$end=(Get-Date).AddSeconds($Seconds);do{try{$v=Invoke-RestMethod -Uri ("http://127.0.0.1:$debugPort/json/version") -TimeoutSec 2;if($v.webSocketDebuggerUrl){return $true}}catch{};Start-Sleep -Milliseconds 500}while((Get-Date)-lt $end);return $false}
+  try{
+    if(-not(Test-Path -LiteralPath (Join-Path $flowExtension 'manifest.json') -PathType Leaf)){throw 'FLOW_EXTENSION_NOT_FOUND'}
+    if(-not(Test-Path -LiteralPath $manager -PathType Leaf)){throw 'CAPTUREBRIDGE_MANAGER_NOT_INSTALLED'}
+    $chrome=Find-CftChrome;if(-not $chrome){throw 'CFT_CHROME_EXE_NOT_FOUND'}
+    $killed=Stop-Dedicated
+    $args=@("--user-data-dir=$userData",'--profile-directory=Default',"--load-extension=$flowExtension",'--new-window','--no-first-run','--no-default-browser-check','--disable-session-crashed-bubble',"--remote-debugging-port=$debugPort",'--remote-debugging-address=127.0.0.1',$flowUrl)
+    Start-Process -FilePath $chrome.FullName -ArgumentList $args -WorkingDirectory $chrome.Directory.FullName|Out-Null
+    $flowChrome=$chrome.FullName
+    if(-not(Wait-Cdp 25)){throw 'FLOW_CFT_CDP_NOT_READY'}
+    $targets=@(Invoke-RestMethod -Uri ("http://127.0.0.1:$debugPort/json/list") -TimeoutSec 5)
+    $flowPage=$targets|Where-Object{$_.type -eq 'page' -and $_.url -and (([string]$_.url).Contains('labs.google') -or ([string]$_.url).Contains('/fx/tools/flow'))}|Select-Object -First 1
+    $loginRequired=(@($targets|Where-Object{$_.url -and ([string]$_.url).Contains('accounts.google.com')}).Count -gt 0)
+    $extensionLoadArg=(@(Dedicated-Procs|Where-Object{$_.CommandLine -and ([string]$_.CommandLine).Contains("--load-extension=$flowExtension")}).Count -gt 0)
+    $preDir=Join-Path $base 'WorkerStaging\Preflight';New-Item -ItemType Directory -Force -Path $preDir|Out-Null
+    $preFile=Join-Path $preDir ($task+'-flow-connectivity.json')
+    [ordered]@{taskId=$task;worker='FLOW';gate='CONNECTIVITY_ONLY';flowPageFound=[bool]$flowPage;extensionLoadArg=[bool]$extensionLoadArg;loginRequired=[bool]$loginRequired;creditSpend=$false;generationClicked=$false;at=(Get-Date).ToString('o')}|ConvertTo-Json|Set-Content -LiteralPath $preFile -Encoding UTF8
+    $oldEap=$ErrorActionPreference;$ErrorActionPreference='Continue'
+    try{$captureText=& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $manager -ServiceKey 'FlowMeta' -SourcePath $preFile -TaskId ($task+'_CONNECTIVITY') 2>&1|Out-String;$captureExit=$LASTEXITCODE}finally{$ErrorActionPreference=$oldEap}
+  } finally {
+    try{Stop-Dedicated|Out-Null}catch{}
+    try{
+      $chrome=Find-CftChrome
+      if($chrome -and (Test-Path -LiteralPath (Join-Path $notebookExtension 'manifest.json') -PathType Leaf)){
+        $restoreArgs=@("--user-data-dir=$userData",'--profile-directory=Default',"--load-extension=$notebookExtension",'--new-window','--no-first-run','--no-default-browser-check','--disable-session-crashed-bubble',$frontUrl)
+        Start-Process -FilePath $chrome.FullName -ArgumentList $restoreArgs -WorkingDirectory $chrome.Directory.FullName|Out-Null
+        Start-Sleep -Seconds 2
+        $restoreOk=(@(Dedicated-Procs).Count -gt 0)
+      }
+    }catch{$restoreOk=$false}
+  }
+  $pageReady=([bool]$flowPage -and -not [bool]$loginRequired)
+  $ok=([bool]$pageReady -and [bool]$extensionLoadArg -and $captureExit -eq 0 -and [bool]$restoreOk)
+  [ordered]@{ok=[bool]$ok;action='FLOW_CONNECTIVITY_ONLY';taskId=$task;flowUrl=$flowUrl;flowPageReady=[bool]$pageReady;loginRequired=[bool]$loginRequired;extensionPath=$flowExtension;extensionLoadArg=[bool]$extensionLoadArg;captureBridgeExit=$captureExit;captureBridge=$captureText.Trim();notebookRestored=[bool]$restoreOk;dedicatedChromeKilled=$killed;normalChromeUntouched=$true;creditSpend=$false;generationClicked=$false;targetCount=@($targets).Count;flowPage=$(if($flowPage){[ordered]@{title=[string]$flowPage.title;url=[string]$flowPage.url}}else{$null});at=(Get-Date).ToString('o')}|ConvertTo-Json -Depth 20 -Compress
+  if($ok){exit 0}else{exit 2}
+}
 
 function Invoke-ExactScriptDeployments {
   if(-not $ExactScriptId){throw 'EXACT_SCRIPT_ID_REQUIRED'}
@@ -161,6 +214,7 @@ function Invoke-Previous {
   & $tmp @invoke;$code=$LASTEXITCODE;Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue;exit $code
 }
 
+if($FlowConnectivityOnly){Invoke-FlowConnectivityOnly}
 if($ExactScriptDeployments){Invoke-ExactScriptDeployments}
 if($InteriorBackendE2E){Invoke-InteriorBackendE2E}
 if($DeploymentInventory){Invoke-DeploymentInventory}
