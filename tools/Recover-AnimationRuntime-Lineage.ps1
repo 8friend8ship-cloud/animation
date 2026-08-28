@@ -31,10 +31,20 @@ $ScriptPath='tools/Recover-AnimationRuntime-Lineage.ps1'
 $PreviousCommit='b1867ff4ef0ed4c42fea2bbc5aab9d7761669beb'
 
 function Resolve-DriveFsParent {
-  $target='00_중앙에이전트'
-  $roots=@('G:\내 드라이브','G:\My Drive','H:\내 드라이브','H:\My Drive','I:\내 드라이브','I:\My Drive')
-  try{foreach($d in [IO.DriveInfo]::GetDrives()){$r=[string]$d.RootDirectory.FullName;if($r){$roots+=@((Join-Path $r '내 드라이브'),(Join-Path $r 'My Drive'))}}}catch{}
-  foreach($root in @($roots|Select-Object -Unique)){try{if(Test-Path -LiteralPath (Join-Path $root $target)){return $root}}catch{}}
+  $target=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('MDBf7KSR7JWZ7JeQ7J207KCE7Yq4'))
+  $myDriveKo=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('64K0IOuTnOudvOydtOu4jA=='))
+  foreach($drive in @(Get-PSDrive -PSProvider FileSystem -ErrorAction SilentlyContinue)){
+    $r=[string]$drive.Root;if(-not $r){continue}
+    $parents=@($r,(Join-Path $r 'My Drive'),(Join-Path $r $myDriveKo),(Join-Path $r 'Google Drive'))
+    foreach($parent in @($parents|Select-Object -Unique)){
+      try{if(Test-Path -LiteralPath (Join-Path $parent $target)){return $parent}}catch{}
+    }
+  }
+  foreach($letter in @('G:\','H:\','I:\')){
+    foreach($parent in @((Join-Path $letter 'My Drive'),(Join-Path $letter $myDriveKo),(Join-Path $letter 'Google Drive'))){
+      try{if(Test-Path -LiteralPath (Join-Path $parent $target)){return $parent}}catch{}
+    }
+  }
   return ''
 }
 
@@ -124,7 +134,13 @@ function Invoke-Previous {
   if($WorkerTimeoutSeconds){$invoke['WorkerTimeoutSeconds']=[int]$WorkerTimeoutSeconds}
   if($ChromeWorkerDriveHandoff){
     $parent=Resolve-DriveFsParent
-    if($parent){try{New-PSDrive -Name 'HDCENTRAL' -PSProvider FileSystem -Root $parent -Scope Global -ErrorAction Stop|Out-Null;Write-Host ('DRIVEFS_PARENT='+$parent)}catch{}}
+    if($parent){
+      try{
+        if(Get-PSDrive -Name 'HDCENTRAL' -ErrorAction SilentlyContinue){Remove-PSDrive -Name 'HDCENTRAL' -Force -ErrorAction SilentlyContinue}
+        New-PSDrive -Name 'HDCENTRAL' -PSProvider FileSystem -Root $parent -Scope Global -ErrorAction Stop|Out-Null
+        Write-Host ('DRIVEFS_PARENT='+$parent)
+      }catch{Write-Host ('DRIVEFS_MAP_ERROR='+$_.Exception.Message)}
+    }else{Write-Host 'DRIVEFS_PARENT_NOT_FOUND'}
   }
   & $tmp @invoke
   $code=$LASTEXITCODE
