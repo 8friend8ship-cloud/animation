@@ -113,20 +113,20 @@ function Invoke-Previous {
   $r=Invoke-RestMethod -Uri $u -Headers $h -Method Get -TimeoutSec 20
   $tmp=Join-Path $env:TEMP ('Recover-AnimationRuntime-Lineage-worker-base-'+[guid]::NewGuid().ToString('N')+'.ps1')
   [IO.File]::WriteAllBytes($tmp,[Convert]::FromBase64String(([string]$r.content -replace '\s','')))
-  $args=@()
-  if($DryRun){$args+='-DryRun'};if($ListOnly){$args+='-ListOnly'};if($ChromeUrlOnly){$args+='-ChromeUrlOnly'};if($CftBoundScriptRecovery){$args+='-CftBoundScriptRecovery'}
-  if($ChromeUrlPrefix){$args+=@('-ChromeUrlPrefix',$ChromeUrlPrefix)};if($TargetSpreadsheetId){$args+=@('-TargetSpreadsheetId',$TargetSpreadsheetId)}
-  if($TargetCodePattern){$args+=@('-TargetCodePattern',$TargetCodePattern)};if($TargetNamePattern){$args+=@('-TargetNamePattern',$TargetNamePattern)}
-  if($TargetLabel){$args+=@('-TargetLabel',$TargetLabel)};if($CentralReadbackName){$args+=@('-CentralReadbackName',$CentralReadbackName)}
-  if($ChromeWorkerDriveHandoff){$args+='-ChromeWorkerDriveHandoff'}
-  if($Worker){$args+=@('-Worker',$Worker)};if($WorkerTaskId){$args+=@('-WorkerTaskId',$WorkerTaskId)};if($WorkerParentTaskId){$args+=@('-WorkerParentTaskId',$WorkerParentTaskId)}
-  if($WorkerAction){$args+=@('-WorkerAction',$WorkerAction)};if($WorkerPrompt){$args+=@('-WorkerPrompt',$WorkerPrompt)};if($WorkerTargetUrl){$args+=@('-WorkerTargetUrl',$WorkerTargetUrl)}
-  if($WorkerTimeoutSeconds){$args+=@('-WorkerTimeoutSeconds',[string]$WorkerTimeoutSeconds)}
+  $invoke=@{}
+  if($DryRun){$invoke['DryRun']=$true};if($ListOnly){$invoke['ListOnly']=$true};if($ChromeUrlOnly){$invoke['ChromeUrlOnly']=$true};if($CftBoundScriptRecovery){$invoke['CftBoundScriptRecovery']=$true}
+  if($ChromeUrlPrefix){$invoke['ChromeUrlPrefix']=$ChromeUrlPrefix};if($TargetSpreadsheetId){$invoke['TargetSpreadsheetId']=$TargetSpreadsheetId}
+  if($TargetCodePattern){$invoke['TargetCodePattern']=$TargetCodePattern};if($TargetNamePattern){$invoke['TargetNamePattern']=$TargetNamePattern}
+  if($TargetLabel){$invoke['TargetLabel']=$TargetLabel};if($CentralReadbackName){$invoke['CentralReadbackName']=$CentralReadbackName}
+  if($ChromeWorkerDriveHandoff){$invoke['ChromeWorkerDriveHandoff']=$true}
+  if($Worker){$invoke['Worker']=$Worker};if($WorkerTaskId){$invoke['WorkerTaskId']=$WorkerTaskId};if($WorkerParentTaskId){$invoke['WorkerParentTaskId']=$WorkerParentTaskId}
+  if($WorkerAction){$invoke['WorkerAction']=$WorkerAction};if($WorkerPrompt){$invoke['WorkerPrompt']=$WorkerPrompt};if($WorkerTargetUrl){$invoke['WorkerTargetUrl']=$WorkerTargetUrl}
+  if($WorkerTimeoutSeconds){$invoke['WorkerTimeoutSeconds']=[int]$WorkerTimeoutSeconds}
   if($ChromeWorkerDriveHandoff){
     $parent=Resolve-DriveFsParent
     if($parent){try{New-PSDrive -Name 'HDCENTRAL' -PSProvider FileSystem -Root $parent -Scope Global -ErrorAction Stop|Out-Null;Write-Host ('DRIVEFS_PARENT='+$parent)}catch{}}
   }
-  & $tmp @args
+  & $tmp @invoke
   $code=$LASTEXITCODE
   Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
   exit $code
