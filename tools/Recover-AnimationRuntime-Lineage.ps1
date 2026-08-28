@@ -6,6 +6,7 @@ param(
   [switch]$DeploymentInventory = $false,
   [switch]$ExactScriptDeployments = $false,
   [switch]$InteriorBackendE2E = $false,
+  [switch]$InspectWorkerStagingOnly = $false,
   [string]$ExactScriptId = '',
   [string]$TargetDeploymentId = '',
   [string]$ChromeUrlPrefix = '',
@@ -82,22 +83,41 @@ function Get-BaseScript([string]$TempPath){
   [IO.File]::WriteAllBytes($TempPath,[Convert]::FromBase64String(([string]$r.content -replace '\s','')))
 }
 
-function Invoke-ChromeWorkerStaged {
+function Get-WorkerStageDir {
   if(-not $WorkerTaskId){throw 'WORKER_TASK_ID_REQUIRED'}
   if(-not $Worker){throw 'WORKER_REQUIRED'}
   $base=Join-Path $env:LOCALAPPDATA 'HomeDesignAutomationV7'
-  $stagingCentral=Join-Path $base 'WorkerStaging\CentralRoot'
-  $stageDir=Join-Path (Join-Path (Join-Path $stagingCentral 'Worker_Results') $Worker) $WorkerTaskId
+  $central=Join-Path $base 'WorkerStaging\CentralRoot'
+  return (Join-Path (Join-Path (Join-Path $central 'Worker_Results') $Worker) $WorkerTaskId)
+}
+
+function Invoke-InspectWorkerStaging {
+  $stageDir=Get-WorkerStageDir
+  $files=@()
+  if(Test-Path -LiteralPath $stageDir -PathType Container){
+    $files=@(Get-ChildItem -LiteralPath $stageDir -File -ErrorAction SilentlyContinue|ForEach-Object{[ordered]@{name=$_.Name;size=[int64]$_.Length;lastWrite=$_.LastWriteTime.ToString('o');path=$_.FullName}})
+  }
+  $result=Read-Json (Join-Path $stageDir 'result.json')
+  $ack=Read-Json (Join-Path $stageDir 'ACK.json')
+  $artifactFiles=@($files|Where-Object{$_.name -notin @('result.json','ACK.json') -and $_.name -notlike '*.crdownload' -and $_.size -gt 0})
+  $dedicated=@();try{$userData=Join-Path $env:LOCALAPPDATA 'HomeDesignAutomationV7\ChromeUserData';$dedicated=@(Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" -ErrorAction SilentlyContinue|Where-Object{$_.CommandLine -and ([string]$_.CommandLine).Contains($userData)}|ForEach-Object{[ordered]@{pid=[int]$_.ProcessId;commandLine=[string]$_.CommandLine}})}catch{}
+  [ordered]@{ok=$true;action='FLOW_WORKER_STAGING_READONLY';taskId=$WorkerTaskId;worker=$Worker;stageDir=$stageDir;stageExists=(Test-Path -LiteralPath $stageDir -PathType Container);files=$files;artifactFiles=$artifactFiles;result=$result;ack=$ack;dedicatedChrome=$dedicated;generationEvidence=([bool]$result -or @($artifactFiles).Count -gt 0);at=(Get-Date).ToString('o')}|ConvertTo-Json -Depth 30 -Compress
+  exit 0
+}
+
+function Invoke-ChromeWorkerStaged {
+  $stageDir=Get-WorkerStageDir
   New-Item -ItemType Directory -Force -Path $stageDir|Out-Null
+  $base=Join-Path $env:LOCALAPPDATA 'HomeDesignAutomationV7'
+  $stagingCentral=Join-Path $base 'WorkerStaging\CentralRoot'
   $manager=Join-Path $base 'LocalAgent\capture\ManageChromeExtensionArtifacts.ps1'
   if(-not(Test-Path -LiteralPath $manager -PathType Leaf)){throw 'CAPTUREBRIDGE_MANAGER_NOT_INSTALLED'}
 
-  # Current central Drive availability is proved before any Flow generation is started.
   $preDir=Join-Path $base 'WorkerStaging\Preflight';New-Item -ItemType Directory -Force -Path $preDir|Out-Null
   $preFile=Join-Path $preDir ($WorkerTaskId+'-capture-preflight.json')
   [ordered]@{taskId=$WorkerTaskId;worker=$Worker;gate='PRE_GENERATION_CAPTUREBRIDGE';at=(Get-Date).ToString('o')}|ConvertTo-Json|Set-Content -LiteralPath $preFile -Encoding UTF8
-  $preOut=& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $manager -ServiceKey 'FlowMeta' -SourcePath $preFile -TaskId ($WorkerTaskId+'_PREFLIGHT') 2>&1|Out-String
-  $preRc=$LASTEXITCODE
+  $oldEap=$ErrorActionPreference;$ErrorActionPreference='Continue'
+  try{$preOut=& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $manager -ServiceKey 'FlowMeta' -SourcePath $preFile -TaskId ($WorkerTaskId+'_PREFLIGHT') 2>&1|Out-String;$preRc=$LASTEXITCODE}finally{$ErrorActionPreference=$oldEap}
   if($preRc -ne 0){[ordered]@{ok=$false;action='FLOW_WORKER_STAGED_PREFLIGHT';stage='CAPTUREBRIDGE_PREFLIGHT_FAILED';generationStarted=$false;preflightExit=$preRc;preflight=$preOut.Trim();at=(Get-Date).ToString('o')}|ConvertTo-Json -Depth 10 -Compress;exit 2}
 
   $tmp=Join-Path $env:TEMP ('Recover-AnimationRuntime-Lineage-worker-staged-'+[guid]::NewGuid().ToString('N')+'.ps1')
@@ -116,8 +136,8 @@ function Invoke-ChromeWorkerStaged {
   if($WorkerPrompt){$child+=@('-WorkerPrompt',$WorkerPrompt)}
   if($WorkerTargetUrl){$child+=@('-WorkerTargetUrl',$WorkerTargetUrl)}
   $child+=@('-WorkerTimeoutSeconds',[string]$WorkerTimeoutSeconds)
-  $childOut=& powershell.exe @child 2>&1|Out-String
-  $childRc=$LASTEXITCODE
+  $oldEap=$ErrorActionPreference;$ErrorActionPreference='Continue'
+  try{$childOut=& powershell.exe @child 2>&1|Out-String;$childRc=$LASTEXITCODE}finally{$ErrorActionPreference=$oldEap}
   Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
 
   $resultPath=Join-Path $stageDir 'result.json';$ackPath=Join-Path $stageDir 'ACK.json'
@@ -125,8 +145,8 @@ function Invoke-ChromeWorkerStaged {
   $mirrors=@();$mirrorOk=$true
   foreach($f in @(Get-ChildItem -LiteralPath $stageDir -File -ErrorAction SilentlyContinue|Where-Object{$_.Name -notlike '*.crdownload' -and $_.Length -gt 0})){
     $svc=$(if($f.Extension.ToLowerInvariant() -eq '.json'){'FlowMeta'}else{'Flow'})
-    $mout=& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $manager -ServiceKey $svc -SourcePath $f.FullName -TaskId $WorkerTaskId 2>&1|Out-String
-    $mrc=$LASTEXITCODE
+    $oldEap=$ErrorActionPreference;$ErrorActionPreference='Continue'
+    try{$mout=& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $manager -ServiceKey $svc -SourcePath $f.FullName -TaskId $WorkerTaskId 2>&1|Out-String;$mrc=$LASTEXITCODE}finally{$ErrorActionPreference=$oldEap}
     if($mrc -ne 0){$mirrorOk=$false}
     $mjson=$null;try{$mjson=($mout.Trim().Split("`n")|Select-Object -Last 1)|ConvertFrom-Json}catch{}
     $mirrors += [ordered]@{file=$f.Name;service=$svc;exit=$mrc;result=$mjson;raw=$(if($mjson){''}else{$mout.Trim()})}
@@ -147,5 +167,6 @@ function Invoke-Previous {
 if($ExactScriptDeployments){Invoke-ExactScriptDeployments}
 if($InteriorBackendE2E){Invoke-InteriorBackendE2E}
 if($DeploymentInventory){Invoke-DeploymentInventory}
+if($InspectWorkerStagingOnly){Invoke-InspectWorkerStaging}
 if($ChromeWorkerDriveHandoff){Invoke-ChromeWorkerStaged}
 Invoke-Previous
