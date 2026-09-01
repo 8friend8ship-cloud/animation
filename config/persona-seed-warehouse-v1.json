@@ -1,0 +1,25 @@
+{
+  "version": "PERSONA_SEED_WAREHOUSE_V1_20260901",
+  "warehouseSpreadsheetId": "110BTzmiDT6w3f4R9E4qcp0wzFX6g0dGluBlV-VFexdc",
+  "targets": {"personas": 2000, "seeds": 100000, "seedsPerPersona": 50},
+  "identityPolicy": {
+    "personaType": "SYNTHETIC_ONLY",
+    "realPersonPii": "FORBIDDEN",
+    "sensitiveInference": "FORBIDDEN",
+    "appearancePersonalityCoupling": "FORBIDDEN",
+    "visualDiversityAxes": ["country_code", "locale", "region_background", "skin_tone_band", "age_band", "gender"],
+    "independentAxes": ["occupation", "personality_archetype", "communication_style", "voice_style", "story_role"]
+  },
+  "consumers": {
+    "DRYWRITE": ["story_role", "communication_style", "personality_archetype", "story_hook"],
+    "VTUBE": ["persona_id", "language_pack", "voice_style", "motion_profile", "viseme", "emotion"],
+    "IMAGEPACK": ["persona_id", "skin_tone_band", "age_band", "gender", "occupation_visual", "continuity_key", "camera", "image_state"],
+    "STORYBOARD": ["story_role", "dialogue_pattern", "motion", "camera", "scene_context", "image_state"],
+    "ANIMATION": ["persona_id", "scene_id", "cut_id", "state_id", "style_id", "motion_profile"]
+  },
+  "pipeline": "QUEENS -> normalize -> PERSONA_MASTER -> reusable synthetic seed -> T1/T2 consumer template -> runtime QA -> Seed promotion",
+  "factualGate": "FACTUAL_OR_TREND_CLAIMS_REQUIRE_QUEENS_EVIDENCE",
+  "generationPolicy": "Synthetic persona/story/motion combinatorics may run without paid external APIs; factual enrichment remains Queens-first.",
+  "triggerPolicy": "REUSE_EXISTING_FACTORY_WAKE_ONLY; logical 10m due; NO_DUPLICATE_PHYSICAL_TRIGGER",
+  "qa": {"schemaReadback": "X2_REQUIRED_FOR_RUNTIME_COMPLETE", "personaSnapshot": "IMMUTABLE_WHEN_USED", "seedLineage": "PERSONA_ID_REQUIRED"}
+}
