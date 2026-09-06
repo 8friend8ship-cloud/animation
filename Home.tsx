@@ -7,6 +7,7 @@ import React, {ChangeEvent, useEffect, useRef, useState, useCallback} from 'reac
 import {GoogleGenAI, Modality, Type} from '@google/genai';
 import GIF from 'gif.js';
 import JSZip from 'jszip';
+import {createBrowserH264MP4Encoder} from './bridge/h264BrowserEncoder';
 import {
   ArrowLeft,
   Bot,
@@ -1388,8 +1389,7 @@ export default function Home() {
     try {
       if (!audioInfo) {
         // Fallback to fast offline silent MP4 generation using h264-mp4-encoder if there is no audio loaded
-        const { createH264MP4Encoder } = await import('h264-mp4-encoder');
-        const encoder = await createH264MP4Encoder();
+        const encoder = await createBrowserH264MP4Encoder();
         
         let videoWidth = currentCanvasDimensions.width;
         let videoHeight = currentCanvasDimensions.height;
