@@ -1,0 +1,100 @@
+{
+  "schema": "HD_VIDEO_QUEENS_STYLE_FIXTURE_PACK_V1",
+  "createdAt": "2026-09-08T07:37:00+09:00",
+  "purpose": "Render the same learned style on different topics and compare whether the reverse-engineered structure survives topic substitution.",
+  "renderPolicy": {
+    "mode": "deterministic_fallback_first",
+    "sourceFootage": "OWNED_GENERATED_ONLY",
+    "aspectRatio": "9:16",
+    "targetContainer": "mp4",
+    "targetCodec": "h264",
+    "qaReadback": 2,
+    "promotion": "AVG_STYLE_SCORE>=85 && CONSISTENCY>=85 && CRITICAL==0"
+  },
+  "fixtures": [
+    {
+      "content_id": "VQ_FIXTURE_METHOD_A_20260908",
+      "template_id": "T1-VIDEO-CREATOR-METHOD-INTERVIEW-DEMO-V1",
+      "style_family": "AI_FOREIGN_VIDEO_REFORM_WORKFLOW",
+      "topic": "7개 언어 여행영상 제작 자동화",
+      "format": "shorts",
+      "duration_sec": 42,
+      "persona_policy": "OWNED_HOST+NONIDENTICAL_EXPERT",
+      "scenes": [
+        {"scene_id":"S01","duration":4,"role":"PROOF_HOOK","caption":"영상 하나를 7개 언어로 바꿀 수 있을까?","visual_role":"host_closeup_plus_result_grid","motion":"proof_pop"},
+        {"scene_id":"S02","duration":4,"role":"PERSONAL_PROBLEM","caption":"번역·더빙·자막을 따로 하면 너무 느리다","visual_role":"host_interview","motion":"reaction_cut"},
+        {"scene_id":"S03","duration":4,"role":"CREDIBILITY_EVIDENCE","caption":"KO·EN·JA·ZH·ES·DE·HI 음성팩 준비","visual_role":"screen_proof","motion":"cursor_zoom"},
+        {"scene_id":"S04","duration":4,"role":"NICHE_DEMAND_PROOF","caption":"여행 영상은 국적별 설명이 달라야 한다","visual_role":"audience_cards","motion":"card_slide"},
+        {"scene_id":"S05","duration":4,"role":"SOURCE_DISCOVERY","caption":"먼저 여행 Seed와 장소 데이터를 불러온다","visual_role":"source_list","motion":"typing_slide"},
+        {"scene_id":"S06","duration":5,"role":"WORKFLOW_DEMO","caption":"대본→번역→음성→자막→영상 조립","visual_role":"timeline_demo","motion":"layer_build"},
+        {"scene_id":"S07","duration":5,"role":"EDIT_LAYER_PROOF","caption":"언어 트랙과 자막 트랙을 분리한다","visual_role":"editor_layers","motion":"track_highlight"},
+        {"scene_id":"S08","duration":4,"role":"RISK_POLICY_GATE","caption":"권리·사실·발음 검수 후 통과","visual_role":"qa_checklist","motion":"check_pop"},
+        {"scene_id":"S09","duration":4,"role":"SCALE_LOCALIZATION","caption":"통과한 구조만 다음 영상에 재사용","visual_role":"language_branch","motion":"branch"},
+        {"scene_id":"S10","duration":4,"role":"CTA","caption":"검증된 템플릿으로 바로 제작","visual_role":"cta","motion":"pulse"}
+      ]
+    },
+    {
+      "content_id": "VQ_FIXTURE_METHOD_B_20260908",
+      "template_id": "T1-VIDEO-CREATOR-METHOD-INTERVIEW-DEMO-V1",
+      "style_family": "AI_FOREIGN_VIDEO_REFORM_WORKFLOW",
+      "topic": "인테리어 견적 자동화 제작 과정",
+      "format": "shorts",
+      "duration_sec": 42,
+      "persona_policy": "OWNED_HOST+NONIDENTICAL_EXPERT",
+      "scenes": [
+        {"scene_id":"S01","duration":4,"role":"PROOF_HOOK","caption":"평면도 하나가 견적표로 바뀐다면?","visual_role":"host_closeup_plus_before_after","motion":"proof_pop"},
+        {"scene_id":"S02","duration":4,"role":"PERSONAL_PROBLEM","caption":"자재를 하나씩 세면 누락이 생긴다","visual_role":"host_interview","motion":"reaction_cut"},
+        {"scene_id":"S03","duration":4,"role":"CREDIBILITY_EVIDENCE","caption":"공간·자재·수량을 같은 ID로 연결","visual_role":"screen_proof","motion":"cursor_zoom"},
+        {"scene_id":"S04","duration":4,"role":"NICHE_DEMAND_PROOF","caption":"견적은 빠르면서도 근거가 보여야 한다","visual_role":"metric_cards","motion":"card_slide"},
+        {"scene_id":"S05","duration":4,"role":"SOURCE_DISCOVERY","caption":"인테리어팩과 자재 Seed 호출","visual_role":"source_list","motion":"typing_slide"},
+        {"scene_id":"S06","duration":5,"role":"WORKFLOW_DEMO","caption":"평면→자재→수량→단가→견적","visual_role":"timeline_demo","motion":"layer_build"},
+        {"scene_id":"S07","duration":5,"role":"EDIT_LAYER_PROOF","caption":"변경된 공간만 DELTA 계산","visual_role":"editor_layers","motion":"track_highlight"},
+        {"scene_id":"S08","duration":4,"role":"RISK_POLICY_GATE","caption":"누락·중복·단위 오류 검수","visual_role":"qa_checklist","motion":"check_pop"},
+        {"scene_id":"S09","duration":4,"role":"SCALE_LOCALIZATION","caption":"통과 템플릿을 다음 현장에 재사용","visual_role":"project_branch","motion":"branch"},
+        {"scene_id":"S10","duration":4,"role":"CTA","caption":"검증된 견적 흐름으로 실행","visual_role":"cta","motion":"pulse"}
+      ]
+    },
+    {
+      "content_id": "VQ_FIXTURE_TRAVEL_A_20260908",
+      "template_id": "T1-TRAVEL-FOREIGNER-COMPARE-REVEAL-V1",
+      "style_family": "FOREIGNER_KOREA_EXPERIENCE_COMPARE_REVEAL",
+      "topic": "일본인 가족의 서울 재래시장 첫 체험",
+      "format": "shorts",
+      "duration_sec": 45,
+      "persona_policy": "NONIDENTICAL_GENERATED_TRAVELER_FAMILY",
+      "fact_policy": "VERIFY_PRICE_OPEN_HOURS_TRANSPORT_BEFORE_FINAL",
+      "scenes": [
+        {"scene_id":"S01","duration":5,"role":"COUNTERINTUITIVE_HOOK","caption":"일본 시장에 익숙한 가족이 서울에서 멈춰 선 이유","visual_role":"traveler_reaction_plus_market","motion":"reveal_zoom"},
+        {"scene_id":"S02","duration":4,"role":"TRAVELER_CREDENTIAL","caption":"시장 여행을 즐겨온 가족의 첫 서울 전통시장","visual_role":"persona_card","motion":"card_slide"},
+        {"scene_id":"S03","duration":5,"role":"MICRO_EXPERIENCE_LOOP","caption":"그 자리에서 바로 부쳐주는 음식","visual_role":"food_detail","motion":"detail_push"},
+        {"scene_id":"S04","duration":5,"role":"MICRO_EXPERIENCE_LOOP","caption":"한국인에겐 평범한 합석이 이들에겐 새 경험","visual_role":"table_reaction","motion":"reaction_cut"},
+        {"scene_id":"S05","duration":5,"role":"HONEST_NEGATIVE","caption":"사람이 많아 아이와 걷기는 조금 힘들었다","visual_role":"crowd_route","motion":"slow_pan"},
+        {"scene_id":"S06","duration":5,"role":"NUMERIC_COMPARE","caption":"가격·대기시간은 현재 정보로 다시 확인","visual_role":"fact_card","motion":"number_compare"},
+        {"scene_id":"S07","duration":5,"role":"VALUE_REVERSAL","caption":"하지만 이 가족이 더 좋아한 건 음식보다 분위기","visual_role":"family_reaction","motion":"reveal_pop"},
+        {"scene_id":"S08","duration":5,"role":"DESTINATION_CONTINUATION","caption":"시장 다음은 청계천 산책으로 연결","visual_role":"live_road_map","motion":"route_draw"},
+        {"scene_id":"S09","duration":6,"role":"VERDICT_CTA","caption":"이 코스를 여행앱에서 그대로 따라가기","visual_role":"app_cta","motion":"pulse"}
+      ]
+    },
+    {
+      "content_id": "VQ_FIXTURE_TRAVEL_B_20260908",
+      "template_id": "T1-TRAVEL-FOREIGNER-COMPARE-REVEAL-V1",
+      "style_family": "FOREIGNER_KOREA_EXPERIENCE_COMPARE_REVEAL",
+      "topic": "미국인 부부의 한강 편의점 피크닉 첫 체험",
+      "format": "shorts",
+      "duration_sec": 45,
+      "persona_policy": "NONIDENTICAL_GENERATED_TRAVELER_COUPLE",
+      "fact_policy": "VERIFY_PRICE_WEATHER_DELIVERY_TRANSIT_BEFORE_FINAL",
+      "scenes": [
+        {"scene_id":"S01","duration":5,"role":"COUNTERINTUITIVE_HOOK","caption":"피크닉을 많이 해본 부부가 편의점 앞에서 놀란 이유","visual_role":"traveler_reaction_plus_hanriver","motion":"reveal_zoom"},
+        {"scene_id":"S02","duration":4,"role":"TRAVELER_CREDENTIAL","caption":"미국 공원 피크닉에 익숙한 여행 부부","visual_role":"persona_card","motion":"card_slide"},
+        {"scene_id":"S03","duration":5,"role":"MICRO_EXPERIENCE_LOOP","caption":"라면을 편의점에서 바로 끓인다","visual_role":"ramen_detail","motion":"detail_push"},
+        {"scene_id":"S04","duration":5,"role":"MICRO_EXPERIENCE_LOOP","caption":"강변까지 배달이 이어지는 경험","visual_role":"delivery_route","motion":"route_slide"},
+        {"scene_id":"S05","duration":5,"role":"HONEST_NEGATIVE","caption":"주말 혼잡과 자리 찾기는 불편했다","visual_role":"crowd_route","motion":"slow_pan"},
+        {"scene_id":"S06","duration":5,"role":"NUMERIC_COMPARE","caption":"비용·이동시간은 오늘 정보로 검증","visual_role":"fact_card","motion":"number_compare"},
+        {"scene_id":"S07","duration":5,"role":"VALUE_REVERSAL","caption":"결국 가장 기억에 남은 건 야경과 자유로운 분위기","visual_role":"couple_reaction","motion":"reveal_pop"},
+        {"scene_id":"S08","duration":5,"role":"DESTINATION_CONTINUATION","caption":"다음 장소는 야경 산책 포인트","visual_role":"live_road_map","motion":"route_draw"},
+        {"scene_id":"S09","duration":6,"role":"VERDICT_CTA","caption":"한강 Road를 여행앱에서 실행","visual_role":"app_cta","motion":"pulse"}
+      ]
+    }
+  ]
+}
