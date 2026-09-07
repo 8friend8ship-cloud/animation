@@ -1,0 +1,108 @@
+{
+  "schema": "HD_VIDEO_QUEENS_STYLE_TEMPLATES_V1",
+  "version": "1.0.0",
+  "effectiveAt": "2026-09-08T07:37:00+09:00",
+  "canonicalLineage": "SOURCE_URL→MV_QUEENS_RAW→MV_QUEENS_STYLE_OBS→MV_SEED_LIBRARY→MV_TEMPLATE_REGISTRY→VTUBE_PRODUCTION→MV_QA_LOG",
+  "rightsPolicy": {
+    "referenceOnly": "Do not archive or reuse whole third-party source footage. Keep URL/videoId/channel/title/thumbnail/transcript/timecodes/style observations only.",
+    "ownedLicensedAuthorized": "Local download, screen recording or mirror may be used when actually required by the production runtime.",
+    "identity": "Do not clone source creator/traveler identity or voice. Final production must use owned/licensed talent or a non-identical generated persona.",
+    "policyClaims": "Creator statements about copyright or platform policy are observations only until verified against official sources."
+  },
+  "trendPresearch": {
+    "required": true,
+    "refreshAtExecution": true,
+    "sources": ["YouTube Help/Creator", "Google/Google Labs/DeepMind official"],
+    "seedSignals20260908": [
+      "Short-form template variables: clip count/length, text, music, effects",
+      "Reference-image guided missing-shot generation",
+      "Automatic dubbing with review gate and eligible experimental lip sync",
+      "Start/end-frame controlled transitions and continuity",
+      "Scene extension and fast draft-to-high-resolution workflow"
+    ]
+  },
+  "templates": [
+    {
+      "templateId": "T1-VIDEO-CREATOR-METHOD-INTERVIEW-DEMO-V1",
+      "seedId": "MVSEED-AI-FOREIGN-REFORM-V1",
+      "styleFamily": "AI_FOREIGN_VIDEO_REFORM_WORKFLOW",
+      "genre": "VIDEO_CREATOR_EDUCATION",
+      "frontTargets": ["APP_VTUBE_MV", "APP_ANIMATION", "APP_CONTENT_OS"],
+      "sourceReference": {
+        "videoId": "itObCxPovPY",
+        "url": "https://www.youtube.com/watch?v=itObCxPovPY",
+        "rights": "REFERENCE_ONLY",
+        "pinterestBoardId": "505106983147380291",
+        "pinterestDraftPostId": "6a9f3ddbQ1JHDpQXGokzx"
+      },
+      "storyboard": [
+        "PROOF_HOOK",
+        "PERSONAL_PROBLEM",
+        "CREDIBILITY_EVIDENCE",
+        "NICHE_DEMAND_PROOF",
+        "SOURCE_DISCOVERY",
+        "WORKFLOW_DEMO",
+        "EDIT_LAYER_PROOF",
+        "RISK_POLICY_GATE",
+        "SCALE_LOCALIZATION",
+        "MANUAL_FALLBACK",
+        "CTA"
+      ],
+      "cameraRule": "Medium interview/two-shot, reaction closeups, screen zoom/cursor, proof screen immediately after a claim.",
+      "motionRule": "Use owned/generated screen demonstrations and UI mockups; alternate interview, proof, reaction and timeline detail.",
+      "transitionRule": "Hard/reaction/screen-insert cuts; refresh visual evidence every 5-15 seconds where semantically justified.",
+      "audioRule": "Natural host/expert dialogue; demo playback only where useful; restrained stingers; no source-voice cloning.",
+      "subtitleRule": "Dialogue, translated-source reference and narrator tracks must be visually distinguishable.",
+      "t2DeltaFields": ["TOPIC", "HOOK", "SCREEN_PROOF", "HOST_PERSONA", "EXPERT_PERSONA", "CTA_VARIANT", "LOCALE", "PLATFORM_PROFILE"],
+      "qa": {
+        "fixtureCountMin": 2,
+        "avgStyleScoreMin": 85,
+        "consistencyMin": 85,
+        "criticalMax": 0,
+        "checks": ["HOOK_MATCH", "STRUCTURE_MATCH", "PACE_MATCH", "CAMERA_MOTION_MATCH", "SUBTITLE_MATCH", "VOICE_VISUAL_ALIGNMENT", "RIGHTS_PASS"]
+      },
+      "status": "CANDIDATE_RENDER_TEST"
+    },
+    {
+      "templateId": "T1-TRAVEL-FOREIGNER-COMPARE-REVEAL-V1",
+      "seedId": "MVSEED-TRAVEL-FOREIGNER-COMPARE-V1",
+      "styleFamily": "FOREIGNER_KOREA_EXPERIENCE_COMPARE_REVEAL",
+      "genre": "TRAVEL_REACTION_COMPARISON",
+      "frontTargets": ["APP_TRAVEL", "APP_VTUBE_MV", "APP_ANIMATION"],
+      "sourceReference": {
+        "videoId": "1eBPSEp3mJc",
+        "url": "https://www.youtube.com/watch?v=1eBPSEp3mJc",
+        "rights": "REFERENCE_ONLY",
+        "pinterestBoardId": "505106983147380291",
+        "pinterestDraftPostId": "6a9f3de1iGkMlKTlWTH97"
+      },
+      "storyboard": [
+        "COUNTERINTUITIVE_HOOK",
+        "TRAVELER_CREDENTIAL",
+        "MICRO_EXPERIENCE_LOOP",
+        "HONEST_NEGATIVE",
+        "NUMERIC_COMPARE",
+        "VALUE_REVERSAL",
+        "DESTINATION_CONTINUATION",
+        "VERDICT_CTA"
+      ],
+      "microExperienceRule": "Ordinary local detail → foreign-traveler reaction → concise explanation → next curiosity beat.",
+      "cameraRule": "Traveler/reaction reference rhythm, transport/place detail, wide establishing shot and map/fact card; final footage must be owned/licensed or non-identical generated scenes.",
+      "motionRule": "Alternate narrator setup, traveler reaction, contextual B-roll and route/location cards; preserve LIVE ROAD continuity.",
+      "transitionRule": "Cliffhanger/reveal cuts; introduce an honest negative before the final verdict; bridge every destination to the next route stop.",
+      "audioRule": "Narrator + owned/licensed traveler dialogue; location ambience; no source-voice cloning.",
+      "subtitleRule": "Traveler translation, narrator and fact/context captions must be visually separate.",
+      "factRule": "All numeric, ranking, operating-status, fare, transport and official-system claims require current verification before final render/publish.",
+      "liveRoadRule": "Every experience block should resolve to PLACE/FOOD/TRANSPORT/WHY_FOREIGNERS_GO/APP_CTA fields when applicable.",
+      "t2DeltaFields": ["COUNTRY_PERSONA", "KOREA_LOCATION", "COMPARE_COUNTRY", "EXPERIENCE_BLOCKS", "LIVE_ROAD_ID", "CTA_VARIANT", "LOCALE", "PLATFORM_PROFILE"],
+      "qa": {
+        "fixtureCountMin": 2,
+        "avgStyleScoreMin": 85,
+        "consistencyMin": 85,
+        "criticalMax": 0,
+        "checks": ["HOOK_MATCH", "STRUCTURE_MATCH", "PACE_MATCH", "MICRO_EXPERIENCE_MATCH", "CAMERA_MOTION_MATCH", "SUBTITLE_MATCH", "VOICE_VISUAL_ALIGNMENT", "FACT_PASS", "RIGHTS_PASS", "APP_LINKAGE"]
+      },
+      "status": "CANDIDATE_FACTCHECK_RENDER_TEST"
+    }
+  ]
+}
