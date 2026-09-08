@@ -1,7 +1,7 @@
 {
   "schema": "HD_VIDEO_QUEENS_STYLE_TEMPLATES_V1",
-  "version": "1.0.0",
-  "effectiveAt": "2026-09-08T07:37:00+09:00",
+  "version": "1.1.0",
+  "effectiveAt": "2026-09-08T09:45:00+09:00",
   "canonicalLineage": "SOURCE_URL→MV_QUEENS_RAW→MV_QUEENS_STYLE_OBS→MV_SEED_LIBRARY→MV_TEMPLATE_REGISTRY→VTUBE_PRODUCTION→MV_QA_LOG",
   "rightsPolicy": {
     "referenceOnly": "Do not archive or reuse whole third-party source footage. Keep URL/videoId/channel/title/thumbnail/transcript/timecodes/style observations only.",
@@ -20,6 +20,25 @@
       "Start/end-frame controlled transitions and continuity",
       "Scene extension and fast draft-to-high-resolution workflow"
     ]
+  },
+  "runtimeGuardrails": {
+    "powershell": "Detect shell version first. Windows PowerShell 5.1 uses semicolon/explicit conditions; do not assume PowerShell 7 &&/|| pipeline-chain syntax.",
+    "npm": "Do not weaken execution policy to run npm.ps1. Prefer npm.cmd/direct executable when policy blocks the PowerShell shim.",
+    "vite": "Use Vite dev for source HTML/TypeScript smoke fixtures; use preview only for built-dist E2E.",
+    "mediaRecorder": "Do not accept container-only video/mp4 as a codec guarantee. Probe isTypeSupported and pin H.264 + AAC for QA/publish outputs.",
+    "tts": "Child PowerShell/TTS commands must fail closed with ErrorActionPreference=Stop; a non-terminating shell error cannot be accepted as voice QA PASS.",
+    "verification": "After a state-changing fix run the same fixture x2, then different-topic template x2, verify codec/output/structure/score, and require Drive cloud readback before OUTPUT_SAVED.",
+    "factGate": "Template runtime promotion and source-claim verification are separate. Travel/source numeric or official claims stay behind current FACT_GATE before final production or publish."
+  },
+  "runtimeEvidence": {
+    "driveFolderId": "1W9g4JDTMpWygfjPMJxCrDhvQdFUk-00G",
+    "runtimeFixQaFileId": "1O3gcq9EULE6qddOgkU_j18nzc0Vy7VAR",
+    "styleX2QaFileId": "1Wk52SOIL7fx0DnUwEbrCMT9UxqzU1gQl",
+    "sameFixtureCodecQa": {
+      "codec": "H264+AAC",
+      "frame4MeanAbsDiff255": 0.0831,
+      "critical": 0
+    }
   },
   "templates": [
     {
@@ -59,9 +78,19 @@
         "avgStyleScoreMin": 85,
         "consistencyMin": 85,
         "criticalMax": 0,
-        "checks": ["HOOK_MATCH", "STRUCTURE_MATCH", "PACE_MATCH", "CAMERA_MOTION_MATCH", "SUBTITLE_MATCH", "VOICE_VISUAL_ALIGNMENT", "RIGHTS_PASS"]
+        "checks": ["HOOK_MATCH", "STRUCTURE_MATCH", "PACE_MATCH", "CAMERA_MOTION_MATCH", "SUBTITLE_MATCH", "VOICE_VISUAL_ALIGNMENT", "RIGHTS_PASS"],
+        "runtimeX2": {
+          "fixtureIds": ["VQ_CREATOR_A", "VQ_CREATOR_B"],
+          "topics": ["7개 언어 여행영상 자동화", "인테리어 견적 자동화"],
+          "scores": [96.7, 96.7],
+          "templateMatch": true,
+          "sceneOrderMatch": true,
+          "paceMatch": true,
+          "critical": 0,
+          "driveFileIds": ["1ui73XvFYNEJOrpGZC1lDvo4ulUHjYSCL", "1FUv2V4kMoS9pWxs8AZjxn7d5KUf_luZw"]
+        }
       },
-      "status": "CANDIDATE_RENDER_TEST"
+      "status": "RUNTIME_VERIFIED_X2_OUTPUT_SAVED"
     },
     {
       "templateId": "T1-TRAVEL-FOREIGNER-COMPARE-REVEAL-V1",
@@ -100,9 +129,19 @@
         "avgStyleScoreMin": 85,
         "consistencyMin": 85,
         "criticalMax": 0,
-        "checks": ["HOOK_MATCH", "STRUCTURE_MATCH", "PACE_MATCH", "MICRO_EXPERIENCE_MATCH", "CAMERA_MOTION_MATCH", "SUBTITLE_MATCH", "VOICE_VISUAL_ALIGNMENT", "FACT_PASS", "RIGHTS_PASS", "APP_LINKAGE"]
+        "checks": ["HOOK_MATCH", "STRUCTURE_MATCH", "PACE_MATCH", "MICRO_EXPERIENCE_MATCH", "CAMERA_MOTION_MATCH", "SUBTITLE_MATCH", "VOICE_VISUAL_ALIGNMENT", "FACT_PASS", "RIGHTS_PASS", "APP_LINKAGE"],
+        "runtimeX2": {
+          "fixtureIds": ["VQ_TRAVEL_A", "VQ_TRAVEL_B"],
+          "topics": ["일본인 가족 서울 재래시장 체험", "미국인 부부 한강 피크닉 체험"],
+          "scores": [97.7, 97.7],
+          "templateMatch": true,
+          "sceneOrderMatch": true,
+          "paceMatch": true,
+          "critical": 0,
+          "driveFileIds": ["1w5DSTu2s_Y40MAuTX4yjZ7us3nCZfR_E", "1fG02flS5XcDd4TY8jjJXezOghe52PqMo"]
+        }
       },
-      "status": "CANDIDATE_FACTCHECK_RENDER_TEST"
+      "status": "RUNTIME_VERIFIED_X2_OUTPUT_SAVED_SOURCE_FACTCHECK_GATE_PUBLISH"
     }
   ]
 }
