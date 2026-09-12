@@ -1,0 +1,44 @@
+{
+  "pack_id": "ANIMATION_PACK",
+  "name": "Animation Pack",
+  "version": "1.0.0",
+  "status": "PROMOTED",
+  "source_repository": "8friend8ship-cloud/animation",
+  "role": "central-agent animation execution engine",
+  "router": {
+    "input_contract": "pack/contracts/animation-input.schema.json",
+    "output_contract": "pack/contracts/animation-output.schema.json",
+    "receipt_required": true,
+    "readback_required": true
+  },
+  "bridges": [
+    "IMAGE_PACK",
+    "PERSONA_PACK",
+    "MOTION_PACK",
+    "VOICE_PACK",
+    "LANGUAGE_PACK",
+    "FLOW_PACK",
+    "VEO_PACK",
+    "VTUBE_PACK",
+    "VIDEO_PACK",
+    "CAPTION_PACK",
+    "SHOPPING_PACK",
+    "SKETCHUP_PACK",
+    "D5_PACK",
+    "UNREAL_PACK",
+    "METAHUMAN"
+  ],
+  "pipeline": [
+    "REQUEST",
+    "STORYBOARD",
+    "ASSET_RESOLVE",
+    "ANIMATE",
+    "RENDER",
+    "QC",
+    "DRIVE_SAVE",
+    "DATA_LOG",
+    "READBACK",
+    "RECEIPT"
+  ],
+  "completion_status": "ANIMATION_PACK_COMPLETE"
+}
