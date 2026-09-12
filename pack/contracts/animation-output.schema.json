@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AnimationPackOutput",
+  "type": "object",
+  "required": ["project_id", "request_id", "status", "receipt"],
+  "properties": {
+    "project_id": {"type": "string"},
+    "request_id": {"type": "string"},
+    "status": {"type": "string", "enum": ["COMPLETE", "FAILED", "BLOCKED", "PARTIAL"]},
+    "output_url": {"type": ["string", "null"]},
+    "output_id": {"type": ["string", "null"]},
+    "seed_id": {"type": ["string", "null"]},
+    "template_id": {"type": ["string", "null"]},
+    "qc": {
+      "type": "object",
+      "properties": {
+        "persona_consistency": {"type": ["boolean", "null"]},
+        "space_consistency": {"type": ["boolean", "null"]},
+        "motion_consistency": {"type": ["boolean", "null"]},
+        "voice_sync": {"type": ["boolean", "null"]},
+        "language_check": {"type": ["boolean", "null"]},
+        "render_check": {"type": ["boolean", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "receipt": {
+      "type": "object",
+      "required": ["readback_ok", "logs_written", "completion_code"],
+      "properties": {
+        "readback_ok": {"type": "boolean"},
+        "logs_written": {"type": "boolean"},
+        "completion_code": {"type": "string"},
+        "timestamp": {"type": ["string", "null"]}
+      }
+    }
+  },
+  "additionalProperties": true
+}
