@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AnimationPackOutput",
+  "type": "object",
+  "required": ["project_id", "request_id", "status", "receipt"],
+  "properties": {
+    "project_id": {"type": "string"},
+    "request_id": {"type": "string"},
+    "status": {"type": "string", "enum": ["COMPLETE", "FAILED", "BLOCKED", "PARTIAL"]},
+    "engine_used": {"type": ["string", "null"]},
+    "engine_version": {"type": ["string", "null"]},
+    "output_url": {"type": ["string", "null"]},
+    "output_id": {"type": ["string", "null"]},
+    "seed_id": {"type": ["string", "null"]},
+    "template_id": {"type": ["string", "null"]},
+    "lineage": {
+      "type": ["object", "null"],
+      "properties": {
+        "source_id": {"type": ["string", "null"]},
+        "parent_output_id": {"type": ["string", "null"]},
+        "template_version": {"type": ["string", "null"]},
+        "seed_version": {"type": ["string", "null"]},
+        "engine_version": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "qc": {
+      "type": "object",
+      "properties": {
+        "identity_score": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "motion_score": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "lipsync_score": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "voice_score": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "spatial_score": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "camera_score": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "frame_score": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "continuity_score": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "overall_score": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "failed_components": {"type": ["array", "null"], "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "rerun": {
+      "type": ["object", "null"],
+      "properties": {
+        "mode": {"type": ["string", "null"], "enum": ["FULL", "PARTIAL", null]},
+        "patched_scene_ids": {"type": ["array", "null"], "items": {"type": "string"}},
+        "preserved_scene_ids": {"type": ["array", "null"], "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "promotion": {
+      "type": ["object", "null"],
+      "properties": {
+        "baked": {"type": "boolean"},
+        "seed_eligible": {"type": "boolean"},
+        "template_eligible": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
+    "receipt": {
+      "type": "object",
+      "required": ["readback_ok", "logs_written", "completion_code"],
+      "properties": {
+        "readback_ok": {"type": "boolean"},
+        "logs_written": {"type": "boolean"},
+        "completion_code": {"type": "string"},
+        "timestamp": {"type": ["string", "null"]}
+      }
+    }
+  },
+  "additionalProperties": true
+}
