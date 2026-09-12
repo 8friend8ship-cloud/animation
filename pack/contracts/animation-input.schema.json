@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AnimationPackInput",
+  "type": "object",
+  "required": ["project_id", "request_id", "scene"],
+  "properties": {
+    "project_id": {"type": "string"},
+    "request_id": {"type": "string"},
+    "persona_id": {"type": ["string", "null"]},
+    "image_id": {"type": ["string", "null"]},
+    "motion_id": {"type": ["string", "null"]},
+    "voice_id": {"type": ["string", "null"]},
+    "language_id": {"type": ["string", "null"]},
+    "camera_id": {"type": ["string", "null"]},
+    "platform_target": {"type": ["string", "null"]},
+    "scene": {
+      "type": "object",
+      "required": ["scene_id"],
+      "properties": {
+        "scene_id": {"type": "string"},
+        "shot_id": {"type": ["string", "null"]},
+        "duration_sec": {"type": ["number", "null"], "minimum": 0},
+        "storyboard": {"type": ["object", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "render": {
+      "type": "object",
+      "properties": {
+        "aspect_ratio": {"type": "string"},
+        "codec": {"type": "string", "default": "h264"},
+        "resolution": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
