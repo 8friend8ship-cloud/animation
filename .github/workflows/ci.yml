@@ -48,3 +48,10 @@ jobs:
             --total-ms 1500
           test -s /tmp/whiteboard-smoke.mp4
           ls -lh /tmp/whiteboard-smoke.mp4
+      - name: Upload smoke MP4 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: animation-pack-e2e-smoke
+          path: /tmp/whiteboard-smoke.mp4
+          if-no-files-found: error
+          retention-days: 7
