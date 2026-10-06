@@ -21,8 +21,22 @@ export type HymnLanguageTrack = {
   lines: HymnLyricLine[];
 };
 
+export type HymnVisualSegment = {
+  section_id: string;
+  role?: string;
+  start: number;
+  end: number;
+  kind: 'image' | 'video';
+  asset_url: string;
+  source_url?: string;
+  crossfade_sec?: number;
+  loop?: boolean;
+  motion?: 'NONE' | 'SLOW_ZOOM' | 'SLOW_PAN';
+};
+
 export type HymnSimpleImagePayload = {
   hymnNo?: number;
+  songId?: string;
   title: string;
   tuneId: string;
   defaultLanguage: string;
@@ -30,6 +44,11 @@ export type HymnSimpleImagePayload = {
   backgroundImageUrl?: string;
   audioUrl?: string;
   motion?: 'NONE' | 'SLOW_ZOOM' | 'SLOW_PAN';
+  visualPlaylist?: HymnVisualSegment[];
+  qa?: {
+    melodyFirstGate?: 'PASS' | 'HOLD' | 'PENDING';
+    musicTeacherPatternTemplate?: 'PASS' | 'HOLD' | 'PENDING';
+  };
 };
 
 const FULL_TEXT_ALLOWED = new Set([
@@ -42,7 +61,7 @@ const FULL_TEXT_ALLOWED = new Set([
 ]);
 
 const EMPTY_PAYLOAD: HymnSimpleImagePayload = {
-  title: '찬송가 단순 이미지 모드',
+  title: '찬송가 단순 이미지/영상 모드',
   tuneId: 'UNRESOLVED_TUNE',
   defaultLanguage: 'KO',
   languages: [
@@ -50,7 +69,7 @@ const EMPTY_PAYLOAD: HymnSimpleImagePayload = {
       code: 'KO',
       label: '한국어',
       rightsStatus: 'USER_PROVIDED',
-      lines: [{ start: 0, end: 9999, text: '가사 JSON을 불러오면 여기에 표시됩니다.' }],
+      lines: [{ start: 0, end: 9999, text: '검증된 가사 JSON을 불러오면 여기에 표시됩니다.' }],
     },
   ],
   motion: 'SLOW_ZOOM',
@@ -58,6 +77,11 @@ const EMPTY_PAYLOAD: HymnSimpleImagePayload = {
 
 function findLine(lines: HymnLyricLine[], time: number) {
   return lines.find((line) => time >= line.start && time < line.end);
+}
+
+function findVisual(visuals: HymnVisualSegment[] | undefined, time: number) {
+  if (!visuals?.length) return undefined;
+  return visuals.find((item) => time >= item.start && time < item.end) ?? visuals[0];
 }
 
 export default function HymnSimpleImageWorkspace({
@@ -72,6 +96,7 @@ export default function HymnSimpleImageWorkspace({
   const [language, setLanguage] = useState(payload.defaultLanguage);
   const [time, setTime] = useState(0);
   const [localImage, setLocalImage] = useState<string | null>(null);
+  const [localVideo, setLocalVideo] = useState<string | null>(null);
   const [localAudio, setLocalAudio] = useState<string | null>(null);
   const [status, setStatus] = useState('READY');
 
@@ -93,15 +118,28 @@ export default function HymnSimpleImageWorkspace({
   useEffect(() => {
     return () => {
       if (localImage) URL.revokeObjectURL(localImage);
+      if (localVideo) URL.revokeObjectURL(localVideo);
       if (localAudio) URL.revokeObjectURL(localAudio);
     };
-  }, [localImage, localAudio]);
+  }, [localImage, localVideo, localAudio]);
 
   const currentLine = version ? findLine(version.lines, time) : undefined;
+  const currentVisual = findVisual(payload.visualPlaylist, time);
   const rightsAllowed = version ? FULL_TEXT_ALLOWED.has(version.rightsStatus) : false;
-  const imageUrl = localImage ?? payload.backgroundImageUrl;
+  const musicTeacherPass =
+    payload.qa?.melodyFirstGate !== 'HOLD' &&
+    payload.qa?.musicTeacherPatternTemplate !== 'HOLD';
+
+  const fallbackImageUrl = localImage ?? payload.backgroundImageUrl;
+  const fallbackVideoUrl = localVideo;
   const audioUrl = localAudio ?? payload.audioUrl;
-  const motion = payload.motion ?? 'SLOW_ZOOM';
+  const effectiveKind: 'image' | 'video' =
+    currentVisual?.kind ?? (fallbackVideoUrl ? 'video' : 'image');
+  const visualUrl =
+    currentVisual?.asset_url ??
+    fallbackVideoUrl ??
+    fallbackImageUrl;
+  const motion = currentVisual?.motion ?? payload.motion ?? 'SLOW_ZOOM';
 
   async function loadPayload(file: File) {
     try {
@@ -109,11 +147,17 @@ export default function HymnSimpleImageWorkspace({
       if (!next.title || !next.tuneId || !Array.isArray(next.languages) || next.languages.length === 0) {
         throw new Error('INVALID_HYMN_PAYLOAD');
       }
+      if (
+        next.qa?.melodyFirstGate === 'HOLD' ||
+        next.qa?.musicTeacherPatternTemplate === 'HOLD'
+      ) {
+        throw new Error('MUSIC_TEACHER_QA_HOLD');
+      }
       setPayload(next);
       setLanguage(next.defaultLanguage || next.languages[0].code);
       setStatus('PAYLOAD_READBACK_PASS');
     } catch {
-      setStatus('PAYLOAD_HOLD_INVALID_JSON');
+      setStatus('PAYLOAD_HOLD_INVALID_OR_UNVERIFIED');
     }
   }
 
@@ -121,7 +165,16 @@ export default function HymnSimpleImageWorkspace({
     if (!file) return;
     if (localImage) URL.revokeObjectURL(localImage);
     setLocalImage(URL.createObjectURL(file));
+    setLocalVideo(null);
     setStatus('IMAGE_READBACK_PASS');
+  }
+
+  function chooseVideo(file?: File) {
+    if (!file) return;
+    if (localVideo) URL.revokeObjectURL(localVideo);
+    setLocalVideo(URL.createObjectURL(file));
+    setLocalImage(null);
+    setStatus('VIDEO_READBACK_PASS');
   }
 
   function chooseAudio(file?: File) {
@@ -153,16 +206,20 @@ export default function HymnSimpleImageWorkspace({
         >
           ← Animation
         </button>
+
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm text-white/60">
             {payload.hymnNo ? `새찬송가 ${payload.hymnNo}장 · ` : ''}{payload.tuneId}
           </div>
           <h1 className="truncate text-lg font-bold">{payload.title}</h1>
         </div>
-        <div className="rounded-lg bg-white/10 px-3 py-2 text-xs text-white/70">{status}</div>
+
+        <div className="rounded-lg bg-white/10 px-3 py-2 text-xs text-white/70">
+          {status} · {currentVisual?.section_id ?? 'STATIC'}
+        </div>
 
         <label className="cursor-pointer rounded-xl bg-white/10 px-3 py-2 text-sm hover:bg-white/15">
-          가사 JSON
+          검증 가사 JSON
           <input
             hidden
             type="file"
@@ -170,10 +227,17 @@ export default function HymnSimpleImageWorkspace({
             onChange={(e) => e.target.files?.[0] && loadPayload(e.target.files[0])}
           />
         </label>
+
         <label className="cursor-pointer rounded-xl bg-white/10 px-3 py-2 text-sm hover:bg-white/15">
           배경 이미지
           <input hidden type="file" accept="image/*" onChange={(e) => chooseImage(e.target.files?.[0])} />
         </label>
+
+        <label className="cursor-pointer rounded-xl bg-white/10 px-3 py-2 text-sm hover:bg-white/15">
+          배경 영상
+          <input hidden type="file" accept="video/*" onChange={(e) => chooseVideo(e.target.files?.[0])} />
+        </label>
+
         <label className="cursor-pointer rounded-xl bg-white/10 px-3 py-2 text-sm hover:bg-white/15">
           오디오
           <input hidden type="file" accept="audio/*" onChange={(e) => chooseAudio(e.target.files?.[0])} />
@@ -197,10 +261,21 @@ export default function HymnSimpleImageWorkspace({
 
       <section className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-4">
         <div className="relative aspect-video overflow-hidden rounded-3xl border border-white/10 bg-neutral-900 shadow-2xl">
-          {imageUrl ? (
+          {visualUrl && effectiveKind === 'video' ? (
+            <video
+              key={currentVisual?.section_id ?? visualUrl}
+              className="absolute inset-0 h-full w-full object-cover"
+              src={visualUrl}
+              muted
+              autoPlay
+              playsInline
+              loop={currentVisual?.loop ?? true}
+            />
+          ) : visualUrl ? (
             <img
+              key={currentVisual?.section_id ?? visualUrl}
               className={`absolute inset-0 h-full w-full object-cover ${motionClass}`}
-              src={imageUrl}
+              src={visualUrl}
               alt=""
             />
           ) : (
@@ -210,7 +285,7 @@ export default function HymnSimpleImageWorkspace({
           <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/10 to-black/60" />
 
           <div className="absolute left-5 top-5 rounded-full bg-black/45 px-4 py-2 text-xs font-semibold tracking-wide text-white/80 backdrop-blur">
-            SIMPLE IMAGE · {motion}
+            HYMN VISUAL · {effectiveKind.toUpperCase()} · {motion}
           </div>
 
           <div className="absolute inset-x-[7%] bottom-[8%] text-center">
@@ -218,9 +293,11 @@ export default function HymnSimpleImageWorkspace({
               {version?.label ?? language}
             </div>
             <div className="mx-auto max-w-5xl text-balance text-[clamp(26px,4.2vw,64px)] font-extrabold leading-[1.22] tracking-[-0.02em] text-white [text-shadow:0_3px_14px_rgba(0,0,0,.9)]">
-              {rightsAllowed
-                ? (currentLine?.text ?? '')
-                : '이 언어 가사는 권리 확인 후 표시됩니다.'}
+              {!musicTeacherPass
+                ? '음악선생팩 검증 HOLD — 자막 표시 중지'
+                : rightsAllowed
+                  ? (currentLine?.text ?? '')
+                  : '이 언어 가사는 권리 확인 후 표시됩니다.'}
             </div>
           </div>
         </div>
@@ -229,22 +306,26 @@ export default function HymnSimpleImageWorkspace({
           <audio ref={audioRef} className="w-full" controls src={audioUrl} />
         ) : (
           <div className="rounded-2xl border border-dashed border-white/15 px-4 py-5 text-center text-sm text-white/50">
-            오디오를 선택하면 시간 동기화 가사가 작동합니다.
+            오디오를 선택하면 시간 동기화 가사와 장면 전환이 작동합니다.
           </div>
         )}
 
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-4">
           <div className="rounded-2xl bg-white/5 p-4">
-            <div className="text-xs text-white/50">화면 원칙</div>
-            <div className="mt-1 font-semibold">이미지 1장 + 아주 약한 움직임</div>
+            <div className="text-xs text-white/50">화면</div>
+            <div className="mt-1 font-semibold">자연 이미지/영상 + 느린 전환</div>
           </div>
           <div className="rounded-2xl bg-white/5 p-4">
-            <div className="text-xs text-white/50">언어 원칙</div>
-            <div className="mt-1 font-semibold">CC 선택은 가사 레이어만 교체</div>
+            <div className="text-xs text-white/50">음악</div>
+            <div className="mt-1 font-semibold">절·후렴·HEART-PEAK 시간축 우선</div>
           </div>
           <div className="rounded-2xl bg-white/5 p-4">
-            <div className="text-xs text-white/50">권리 원칙</div>
-            <div className="mt-1 font-semibold">미승인 번역 가사 전문은 표시하지 않음</div>
+            <div className="text-xs text-white/50">언어</div>
+            <div className="mt-1 font-semibold">CC는 검증된 가사 레이어만 교체</div>
+          </div>
+          <div className="rounded-2xl bg-white/5 p-4">
+            <div className="text-xs text-white/50">권리</div>
+            <div className="mt-1 font-semibold">미승인 가사/스톡은 표시·선택 금지</div>
           </div>
         </div>
       </section>
