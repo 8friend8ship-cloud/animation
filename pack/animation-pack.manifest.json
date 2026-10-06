@@ -1,7 +1,7 @@
 {
   "pack_id": "ANIMATION_PACK",
   "name": "Animation Pack",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "status": "PROMOTED",
   "source_repository": "8friend8ship-cloud/animation",
   "role": "central-agent animation execution engine",
@@ -52,7 +52,9 @@
       "local_ambience_generator": "hymn/local_nature_ambience_generator.py",
       "local_learning_library": "hymn/veo_pack_local_nature_learning_library.json",
       "final_video_default": "SILENT_VIDEO",
-      "ambient_audio_layer": "SEPARATE_OPTIONAL_TRACK"
+      "ambient_audio_layer": "SEPARATE_OPTIONAL_TRACK",
+      "music_background_pack": "V-tube/hymn_multilingual/music_background",
+      "background_plan_authority": "MUSIC_BACKGROUND_PACK_AFTER_MUSIC_TEACHER_PASS"
     }
   },
   "reuse_priority": [
@@ -82,7 +84,8 @@
     "SKETCHUP_PACK",
     "D5_PACK",
     "UNREAL_PACK",
-    "METAHUMAN"
+    "METAHUMAN",
+    "MUSIC_BACKGROUND_PACK"
   ],
   "pipeline": [
     "REQUEST",
