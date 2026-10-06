@@ -1,7 +1,7 @@
 {
   "pack_id": "ANIMATION_PACK",
   "name": "Animation Pack",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "status": "PROMOTED",
   "source_repository": "8friend8ship-cloud/animation",
   "role": "central-agent animation execution engine",
@@ -38,7 +38,15 @@
       "stock_registry": "hymn/stock_source_registry.json",
       "visual_timing": "MUSIC_TEACHER_SECTION_BOUNDARY_THEN_NEAREST_DOWNBEAT_WITH_0.55S_LIMIT",
       "rights_gate_required": true,
-      "mobile_monitor_bridge": "V-tube/hymn_multilingual/karaoke_bridge_server.py"
+      "mobile_monitor_bridge": "V-tube/hymn_multilingual/karaoke_bridge_server.py",
+      "dynamic_scene_taxonomy": "hymn/natural_scene_taxonomy.json",
+      "scene_discovery": "hymn/natural_scene_discovery.py",
+      "rights_safe_motion_extractor": "hymn/natural_motion_template_extractor.py",
+      "procedural_nature_animator": "hymn/procedural_nature_animator.py",
+      "idle_ambient_scheduler": "hymn/idle_ambient_scheduler.py",
+      "idle_behavior": "CONTINUOUS_WHEN_NO_ACTIVE_SONG",
+      "scene_taxonomy_closed": false,
+      "initial_user_scene_examples_are_seeds_only": true
     }
   },
   "reuse_priority": [
