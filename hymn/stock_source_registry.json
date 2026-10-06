@@ -1,0 +1,85 @@
+{
+  "lineage": "DUAL_EYE_MULTI_BRAIN_BRIDGE_V1",
+  "owner_pack": "ANIMATION_PACK",
+  "status": "ACTIVE_SOURCE_POLICY",
+  "priority": [
+    "PEXELS",
+    "PIXABAY",
+    "COVERR_RUNTIME_ONLY"
+  ],
+  "sources": [
+    {
+      "id": "PEXELS",
+      "media": [
+        "photo",
+        "video"
+      ],
+      "source_url": "https://www.pexels.com/",
+      "license_url": "https://www.pexels.com/license/",
+      "free_use": true,
+      "commercial_use": true,
+      "modification": true,
+      "attribution_required": false,
+      "standalone_redistribution": false,
+      "learning_usage": "DERIVED_PLACEMENT_FEATURES_ONLY; do not republish stock as dataset",
+      "preferred_tags": [
+        "nature",
+        "forest",
+        "mountain",
+        "ocean",
+        "sky",
+        "sunrise",
+        "sunset",
+        "river",
+        "rain",
+        "snow",
+        "flowers",
+        "field"
+      ]
+    },
+    {
+      "id": "PIXABAY",
+      "media": [
+        "photo",
+        "video"
+      ],
+      "source_url": "https://pixabay.com/",
+      "license_url": "https://pixabay.com/service/license-summary/",
+      "free_use": true,
+      "modification": true,
+      "attribution_required": false,
+      "standalone_redistribution": false,
+      "learning_usage": "DERIVED_PLACEMENT_FEATURES_ONLY; keep source/license metadata"
+    },
+    {
+      "id": "COVERR_RUNTIME_ONLY",
+      "media": [
+        "video"
+      ],
+      "source_url": "https://coverr.co/",
+      "license_url": "https://coverr.co/license/",
+      "free_use": true,
+      "commercial_use": true,
+      "attribution_required": false,
+      "ai_training_or_dataset": false,
+      "learning_usage": "FORBIDDEN_AS_AI_TRAINING_OR_DATASET; may be selected only as runtime/final visual content",
+      "warning": "Do not ingest Coverr files into learning corpora."
+    }
+  ],
+  "storage_policy": {
+    "keep": [
+      "source_id",
+      "source_url",
+      "asset_url",
+      "creator",
+      "license_snapshot",
+      "asset_id",
+      "download_time",
+      "derived_visual_features"
+    ],
+    "avoid": [
+      "standalone redistribution bundle",
+      "stock-content training dataset"
+    ]
+  }
+}
