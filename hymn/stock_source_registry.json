@@ -21,7 +21,7 @@
       "modification": true,
       "attribution_required": false,
       "standalone_redistribution": false,
-      "learning_usage": "DERIVED_PLACEMENT_FEATURES_ONLY; do not republish stock as dataset",
+      "learning_usage": "RUNTIME_BACKGROUND_AND_MANUAL_EDITORIAL_REFERENCE_ONLY__NO_ML_TRAINING_NO_30FPS_AUTOMATED_LEARNING",
       "preferred_tags": [
         "nature",
         "forest",
@@ -35,7 +35,8 @@
         "snow",
         "flowers",
         "field"
-      ]
+      ],
+      "automated_frame_learning_allowed": false
     },
     {
       "id": "PIXABAY",
@@ -49,7 +50,8 @@
       "modification": true,
       "attribution_required": false,
       "standalone_redistribution": false,
-      "learning_usage": "DERIVED_PLACEMENT_FEATURES_ONLY; keep source/license metadata"
+      "learning_usage": "RUNTIME_BACKGROUND_AND_MANUAL_EDITORIAL_REFERENCE_ONLY__NO_ML_TRAINING_NO_30FPS_AUTOMATED_LEARNING",
+      "automated_frame_learning_allowed": false
     },
     {
       "id": "COVERR_RUNTIME_ONLY",
@@ -81,5 +83,23 @@
       "standalone redistribution bundle",
       "stock-content training dataset"
     ]
-  }
+  },
+  "training_sources": [
+    {
+      "id": "USER_OWNED_OR_USER_RECORDED",
+      "automated_frame_learning_allowed": true,
+      "condition": "user owns footage or has explicit ML/analysis permission"
+    },
+    {
+      "id": "CC0_OR_PUBLIC_DOMAIN_VERIFIED",
+      "automated_frame_learning_allowed": true,
+      "condition": "per-asset rights evidence saved before analysis"
+    },
+    {
+      "id": "OUR_GENERATED_OR_PROCEDURAL",
+      "automated_frame_learning_allowed": true,
+      "condition": "generation/tool terms allow the intended use and source is not copied from protected material"
+    }
+  ],
+  "learning_rule": "30FPS reverse-motion/template extraction is allowed ONLY from training_sources above. Pexels/Pixabay/Coverr remain runtime/reference sources, not ML/training corpora."
 }
