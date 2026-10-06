@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hymn Stock Candidate",
+  "type": "object",
+  "required": [
+    "id",
+    "provider",
+    "kind",
+    "tags",
+    "nature_score",
+    "rights_pass",
+    "source_url",
+    "asset_url"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "provider": {
+      "enum": [
+        "PEXELS",
+        "PIXABAY",
+        "COVERR_RUNTIME_ONLY"
+      ]
+    },
+    "kind": {
+      "enum": [
+        "image",
+        "video"
+      ]
+    },
+    "duration": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "nature_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "motion_energy": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "brightness": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "expansiveness": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "rights_pass": {
+      "const": true
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "asset_url": {
+      "type": "string"
+    },
+    "creator": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "width": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "height": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "license": {
+      "type": "string"
+    }
+  }
+}

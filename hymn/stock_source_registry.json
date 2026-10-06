@@ -1,0 +1,105 @@
+{
+  "lineage": "DUAL_EYE_MULTI_BRAIN_BRIDGE_V1",
+  "owner_pack": "ANIMATION_PACK",
+  "status": "ACTIVE_SOURCE_POLICY",
+  "priority": [
+    "PEXELS",
+    "PIXABAY",
+    "COVERR_RUNTIME_ONLY"
+  ],
+  "sources": [
+    {
+      "id": "PEXELS",
+      "media": [
+        "photo",
+        "video"
+      ],
+      "source_url": "https://www.pexels.com/",
+      "license_url": "https://www.pexels.com/license/",
+      "free_use": true,
+      "commercial_use": true,
+      "modification": true,
+      "attribution_required": false,
+      "standalone_redistribution": false,
+      "learning_usage": "RUNTIME_BACKGROUND_AND_MANUAL_EDITORIAL_REFERENCE_ONLY__NO_ML_TRAINING_NO_30FPS_AUTOMATED_LEARNING",
+      "preferred_tags": [
+        "nature",
+        "forest",
+        "mountain",
+        "ocean",
+        "sky",
+        "sunrise",
+        "sunset",
+        "river",
+        "rain",
+        "snow",
+        "flowers",
+        "field"
+      ],
+      "automated_frame_learning_allowed": false
+    },
+    {
+      "id": "PIXABAY",
+      "media": [
+        "photo",
+        "video"
+      ],
+      "source_url": "https://pixabay.com/",
+      "license_url": "https://pixabay.com/service/license-summary/",
+      "free_use": true,
+      "modification": true,
+      "attribution_required": false,
+      "standalone_redistribution": false,
+      "learning_usage": "RUNTIME_BACKGROUND_AND_MANUAL_EDITORIAL_REFERENCE_ONLY__NO_ML_TRAINING_NO_30FPS_AUTOMATED_LEARNING",
+      "automated_frame_learning_allowed": false
+    },
+    {
+      "id": "COVERR_RUNTIME_ONLY",
+      "media": [
+        "video"
+      ],
+      "source_url": "https://coverr.co/",
+      "license_url": "https://coverr.co/license/",
+      "free_use": true,
+      "commercial_use": true,
+      "attribution_required": false,
+      "ai_training_or_dataset": false,
+      "learning_usage": "FORBIDDEN_AS_AI_TRAINING_OR_DATASET; may be selected only as runtime/final visual content",
+      "warning": "Do not ingest Coverr files into learning corpora."
+    }
+  ],
+  "storage_policy": {
+    "keep": [
+      "source_id",
+      "source_url",
+      "asset_url",
+      "creator",
+      "license_snapshot",
+      "asset_id",
+      "download_time",
+      "derived_visual_features"
+    ],
+    "avoid": [
+      "standalone redistribution bundle",
+      "stock-content training dataset"
+    ]
+  },
+  "training_sources": [
+    {
+      "id": "USER_OWNED_OR_USER_RECORDED",
+      "automated_frame_learning_allowed": true,
+      "condition": "user owns footage or has explicit ML/analysis permission"
+    },
+    {
+      "id": "CC0_OR_PUBLIC_DOMAIN_VERIFIED",
+      "automated_frame_learning_allowed": true,
+      "condition": "per-asset rights evidence saved before analysis"
+    },
+    {
+      "id": "OUR_GENERATED_OR_PROCEDURAL",
+      "automated_frame_learning_allowed": true,
+      "condition": "generation/tool terms allow the intended use and source is not copied from protected material"
+    }
+  ],
+  "learning_rule": "30FPS reverse-motion/template extraction is allowed ONLY from training_sources above. Pexels/Pixabay/Coverr remain runtime/reference sources, not ML/training corpora."
+}

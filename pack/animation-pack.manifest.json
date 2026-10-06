@@ -1,7 +1,7 @@
 {
   "pack_id": "ANIMATION_PACK",
   "name": "Animation Pack",
-  "version": "1.1.0",
+  "version": "1.2.3",
   "status": "PROMOTED",
   "source_repository": "8friend8ship-cloud/animation",
   "role": "central-agent animation execution engine",
@@ -21,6 +21,42 @@
     "receipt_required": true,
     "readback_required": true
   },
+  "modes": {
+    "hymn_simple_image": {
+      "status": "SUPPORTED_IMAGE_AND_VIDEO",
+      "contract": "pack/contracts/hymn-simple-image.schema.json",
+      "workspace": "hymn/HymnSimpleImageWorkspace.tsx",
+      "motion": [
+        "NONE",
+        "SLOW_ZOOM",
+        "SLOW_PAN"
+      ],
+      "language_layer": "CC_SELECTOR",
+      "background_policy": "INDEPENDENT_FROM_LANGUAGE",
+      "paid_generation_required": false,
+      "stock_optimizer": "hymn/stock_melody_optimizer.py",
+      "stock_registry": "hymn/stock_source_registry.json",
+      "visual_timing": "MUSIC_TEACHER_SECTION_BOUNDARY_THEN_NEAREST_DOWNBEAT_WITH_0.55S_LIMIT",
+      "rights_gate_required": true,
+      "mobile_monitor_bridge": "V-tube/hymn_multilingual/karaoke_bridge_server.py",
+      "dynamic_scene_taxonomy": "hymn/natural_scene_taxonomy.json",
+      "scene_discovery": "hymn/natural_scene_discovery.py",
+      "rights_safe_motion_extractor": "hymn/natural_motion_template_extractor.py",
+      "procedural_nature_animator": "hymn/procedural_nature_animator.py",
+      "idle_ambient_scheduler": "hymn/idle_ambient_scheduler.py",
+      "idle_behavior": "CONTINUOUS_WHEN_NO_ACTIVE_SONG",
+      "scene_taxonomy_closed": false,
+      "initial_user_scene_examples_are_seeds_only": true,
+      "veo_teacher_workflow": "hymn/flow_gemini_eye_veo_nature_workflow.json",
+      "av_teacher_split": "hymn/veo_av_teacher_split.py",
+      "local_ambience_generator": "hymn/local_nature_ambience_generator.py",
+      "local_learning_library": "hymn/veo_pack_local_nature_learning_library.json",
+      "final_video_default": "SILENT_VIDEO",
+      "ambient_audio_layer": "SEPARATE_OPTIONAL_TRACK",
+      "music_background_pack": "V-tube/hymn_multilingual/music_background",
+      "background_plan_authority": "MUSIC_BACKGROUND_PACK_AFTER_MUSIC_TEACHER_PASS"
+    }
+  },
   "reuse_priority": [
     "TEMPLATE",
     "SEED",
@@ -38,6 +74,7 @@
     "MOTION_PACK",
     "VOICE_PACK",
     "LANGUAGE_PACK",
+    "MUSIC_TEACHER_PACK",
     "FLOW_PACK",
     "VEO_PACK",
     "VTUBE_PACK",
@@ -47,7 +84,8 @@
     "SKETCHUP_PACK",
     "D5_PACK",
     "UNREAL_PACK",
-    "METAHUMAN"
+    "METAHUMAN",
+    "MUSIC_BACKGROUND_PACK"
   ],
   "pipeline": [
     "REQUEST",
