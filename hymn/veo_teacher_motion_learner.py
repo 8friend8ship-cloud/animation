@@ -31,11 +31,28 @@ def sha256_file(path:Path):
         for b in iter(lambda:f.read(1024*1024),b""): h.update(b)
     return h.hexdigest()
 
-def read_frame_at(cap,t_sec,w=320,h=180):
-    cap.set(cv2.CAP_PROP_POS_MSEC,max(0.0,t_sec)*1000.0)
-    ok,fr=cap.read()
-    if not ok: return None
-    return cv2.resize(fr,(w,h),interpolation=cv2.INTER_AREA)
+def decode_all(cap,w=320,h=180):
+    frames=[]
+    while True:
+        ok,fr=cap.read()
+        if not ok: break
+        frames.append(cv2.resize(fr,(w,h),interpolation=cv2.INTER_AREA))
+    return frames
+
+def resample_frames(src_frames,src_fps,target_fps,use_dur):
+    if not src_frames or src_fps<=0: return []
+    target_n=max(1,int(round(use_dur*target_fps)))
+    out=[]
+    for i in range(target_n):
+        pos=(i/target_fps)*src_fps
+        i0=min(int(math.floor(pos)),len(src_frames)-1)
+        i1=min(i0+1,len(src_frames)-1)
+        a=float(pos-i0)
+        if i0==i1 or a<=1e-6:
+            out.append(src_frames[i0])
+        else:
+            out.append(cv2.addWeighted(src_frames[i0],1.0-a,src_frames[i1],a,0))
+    return out
 
 def gray(fr): return cv2.cvtColor(fr,cv2.COLOR_BGR2GRAY)
 
@@ -116,15 +133,10 @@ def analyze(entry,target_fps=30,max_sec=None):
     frame_count=int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
     duration=frame_count/src_fps if src_fps>0 else float(entry.get("duration") or 0)
     use_dur=min(duration,float(max_sec)) if max_sec else duration
-    # Uniform 30fps timeline by timestamp seek. For 24fps Veo, repeated source
-    # frames are expected; analysis cadence is still 30 slots/sec.
-    times=np.arange(0,max(use_dur-1e-6,0),1.0/target_fps,dtype=np.float64)
-    frames=[]; metrics=[]
-    for t in times:
-        fr=read_frame_at(cap,float(t))
-        if fr is None: break
-        frames.append(fr); metrics.append(frame_metrics(fr))
+    src_frames=decode_all(cap)
     cap.release()
+    frames=resample_frames(src_frames,src_fps,target_fps,use_dur)
+    metrics=[frame_metrics(fr) for fr in frames]
     steps=[]
     cut_flags=[]
     prev=None
@@ -168,7 +180,7 @@ def analyze(entry,target_fps=30,max_sec=None):
             "teacher_status":entry.get("teacher_status","MOTION_OBSERVATION_ONLY_HOLD"),
             "source_fps":round(src_fps,3),"source_frames":frame_count,
             "duration_sec":round(duration,3),"analysis_fps":target_fps,
-            "analysis_slots":len(frames)
+            "analysis_slots":len(frames),"resample_method":"SEQUENTIAL_DECODE_LINEAR_FRAME_BLEND"
         },
         "camera_class":classify_camera(steps),
         "cut_times_sec":cut_flags,
