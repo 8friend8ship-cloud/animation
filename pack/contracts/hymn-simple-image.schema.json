@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Animation Pack Hymn Simple Image Input",
+  "title": "Animation Pack Hymn Simple Image/Video Input",
   "type": "object",
   "required": [
     "title",
@@ -16,6 +16,12 @@
       ],
       "minimum": 1,
       "maximum": 645
+    },
+    "songId": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "title": {
       "type": "string"
@@ -44,6 +50,98 @@
         "SLOW_ZOOM",
         "SLOW_PAN"
       ]
+    },
+    "qa": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "melodyFirstGate": {
+          "enum": [
+            "PASS",
+            "HOLD",
+            "PENDING"
+          ]
+        },
+        "musicTeacherPatternTemplate": {
+          "enum": [
+            "PASS",
+            "HOLD",
+            "PENDING"
+          ]
+        }
+      }
+    },
+    "visualPlaylist": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "section_id",
+          "start",
+          "end",
+          "kind",
+          "asset_url"
+        ],
+        "properties": {
+          "section_id": {
+            "type": "string"
+          },
+          "role": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "start": {
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "type": "number",
+            "minimum": 0
+          },
+          "kind": {
+            "enum": [
+              "image",
+              "video"
+            ]
+          },
+          "asset_url": {
+            "type": "string"
+          },
+          "source_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "crossfade_sec": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "loop": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "motion": {
+            "enum": [
+              "NONE",
+              "SLOW_ZOOM",
+              "SLOW_PAN"
+            ]
+          }
+        }
+      }
     },
     "languages": {
       "type": "array",
