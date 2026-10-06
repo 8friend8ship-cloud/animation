@@ -46,7 +46,13 @@
       "idle_ambient_scheduler": "hymn/idle_ambient_scheduler.py",
       "idle_behavior": "CONTINUOUS_WHEN_NO_ACTIVE_SONG",
       "scene_taxonomy_closed": false,
-      "initial_user_scene_examples_are_seeds_only": true
+      "initial_user_scene_examples_are_seeds_only": true,
+      "veo_teacher_workflow": "hymn/flow_gemini_eye_veo_nature_workflow.json",
+      "av_teacher_split": "hymn/veo_av_teacher_split.py",
+      "local_ambience_generator": "hymn/local_nature_ambience_generator.py",
+      "local_learning_library": "hymn/veo_pack_local_nature_learning_library.json",
+      "final_video_default": "SILENT_VIDEO",
+      "ambient_audio_layer": "SEPARATE_OPTIONAL_TRACK"
     }
   },
   "reuse_priority": [
