@@ -1,0 +1,361 @@
+{
+  "lineage": "DUAL_EYE_MULTI_BRAIN_BRIDGE_V1",
+  "owner_pack": "ANIMATION_PACK",
+  "status": "DYNAMIC_NATURE_SCENE_TAXONOMY_V1",
+  "principle": "The initial nine user examples are seeds, not a closed list. Scene types are discovered and expanded from rights-safe collection metadata plus eligible motion templates.",
+  "dimensions": {
+    "environment": [
+      "FOREST",
+      "WOODLAND",
+      "MOUNTAIN",
+      "VALLEY",
+      "MEADOW",
+      "FIELD",
+      "GRASSLAND",
+      "DESERT",
+      "DUNE",
+      "COAST",
+      "BEACH",
+      "CLIFF",
+      "ISLAND",
+      "WETLAND",
+      "MARSH",
+      "LAKE",
+      "POND",
+      "RIVER",
+      "STREAM",
+      "WATERFALL",
+      "SPRING",
+      "CAVE",
+      "GLACIER",
+      "SNOWFIELD",
+      "VOLCANIC",
+      "GARDEN",
+      "FARMLAND"
+    ],
+    "water_state_and_flux": [
+      "OCEAN_SWELL",
+      "SHORE_BREAK",
+      "TIDE",
+      "FOAM",
+      "RIPPLE",
+      "REFLECTION",
+      "STREAMFLOW",
+      "RAPIDS",
+      "FALLING_WATER",
+      "SPRAY",
+      "MIST",
+      "RAIN",
+      "DRIZZLE",
+      "SNOW",
+      "SLEET",
+      "HAIL",
+      "SNOWMELT",
+      "RUNOFF",
+      "ICE_DRIFT",
+      "GLACIER_CALVING",
+      "DEW",
+      "CONDENSATION",
+      "EVAPORATION_VISUAL"
+    ],
+    "atmosphere_weather": [
+      "CLEAR_SKY",
+      "CLOUD_DRIFT",
+      "FOG",
+      "LOW_CLOUD",
+      "MOUNTAIN_MIST",
+      "RAIN_SHOWER",
+      "HEAVY_RAIN",
+      "THUNDERSTORM",
+      "LIGHTNING",
+      "WIND_GUST",
+      "BREEZE",
+      "SNOWFALL",
+      "BLIZZARD_VISUAL",
+      "STORM_TO_CLEAR",
+      "RAINBOW",
+      "SUNBEAM",
+      "CREPUSCULAR_RAYS",
+      "HEAT_HAZE"
+    ],
+    "sky_celestial": [
+      "SUNRISE",
+      "SUNSET",
+      "GOLDEN_HOUR",
+      "BLUE_HOUR",
+      "MOON",
+      "MOONLIGHT",
+      "STARS",
+      "MILKY_WAY",
+      "AURORA",
+      "CLOUD_TIMELAPSE",
+      "STAR_TIMELAPSE",
+      "DAY_TO_NIGHT",
+      "NIGHT_TO_DAY"
+    ],
+    "vegetation": [
+      "TREE_CANOPY",
+      "LEAVES",
+      "GRASS",
+      "WHEAT",
+      "REEDS",
+      "FLOWERS",
+      "PETALS",
+      "MOSS",
+      "FERNS",
+      "BAMBOO",
+      "AUTUMN_LEAVES",
+      "SPRING_BLOSSOM",
+      "FALLING_LEAVES",
+      "POLLEN_SEEDS",
+      "FOREST_LIGHT"
+    ],
+    "fauna": [
+      "BIRDS_SINGLE",
+      "BIRD_FLOCK",
+      "BUTTERFLIES",
+      "INSECTS",
+      "FISH",
+      "DEER_WILDLIFE",
+      "HORSES_FIELD",
+      "MARINE_WILDLIFE",
+      "SMALL_WILDLIFE",
+      "DISTANT_ANIMAL_SILHOUETTE"
+    ],
+    "fire_light_particle": [
+      "FIREPLACE",
+      "CAMPFIRE",
+      "EMBERS",
+      "CANDLE",
+      "LANTERN",
+      "SMOKE",
+      "STEAM",
+      "DUST_MOTES",
+      "BOKEH_LIGHT"
+    ],
+    "seasonal": [
+      "SPRING",
+      "SUMMER",
+      "AUTUMN",
+      "WINTER",
+      "FIRST_SNOW",
+      "BLOSSOM_SEASON",
+      "FALL_COLOR",
+      "MONSOON_VISUAL"
+    ],
+    "scale": [
+      "EXTREME_WIDE",
+      "WIDE_ESTABLISHING",
+      "MEDIUM_NATURE",
+      "CLOSE_DETAIL",
+      "MACRO",
+      "AERIAL",
+      "TOP_DOWN"
+    ],
+    "camera_motion": [
+      "LOCKED",
+      "SLOW_ZOOM_IN",
+      "SLOW_ZOOM_OUT",
+      "PAN_LEFT",
+      "PAN_RIGHT",
+      "TILT_UP",
+      "TILT_DOWN",
+      "DOLLY_IN",
+      "DOLLY_OUT",
+      "AERIAL_GLIDE",
+      "TRACKING",
+      "ORBIT_SLOW",
+      "HANDHELD_SOFT",
+      "TIMELAPSE"
+    ],
+    "temporal_role": [
+      "STATIC_AMBIENT",
+      "PERIODIC",
+      "CONTINUOUS_FLOW",
+      "STOCHASTIC_PARTICLE",
+      "SWAY",
+      "BURST_THEN_DECAY",
+      "TENSION_TO_RELEASE",
+      "LIGHT_TRANSITION",
+      "OBJECT_CROSSING",
+      "GROWTH_OR_OPENING"
+    ]
+  },
+  "motion_archetypes": {
+    "FLOW_FIELD": [
+      "river",
+      "stream",
+      "waterfall",
+      "cloud",
+      "smoke",
+      "fog",
+      "grass_wind",
+      "underwater_current"
+    ],
+    "PERIODIC_WAVE": [
+      "ocean",
+      "lake_ripple",
+      "wheat_sway",
+      "branch_sway"
+    ],
+    "PARTICLE_FALL": [
+      "rain",
+      "snow",
+      "petals",
+      "leaves",
+      "embers",
+      "dust"
+    ],
+    "PARTICLE_RISE": [
+      "fire",
+      "steam",
+      "smoke",
+      "embers"
+    ],
+    "OBJECT_CROSSING": [
+      "birds",
+      "butterflies",
+      "wildlife",
+      "cloud_shadow"
+    ],
+    "LIGHT_CURVE": [
+      "sunrise",
+      "sunset",
+      "storm_clear",
+      "fire_flicker",
+      "cloud_shadow",
+      "aurora"
+    ],
+    "TIMELAPSE": [
+      "clouds",
+      "stars",
+      "day_night",
+      "flower_opening",
+      "fog_lift"
+    ],
+    "LOW_MOTION_HOLD": [
+      "mountain",
+      "lake",
+      "forest",
+      "snowfield",
+      "night_sky"
+    ],
+    "TURBULENT": [
+      "waterfall",
+      "rapids",
+      "storm_cloud",
+      "fire",
+      "ocean_breaker"
+    ],
+    "PARALLAX": [
+      "forest_depth",
+      "mountain_layers",
+      "window_rain",
+      "aerial_landscape"
+    ]
+  },
+  "emotion_visual_map": {
+    "QUIET": [
+      "lake",
+      "forest",
+      "fog",
+      "slow_stream",
+      "snowfall",
+      "moonlight",
+      "close_detail"
+    ],
+    "PRAYER": [
+      "sunbeam",
+      "forest_light",
+      "rain_window",
+      "candle",
+      "mountain_mist",
+      "stars"
+    ],
+    "HOPE": [
+      "sunrise",
+      "cloud_opening",
+      "rainbow",
+      "birds",
+      "spring_blossom",
+      "wide_valley"
+    ],
+    "JOY": [
+      "flowers",
+      "bright_field",
+      "clear_sky",
+      "sparkling_water",
+      "bird_flock",
+      "golden_hour"
+    ],
+    "LONGING": [
+      "sunset",
+      "distant_mountain",
+      "ocean_horizon",
+      "rain_window",
+      "blue_hour"
+    ],
+    "MAJESTY": [
+      "mountain",
+      "waterfall",
+      "ocean",
+      "storm_cloud",
+      "aurora",
+      "aerial_landscape"
+    ],
+    "TENSION": [
+      "storm",
+      "heavy_rain",
+      "wind_gust",
+      "rapids",
+      "dark_cloud"
+    ],
+    "RELEASE": [
+      "storm_to_clear",
+      "sunbeam",
+      "open_sky",
+      "calm_ocean",
+      "rainbow",
+      "sunrise"
+    ],
+    "MEMORIAL": [
+      "slow_cloud",
+      "sunset",
+      "candle",
+      "soft_rain",
+      "autumn_leaves",
+      "distant_birds"
+    ]
+  },
+  "discovery": {
+    "closed_list": false,
+    "metadata_sources": "runtime stock metadata may expand search vocabulary, but stock frames are not used for ML training",
+    "motion_training_sources": [
+      "USER_OWNED",
+      "CC0",
+      "PUBLIC_DOMAIN",
+      "OUR_GENERATED",
+      "EXPLICIT_ANALYSIS_LICENSE"
+    ],
+    "candidate_scene_type_when": [
+      "new tag cluster recurs across >=3 distinct rights-safe assets",
+      "or a rights-safe 30fps motion template reveals a stable new motion archetype",
+      "or a procedural physics template passes visual sanity review"
+    ],
+    "promote_to_reusable_when": [
+      "semantic label is clear",
+      "motion signature is reproducible",
+      "camera/scale role is known",
+      "music/emotion placement benefit is documented",
+      "rights provenance is stored",
+      "human visual review PASS"
+    ],
+    "never_freeze_taxonomy": true
+  },
+  "source_grounding": [
+    "USGS water-cycle pools and fluxes broaden water scenes beyond waterfall/river/waves",
+    "NOAA weather categories broaden atmospheric scenes beyond rain/storm",
+    "stock discovery tags broaden practical footage vocabulary",
+    "cinematography shot taxonomy adds framing/camera-motion dimensions"
+  ]
+}
