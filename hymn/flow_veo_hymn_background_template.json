@@ -41,7 +41,7 @@
     "orientation": "landscape",
     "camera": "locked; no cuts; no whip pan; no zoom burst",
     "motion": "slow, continuous, physically plausible, loop-friendly",
-    "audio": "not required for hymn background seed",
+    "audio": "Generate phenomenon-matched ambient SFX only when approved; no dialogue, lyrics, or background music. After generation, split to silent video master + separate ambient teacher WAV.",
     "first_last_frame": "use when it improves loop continuity; reject if it creates unnatural reverse/hold",
     "extend": "optional only after explicit credit approval",
     "prompt_requirements": [
@@ -161,12 +161,16 @@
     "MUSIC_TEACHER section/emotion fit PASS",
     "Gemini Eye advisory visual review",
     "OpenAI crosscheck",
-    "human monitor preview PASS"
+    "human monitor preview PASS",
+    "silent-master ffprobe audio_stream_count == 0",
+    "ambient-audio teacher QA PASS when audio exists",
+    "only PASS assets distill into local VEO_PACK/VIDEO_PACK/ANIMATION_PACK libraries"
   ],
   "source_lessons": [
     "Worship backgrounds typically work as subtle loops rather than attention-grabbing video.",
     "Readability beats spectacle.",
     "Nature is strongest for creation, peace, prayer and reflective moments.",
-    "One visual family per song is usually better than frequent mid-song switching."
+    "One visual family per song is usually better than frequent mid-song switching.",
+    "Audio/video separation is the canonical reuse format: silent background video + independently mixable ambience."
   ]
 }
