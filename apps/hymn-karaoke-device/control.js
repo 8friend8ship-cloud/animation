@@ -50,6 +50,7 @@ channel.onmessage=(e)=>{
  const msg=e.data;
  if (!msg||msg.v!==1||msg.room!==room) return;
  if (msg.kind==="HELLO") send();
+ if (msg.kind==="DISPLAY_NEXT" && active==="scripture" && msg.seq===seq) turnVerse(1);
  if (msg.kind==="ACK") {acknowledgedAt=Date.now();status();}
 };
 function setPreview(scene) {
