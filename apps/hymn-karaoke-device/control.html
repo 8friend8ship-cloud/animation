@@ -55,6 +55,18 @@
   <p class="note">현재 재생은 악보 자막 시연입니다. 실제 반주·전체곡은 아직 연결되지 않았습니다.</p>
  </section>
  <section class="operator-card">
+  <h2>성경 장절</h2>
+  <p class="note">퍼블릭 도메인 1910년 한국어 성경 · 창세기 1장, 시편 23편 시험</p>
+  <div class="operator-row"><label for="bookSelect">성경</label><select id="bookSelect"><option value="GEN">창세기</option><option value="PSA">시편</option></select></div>
+  <div class="operator-row"><label for="chapterNumber">장</label><input id="chapterNumber" type="number" min="1" value="1"></div>
+  <div class="operator-row"><label for="fromVerse">시작 절</label><input id="fromVerse" type="number" min="1" value="1"></div>
+  <div class="operator-row"><label for="toVerse">마지막 절</label><input id="toVerse" type="number" min="1" value="5"></div>
+  <button type="button" id="previewScripture" class="scripture-button">말씀 미리보기</button>
+  <p id="scriptureStatus" class="note" role="status"></p>
+  <div class="playback"><button type="button" id="previousVerse">← 이전 절</button><button type="button" id="nextVerse">다음 절 →</button></div>
+  <p class="note">미리보기 후 송출하세요. 다음 절은 진행자가 직접 선택합니다.</p>
+</section>
+<section class="operator-card">
   <h2>모니터 연결 QR</h2>
   <p class="note">현재 같은 노트북 Chrome 안의 화면 연결을 검증합니다. QR을 다른 휴대전화에서 열어도 원격 조작은 아직 연결되지 않습니다.</p>
   <div class="room-qr" id="roomQr">QR 생성 중</div>
