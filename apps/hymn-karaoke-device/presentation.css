@@ -1,0 +1,59 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap");
+:root{font-family:"Noto Sans KR",system-ui,sans-serif;font-synthesis:none;color:#f5f8ff;background:#0b1428}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #8ddfff;outline-offset:3px}
+.operator-body{background:linear-gradient(150deg,#0c1930,#132743 65%,#101b30);min-height:100vh}
+.operator-layout{width:min(1310px,calc(100% - 42px));margin:auto;padding-bottom:55px}
+.operator-header{display:flex;align-items:center;gap:17px;padding:22px 0;border-bottom:1px solid #34465d}
+.operator-header strong{font-size:20px;flex:1}.back-link{color:#a8cbed;font-size:13px;text-decoration:none}.pilot-label{font-size:11px;border-radius:100px;border:1px solid #5a7191;color:#bfddf6;padding:7px 12px}
+.operator-status{display:flex;align-items:center;gap:12px;background:#1a2d46;margin:20px 0;border:1px solid #344d67;border-radius:12px;padding:16px;flex-wrap:wrap}
+.operator-status a{margin-left:auto;color:#a4d9ff;font-weight:800;font-size:14px}.live-led{width:12px;height:12px;background:#b58f5c;border-radius:100%}.live-led.connected{background:#58d6a8}
+.operator-columns{display:grid;grid-template-columns:1fr 1fr .83fr;align-items:start;gap:18px}.operator-card{border:1px solid #304865;border-radius:16px;padding:23px;background:#14253c;min-width:0}
+.operator-card h1,.operator-card h2{margin:0 0 23px;font-size:22px}.operator-card h3{font-size:14px;margin:14px 0 7px}
+.field-label{display:block;color:#b1c5dd;font-weight:600;font-size:13px;margin:16px 0 8px}
+.operator-card input[type=text],.operator-card select{width:100%;background:#0d1c32;color:#fff;border-radius:9px;border:1px solid #4c6583;padding:11px 13px;min-height:48px}
+.operator-card input[type=text]{font-size:26px;font-weight:900;text-align:center;letter-spacing:5px}
+.operator-card input[type=range]{width:100%;accent-color:#67c8fe}
+.num-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:15px}
+.num-pad button,.scene-grid button,.playback button,#copyDisplay{background:#263e5b;border:1px solid #446080;color:white;border-radius:10px;padding:13px 7px;min-height:54px;font-weight:800;font-size:16px}
+.num-pad button:hover,.scene-grid button:hover,.playback button:hover{background:#33577d}
+#numEnter{background:#256eb3}.selected-info{min-height:52px;border-radius:8px;margin-top:12px;padding:11px;color:#c5d7ec;font-size:12px;line-height:1.7;background:#172c47}
+.operator-row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0}.operator-row label{font-size:13px;color:#b4c7dd}.operator-row select{width:57%;font-size:13px;min-height:42px}
+.scene-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.scene-grid button{font-size:13px;min-height:56px}.scene-grid button:nth-child(3){grid-column:span 2}
+.preview-panel{background:#101f35;border:1px solid #425a72;padding:17px;border-radius:12px;margin:21px 0 12px;display:flex;flex-direction:column;gap:11px}
+.preview-panel span{font-size:11px;color:#a3b9d0}.preview-panel strong{font-size:18px}.preview-panel small{color:#8baccb;line-height:1.5}
+.go-live{width:100%;padding:15px;background:#188e6d;border:1px solid #65caab;color:white;font-size:17px;border-radius:10px;font-weight:900}
+.go-live:disabled{background:#536373;cursor:not-allowed}.note{line-height:1.7;color:#a1b5ce;font-size:12px}
+.playback{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:20px 0 13px}.playback button{font-size:12px;min-height:45px}.time-label{color:#d5e7fb;font-size:13px;text-align:center;font-variant-numeric:tabular-nums}
+.room-qr{margin:19px auto 12px;background:#fff;color:#27425e;width:185px;min-height:185px;display:grid;place-items:center;text-align:center;padding:10px;border-radius:10px;font-size:12px}
+#copyDisplay{width:100%;font-size:13px;min-height:45px}.pending-list{margin-top:25px;border-top:1px solid #3b4e65;padding-top:12px}
+.display-body{width:100vw;height:100vh;overflow:hidden;background:#000}
+.worship-screen{position:relative;width:100vw;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.worship-screen.nature-scene{background:linear-gradient(180deg,#b4d9f0 0%,#e7ddaf 45%,#75a3a6 80%,#3d6470 100%)}
+.worship-screen.hymn-scene{background:linear-gradient(145deg,#152b4b 0%,#284c67 50%,#4b6375 100%)}
+.worship-screen.blank-scene{background:#000}
+.scenery{position:absolute;inset:0;overflow:hidden;opacity:0;transition:opacity .6s}
+.nature-scene .scenery{opacity:1}.scenery .sun{position:absolute;left:69%;top:19%;height:min(19vw,180px);width:min(19vw,180px);background:#fff2bd;border-radius:50%;box-shadow:0 0 100px 55px #fff4cc70;animation:sunfloat 24s ease-in-out infinite alternate}
+.ridge{position:absolute;width:125%;height:45%;left:-12%;border-radius:48% 40% 0 0}
+.ridge-a{top:58%;background:linear-gradient(40deg,#7ca5a1,#4b7e8f);transform:rotate(-4deg)}
+.ridge-b{top:70%;background:linear-gradient(40deg,#436970,#375867);transform:rotate(5deg)}
+.meadow{position:absolute;bottom:-14%;width:140%;height:42%;left:-17%;background:linear-gradient(0deg,#385c55,#618c72);border-radius:55% 45% 0 0;transform:rotate(-3deg)}
+@keyframes sunfloat{from{transform:translate(-15px,2px)}to{transform:translate(18px,-11px)}}
+.nature-message{position:absolute;bottom:12%;color:#fffbea;text-shadow:0 4px 20px #19343e80;font-size:clamp(28px,3vw,54px);font-weight:700;letter-spacing:.1em}
+.projected-content{position:relative;z-index:1;text-align:center;width:92%;max-width:1900px;color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60%}
+.projected-content[hidden]{display:none}
+.projected-kicker{font-size:clamp(18px,2vw,32px);letter-spacing:.06em;font-weight:700;color:#c7e6f4;margin:0 0 14px}
+.projected-content h1{font-size:clamp(28px,3vw,55px);font-weight:800;margin:0 0 7vh;text-shadow:0 3px 14px #03132480}
+.projected-lyrics{display:flex;flex-direction:column;align-items:center;gap:3vh;min-height:23vh;width:100%;justify-content:center;white-space:pre-wrap;overflow-wrap:anywhere}
+.worship-caption{font-size:clamp(34px,4.6vw,86px);font-weight:900;line-height:1.36;letter-spacing:-.03em;text-shadow:0 3px 14px #071829a5}
+.projected-lyrics[data-size=large] .worship-caption{font-size:clamp(43px,5.5vw,100px)}
+.projected-lyrics[data-size=extra] .worship-caption{font-size:clamp(46px,6.6vw,118px)}
+.projected-lyrics .worship-caption:nth-child(2){font-size:.68em}
+.worship-syllable{color:#fff;display:inline;background:linear-gradient(90deg,#ffda69 var(--fill),#fff var(--fill));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.projected-note{font-size:clamp(13px,1.3vw,22px);color:#b9d9eb;margin:7vh 0 0}
+.display-connection{position:absolute;bottom:2%;right:3%;z-index:2;color:#ffffff94;font-size:12px;pointer-events:none}
+@media(max-width:1100px){.operator-columns{grid-template-columns:1fr 1fr}.operator-card:nth-child(3){grid-column:span 2}}
+@media(max-width:690px){.operator-layout{width:calc(100% - 25px)}.operator-columns{grid-template-columns:1fr}.operator-card:nth-child(3){grid-column:auto}.operator-header{gap:9px}.operator-header strong{font-size:16px}.operator-status a{margin-left:0}.operator-card{padding:17px}}
