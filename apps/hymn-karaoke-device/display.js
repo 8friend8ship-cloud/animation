@@ -1,27 +1,58 @@
-import {schema,getRoom,roomChannel,loadCatalog,safeState,clamp,addCaption} from "./presentation-shared.js";
+import {schema,getRoom,roomChannel,loadCatalog,loadBiblePilot,findPilotPassage,safeState,clamp,addCaption} from "./presentation-shared.js";
 const $=id=>document.getElementById(id);
 const room=getRoom();
-let channel=null, catalog=null;
+let channel=null, catalog=null,bible=null;
 let live=null,lastSeq=-1,lastMessageAt=0,raf=0, connected=false;
 function showNature(){
  $("worshipScreen").className="worship-screen nature-scene";
  $("projectedContent").hidden=true;
+ $("scripturePanel").hidden=true;
  $("standbyLabel").hidden=false;
 }
 function showBlank(){
  $("worshipScreen").className="worship-screen blank-scene";
  $("projectedContent").hidden=true;
+ $("scripturePanel").hidden=true;
  $("standbyLabel").hidden=true;
 }
 function showHymn(){
  $("worshipScreen").className="worship-screen hymn-scene";
  $("standbyLabel").hidden=true;
+ $("scripturePanel").hidden=true;
  $("projectedContent").hidden=false;
+}
+function showScripture(){
+ $("worshipScreen").className="worship-screen scripture-scene";
+ $("standbyLabel").hidden=true;
+ $("projectedContent").hidden=true;
+ $("scripturePanel").hidden=false;
 }
 function updateScene(){
  if(!catalog||!live){showNature();return;}
  if(live.scene==="nature"){showNature();return;}
  if(live.scene==="blank"){showBlank();return;}
+ if(live.scene==="scripture"){
+   const entry=findPilotPassage(bible,live.passageBook,live.passageChapter);
+   if(!entry||live.fromVerse<1||live.toVerse>entry.verses.length||
+      live.toVerse<live.fromVerse||live.currentVerse<live.fromVerse||live.currentVerse>live.toVerse){
+     showNature();return;
+   }
+   const verse=entry.verses.find(x=>x.v===live.currentVerse);
+   if(!verse){showNature();return;}
+   showScripture();
+   $("scriptureReference").textContent=entry.name+" "+entry.chapter+"장 "+verse.v+"절";
+   $("scriptureVerse").textContent=verse.text;
+   $("scriptureProgress").textContent=verse.v+" / "+live.toVerse+"절";
+   // Fit text within measured monitor bounds; preserve complete wording and punctuation.
+   const element=$("scriptureVerse");
+   let font=clamp(window.innerWidth*.043,36,84);
+   element.style.fontSize=font+"px";
+   for(let i=0;i<16 && element.scrollHeight>element.clientHeight+2;i++){
+     font=Math.max(25,font-4);
+     element.style.fontSize=font+"px";
+   }
+   return;
+ }
  const hymn=catalog.hymns.find(h=>h.id===live.hymnId);
  if(!hymn){showNature();return;}
  showHymn();
@@ -66,8 +97,12 @@ async function boot(){
  }
  try{
   catalog=await loadCatalog();
+  try{bible=await loadBiblePilot();}catch(e){console.warn("BIBLE_PILOT_HOLD",e);}
   channel=roomChannel(room);
   channel.onmessage=e=>accept(e.data);
+  $("scripturePanel").addEventListener("click",()=>{
+    if(live?.scene==="scripture")channel.postMessage({v:1,kind:"DISPLAY_NEXT",room,seq:lastSeq});
+  });
   channel.postMessage({v:1,kind:"HELLO",room});
   showNature();
   raf=requestAnimationFrame(frame);
