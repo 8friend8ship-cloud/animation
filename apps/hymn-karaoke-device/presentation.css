@@ -57,3 +57,15 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .display-connection{position:absolute;bottom:2%;right:3%;z-index:2;color:#ffffff94;font-size:12px;pointer-events:none}
 @media(max-width:1100px){.operator-columns{grid-template-columns:1fr 1fr}.operator-card:nth-child(3){grid-column:span 2}}
 @media(max-width:690px){.operator-layout{width:calc(100% - 25px)}.operator-columns{grid-template-columns:1fr}.operator-card:nth-child(3){grid-column:auto}.operator-header{gap:9px}.operator-header strong{font-size:16px}.operator-status a{margin-left:0}.operator-card{padding:17px}}
+
+/* Source-verified PD1910 Bible pilot: display only, no operator controls. */
+.operator-row input[type=number]{width:57%;min-height:42px;padding:9px;border-radius:9px;border:1px solid #4c6583;background:#0d1c32;color:#fff;text-align:center}
+.scripture-button{width:100%;min-height:51px;padding:10px;border-radius:10px;border:1px solid #79bfeb;background:#26669d;color:#fff;font-weight:800;font-size:15px}
+.worship-screen.scripture-scene{background:radial-gradient(ellipse at 50% 24%,#294c65,#091b32 72%);}
+.scripture-projection{width:90%;max-width:1660px;min-height:60%;max-height:90vh;color:#f7fbff;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:1}
+.scripture-projection[hidden]{display:none}
+#scriptureEdition{font-size:clamp(14px,1.4vw,25px);color:#a2c4db;letter-spacing:.05em;margin:0 0 4vh}
+#scriptureReference{font-size:clamp(27px,3.2vw,56px);margin:0 0 6vh}
+.scripture-verse{max-height:55vh;min-height:140px;width:100%;overflow:hidden;white-space:pre-wrap;overflow-wrap:break-word;line-height:1.55;font-weight:700;padding:0 2%}
+#scriptureProgress{font-size:clamp(14px,1.2vw,22px);margin-top:5vh;color:#afc7de}
+@media(max-width:690px){.scripture-verse{max-height:66vh;line-height:1.45}}
