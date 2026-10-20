@@ -1,0 +1,196 @@
+{
+  "schema": "O3_KARAOKE_SCORE_V1",
+  "lineage": "DUAL_EYE_MULTI_BRAIN_BRIDGE_V1",
+  "approvalScope": "X41_FIRST_10_67_SECONDS_KO_EN_SYNC_ONLY",
+  "languages": [
+    {
+      "code": "ko",
+      "name": "한국어",
+      "readiness": "SYNC_APPROVED_LYRICS_RIGHTS_PENDING"
+    },
+    {
+      "code": "en",
+      "name": "English",
+      "readiness": "SYNC_APPROVED_LYRICS_MEANING_GATE_PENDING"
+    },
+    {
+      "code": "ja",
+      "name": "日本語",
+      "readiness": "AWAITING_APPROVED_LYRICS"
+    },
+    {
+      "code": "zh",
+      "name": "中文",
+      "readiness": "AWAITING_APPROVED_LYRICS"
+    },
+    {
+      "code": "es",
+      "name": "Español",
+      "readiness": "AWAITING_APPROVED_LYRICS"
+    },
+    {
+      "code": "fr",
+      "name": "Français",
+      "readiness": "AWAITING_APPROVED_LYRICS"
+    },
+    {
+      "code": "de",
+      "name": "Deutsch",
+      "readiness": "AWAITING_APPROVED_LYRICS"
+    }
+  ],
+  "hymns": [
+    {
+      "id": "nicaea-x41",
+      "title": "거룩 거룩 거룩",
+      "titleEn": "Holy, Holy, Holy!",
+      "numberKo": "8장",
+      "numberEn": "Hymn 64",
+      "meter": "4/4",
+      "bpm": 90,
+      "durationCs": 1067,
+      "published": false,
+      "mediaStatus": "DEMO_CLOCK_ONLY_NO_AUDIO_DISTRIBUTED",
+      "rights": "PUBLIC_RIGHTS_QA_HOLD",
+      "fullSong": "HOLD_4_VERSES",
+      "approvedSync": "X41_B_KO_EN_FIRST_10P667_ONLY",
+      "notesCs": [
+        0,
+        67,
+        133,
+        200,
+        267,
+        400,
+        533,
+        600,
+        667,
+        733,
+        800,
+        933,
+        1067
+      ],
+      "captions": {
+        "ko": [
+          {
+            "startCs": 0,
+            "endCs": 533,
+            "groups": [
+              [
+                "거",
+                67
+              ],
+              [
+                "룩 ",
+                66
+              ],
+              [
+                "거",
+                67
+              ],
+              [
+                "룩 ",
+                67
+              ],
+              [
+                "거",
+                133
+              ],
+              [
+                "룩",
+                133
+              ]
+            ]
+          },
+          {
+            "startCs": 533,
+            "endCs": 1067,
+            "groups": [
+              [
+                "전",
+                67
+              ],
+              [
+                "능",
+                67
+              ],
+              [
+                "하",
+                66
+              ],
+              [
+                "신 ",
+                67
+              ],
+              [
+                "주",
+                133
+              ],
+              [
+                "님",
+                134
+              ]
+            ]
+          }
+        ],
+        "en": [
+          {
+            "startCs": 0,
+            "endCs": 533,
+            "groups": [
+              [
+                "Ho",
+                67
+              ],
+              [
+                "ly, ",
+                66
+              ],
+              [
+                "ho",
+                67
+              ],
+              [
+                "ly, ",
+                67
+              ],
+              [
+                "ho",
+                133
+              ],
+              [
+                "ly!",
+                133
+              ]
+            ]
+          },
+          {
+            "startCs": 533,
+            "endCs": 1067,
+            "groups": [
+              [
+                "Lord ",
+                134
+              ],
+              [
+                "God ",
+                66
+              ],
+              [
+                "Al",
+                67
+              ],
+              [
+                "might",
+                133
+              ],
+              [
+                "y!",
+                134
+              ]
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
