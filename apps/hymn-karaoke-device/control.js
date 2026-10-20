@@ -1,4 +1,4 @@
-import {schema,getRoom,newRoom,makeDisplayUrl,roomChannel,loadCatalog,formatTime,clamp} from "./presentation-shared.js";
+import {schema,getRoom,newRoom,makeDisplayUrl,roomChannel,loadCatalog,loadBiblePilot,findPilotPassage,formatTime,clamp} from "./presentation-shared.js";
 const $=id=>document.getElementById(id);
 const room=getRoom()||newRoom();
 if (!getRoom()) {
@@ -8,6 +8,8 @@ if (!getRoom()) {
 }
 const channel=roomChannel(room);
 let catalog=null;
+let bible=null;
+let passage=null;
 let currentHymn=null;
 let preview="nature";
 let active="nature";
@@ -24,7 +26,9 @@ let number=8;
 const duration=()=>currentHymn?.durationCs||1067;
 const withSeq=()=>({scene:active,seq,hymnId:currentHymn?.id||"nicaea-x41",
   primary:first,secondary:second==="none"?first:second,lines:second==="none"?1:2,
-  size:font,elapsedCs:Math.round(elapsedCs),playing,startedEpochMs:startMs});
+  size:font,elapsedCs:Math.round(elapsedCs),playing,startedEpochMs:startMs,
+  passageBook:passage?.book||"GEN",passageChapter:passage?.chapter||1,
+  fromVerse:passage?.from||1,toVerse:passage?.to||5,currentVerse:passage?.current||1});
 function send() {
   channel.postMessage({v:1,kind:"STATE",room,state:withSeq()});
 }
@@ -51,8 +55,9 @@ channel.onmessage=(e)=>{
 function setPreview(scene) {
  preview=scene;
  $("nextPreview").textContent=scene==="hymn"?"8장 거룩 거룩 거룩 · 첫 10.67초":
+  scene==="scripture"&&passage?passage.name+" "+passage.chapter+"장 "+passage.from+"–"+passage.to+"절":
   scene==="blank"?"검은 화면":"자연풍경 대기";
- $("goLive").disabled=(scene==="hymn"&&!currentHymn);
+ $("goLive").disabled=(scene==="hymn"&&!currentHymn)||(scene==="scripture"&&!passage);
 }
 function goLive() {
  active=preview;
@@ -95,6 +100,25 @@ function selectNumber() {
  $("selectedInfo").textContent="8장 선택 · X41 첫 10.67초 자막 시연 가능 (반주 미연결)";
  setPreview("hymn");
 }
+function chooseScripture(){
+ if(!bible){$("scriptureStatus").textContent="성경 원본을 아직 불러오지 못했습니다.";return;}
+ const book=$("bookSelect").value,chapter=Number($("chapterNumber").value);
+ const from=Number($("fromVerse").value),to=Number($("toVerse").value);
+ const data=findPilotPassage(bible,book,chapter);
+ if(!data||!Number.isInteger(from)||!Number.isInteger(to)||from<1||to<from||to>data.verses.length){
+   $("scriptureStatus").textContent="현재 가능한 장절: 창세기 1장 1–31절, 시편 23편 1–6절입니다.";
+   return;
+ }
+ passage={book,chapter,name:data.name,from,to,current:from};
+ $("scriptureStatus").textContent=data.name+" "+chapter+"장 "+from+"–"+to+"절 · 1910년 성경";
+ setPreview("scripture");
+}
+function turnVerse(delta){
+ if(active!=="scripture"||!passage){$("scriptureStatus").textContent="먼저 말씀을 화면에 송출해 주세요.";return;}
+ passage.current=clamp(passage.current+delta,passage.from,passage.to);
+ $("scriptureStatus").textContent=passage.name+" "+passage.chapter+"장 "+passage.current+"절";
+ bump();
+}
 function makeQRCode() {
  const href=makeDisplayUrl(room);
  $("openDisplay").href=href;
@@ -117,6 +141,15 @@ function wire() {
  $("previewHymn").addEventListener("click",()=>{selectNumber();});
  $("previewNature").addEventListener("click",()=>setPreview("nature"));
  $("previewBlank").addEventListener("click",()=>setPreview("blank"));
+ $("previewScripture").addEventListener("click",chooseScripture);
+ $("previousVerse").addEventListener("click",()=>turnVerse(-1));
+ $("nextVerse").addEventListener("click",()=>turnVerse(1));
+ $("bookSelect").addEventListener("change",()=>{
+  const isPsalm=$("bookSelect").value==="PSA";
+  $("chapterNumber").value=isPsalm?"23":"1";
+  $("fromVerse").value="1";
+  $("toVerse").value=isPsalm?"6":"5";
+ });
  $("goLive").addEventListener("click",goLive);
  $("play").addEventListener("click",play);
  $("pause").addEventListener("click",pause);
@@ -143,6 +176,7 @@ function wire() {
 async function init(){
  try{
    catalog=await loadCatalog();
+   try{bible=await loadBiblePilot();}catch(e){console.warn("BIBLE_PILOT_HOLD",e);}
    currentHymn=catalog.hymns[0];
    wire();
    setPreview("nature");makeQRCode();syncClock();status();
