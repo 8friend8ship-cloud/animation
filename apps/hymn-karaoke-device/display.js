@@ -46,7 +46,12 @@ function frame(){
 function accept(msg){
  if(!msg||msg.v!==1||msg.room!==room||msg.kind!=="STATE")return;
  const valid=safeState(msg.state,catalog);
- if(!valid||valid.seq<=lastSeq)return;
+ if(!valid||valid.seq<lastSeq)return;
+ if(valid.seq===lastSeq){
+   lastMessageAt=Date.now();
+   channel.postMessage({v:1,kind:"ACK",room,seq:lastSeq});
+   return;
+ }
  lastSeq=valid.seq;
  live=valid;
  connected=true;lastMessageAt=Date.now();
