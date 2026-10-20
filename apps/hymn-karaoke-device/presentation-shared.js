@@ -2,7 +2,7 @@
 export const schema = "O3_PRESENTATION_LOCAL_V1";
 const repoBase = new URL("./", import.meta.url);
 export const roomPattern = /^[a-f0-9]{24}$/;
-export const allowedScenes = new Set(["nature","hymn","blank"]);
+export const allowedScenes = new Set(["nature","hymn","scripture","blank"]);
 export const formatTime = cs => {
   const t = Math.floor(Math.max(0,cs)/100);
   return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0");
@@ -39,6 +39,19 @@ export async function loadCatalog() {
   // Never assume other hymns/languages have cleared lyrics or media rights.
   return doc;
 }
+export async function loadBiblePilot() {
+  const response=await fetch(new URL("./data/bible-1910-pilot.json",repoBase),{cache:"no-store"});
+  if(!response.ok) throw Error("BIBLE_SOURCE_HTTP_"+response.status);
+  const data=await response.json();
+  if(data.schema!=="O3_BIBLE_1910_PILOT_V1"||
+     data.sourceZipSHA256!=="FEF4550220AD540B7358472E42DA651B7DCB1475359BDB4D2E388A912AC45E02"||
+     data.books.length!==2||data.books[0].verses.length!==31||data.books[1].verses.length!==6)
+      throw Error("BIBLE_PUBLIC_DOMAIN_SOURCE_AUDIT_FAILED");
+  return data;
+}
+export function findPilotPassage(data,book,chapter){
+  return data?.books?.find(x=>x.id===book&&x.chapter===chapter)||null;
+}
 export function availableLanguages(catalog,hymn) {
   return catalog.languages.filter(l =>
     l.readiness.startsWith("SYNC_APPROVED") && Array.isArray(hymn.captions[l.code]))
@@ -60,7 +73,12 @@ export function safeState(input, catalog) {
     elapsedCs:clamp(Number(input.elapsedCs)||0,0,hymn.durationCs),
     playing:input.playing===true,
     startedEpochMs:Number.isFinite(input.startedEpochMs)?input.startedEpochMs:null,
-    seq:Number.isSafeInteger(input.seq)?input.seq:0
+    seq:Number.isSafeInteger(input.seq)?input.seq:0,
+    passageBook:["GEN","PSA"].includes(input.passageBook)?input.passageBook:"GEN",
+    passageChapter:Number.isInteger(input.passageChapter)?input.passageChapter:1,
+    fromVerse:Number.isInteger(input.fromVerse)?input.fromVerse:1,
+    toVerse:Number.isInteger(input.toVerse)?input.toVerse:5,
+    currentVerse:Number.isInteger(input.currentVerse)?input.currentVerse:1
   };
 }
 export function cueAt(hymn,language,elapsedCs) {
