@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1428"><title>예배 조작기 · O3</title>
+<link rel="stylesheet" href="./presentation.css"><script src="./control.js" type="module"></script></head>
+<body class="operator-body">
+<main class="operator-layout">
+<header class="operator-header">
+ <a href="./" class="back-link">← 노래방 홈</a>
+ <strong>O3 예배 조작기</strong>
+ <span class="pilot-label">같은 브라우저 시연</span>
+</header>
+<section class="operator-status">
+ <span class="live-led" id="connectionLed"></span>
+ <span id="connectionStatus" role="status">모니터 연결 대기</span>
+ <a href="#" id="openDisplay" target="_blank" rel="noopener">모니터 전용 화면 열기 ↗</a>
+</section>
+<div class="operator-columns">
+ <section class="operator-card">
+  <h1>찬송가 번호</h1>
+  <label class="field-label" for="hymnNumber">번호를 입력하고 확인</label>
+  <input id="hymnNumber" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" placeholder="예: 8" autocomplete="off">
+  <div class="num-pad" role="group" aria-label="찬송가 번호 키패드">
+   <button data-digit="1">1</button><button data-digit="2">2</button><button data-digit="3">3</button>
+   <button data-digit="4">4</button><button data-digit="5">5</button><button data-digit="6">6</button>
+   <button data-digit="7">7</button><button data-digit="8">8</button><button data-digit="9">9</button>
+   <button id="numClear">지움</button><button data-digit="0">0</button><button id="numEnter">확인</button>
+  </div>
+  <div id="selectedInfo" class="selected-info" role="status">현재 사용 가능: 8장 X41 첫 10.67초 시연</div>
+  <div class="operator-row"><label for="firstLang">첫 줄</label><select id="firstLang"><option value="ko">한국어</option><option value="en">English</option></select></div>
+  <div class="operator-row"><label for="secondLang">둘째 줄</label><select id="secondLang"><option value="en">English</option><option value="ko">한국어</option><option value="none">표시 안 함</option></select></div>
+  <div class="operator-row"><label for="fontSize">글자 크기</label><select id="fontSize"><option value="normal">보통</option><option value="large">크게</option><option value="extra">아주 크게</option></select></div>
+ </section>
+ <section class="operator-card">
+  <h2>예배 화면 조작</h2>
+  <div class="scene-grid">
+   <button id="previewHymn" type="button">♫ 찬송가 미리보기</button>
+   <button id="previewNature" type="button">☀ 자연영상 대기</button>
+   <button id="previewBlank" type="button">▣ 검은 화면</button>
+  </div>
+  <div class="preview-panel">
+   <span>다음 송출 예정</span>
+   <strong id="nextPreview">자연 배경 · 무음</strong>
+   <small id="livePreview">실제 모니터: 대기화면</small>
+  </div>
+  <button id="goLive" class="go-live">화면에 송출하기</button>
+  <p class="note">미리보기 선택만으로는 모니터가 변경되지 않습니다. 송출 버튼을 눌러야 표시됩니다.</p>
+  <div class="playback">
+   <button id="play">▶ 자막 진행</button>
+   <button id="pause">Ⅱ 정지</button>
+   <button id="restart">↺ 처음</button>
+  </div>
+  <label class="field-label" for="seek">악보 기준 위치 (소리 없음)</label>
+  <input type="range" id="seek" min="0" max="1067" value="0" step="1">
+  <div id="timeLabel" class="time-label">00:00 / 00:10</div>
+  <p class="note">현재 재생은 악보 자막 시연입니다. 실제 반주·전체곡은 아직 연결되지 않았습니다.</p>
+ </section>
+ <section class="operator-card">
+  <h2>모니터 연결 QR</h2>
+  <p class="note">현재 같은 노트북 Chrome 안의 화면 연결을 검증합니다. QR을 다른 휴대전화에서 열어도 원격 조작은 아직 연결되지 않습니다.</p>
+  <div class="room-qr" id="roomQr">QR 생성 중</div>
+  <button id="copyDisplay" type="button">모니터 주소 복사</button>
+  <p id="copyStatus" class="note" role="status"></p>
+  <div class="pending-list">
+   <h3>다음 개발 단계</h3>
+   <p>성경 장절 · 주기도문 · 사도신경 · 교독문 · 다른 기기 실시간 브릿지</p>
+   <p>미검수 자료를 임의로 화면에 표시하지 않습니다.</p>
+  </div>
+ </section>
+</div>
+</main></body></html>
