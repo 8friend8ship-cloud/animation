@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#142d46"><title>예배 모니터 · O3</title>
+<link rel="stylesheet" href="./presentation.css"><script src="./display.js" type="module"></script></head>
+<body class="display-body">
+<main id="worshipScreen" class="worship-screen nature-scene" role="main">
+ <div class="scenery sky-scenery" aria-hidden="true"><div class="sun"></div><div class="ridge ridge-a"></div><div class="ridge ridge-b"></div><div class="meadow"></div></div>
+ <div class="nature-message" id="standbyLabel">평안과 쉼</div>
+ <section class="projected-content" id="projectedContent" hidden>
+   <p class="projected-kicker" id="projectedKicker">찬송가 8장</p>
+   <h1 id="projectedTitle"></h1>
+   <div class="projected-lyrics" id="projectedLyrics" aria-live="off"></div>
+   <p class="projected-note" id="projectedNote">악보 기반 자막 시연 · 음원 미연결</p>
+ </section>
+ <div id="localConnectionLabel" class="display-connection" aria-live="polite">모니터 연결 준비 중</div>
+</main>
+</body></html>
