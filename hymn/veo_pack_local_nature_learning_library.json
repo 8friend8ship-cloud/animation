@@ -1,0 +1,57 @@
+{
+  "schema": "VEO_PACK_LOCAL_NATURE_LEARNING_LIBRARY_V1",
+  "lineage": "DUAL_EYE_MULTI_BRAIN_BRIDGE_V1",
+  "status": "LOCAL_FIRST_CANDIDATE_LIBRARY",
+  "rule": "This trains/updates our local VEO_PACK behavior, not Google's Veo model.",
+  "input_teacher_asset": {
+    "required": "FLOW/Gemini-approved Veo result",
+    "split": [
+      "silent_video_master",
+      "ambient_audio_teacher_wav"
+    ],
+    "final_positive_evidence_requires": [
+      "Gemini Eye final silent-video PASS",
+      "local numeric video QA PASS",
+      "ambient audio QA PASS when audio exists",
+      "OpenAI crosscheck",
+      "human monitor preview PASS"
+    ]
+  },
+  "distilled_fields": {
+    "video": [
+      "phenomenon",
+      "camera",
+      "lens_look",
+      "motion_speed",
+      "global_motion",
+      "residual_motion",
+      "loop_metrics",
+      "lyric_safe_zone",
+      "negative_prompt_patterns"
+    ],
+    "audio": [
+      "phenomenon",
+      "rms_envelope",
+      "peak_margin",
+      "event_density",
+      "loop_shape",
+      "prompt_words",
+      "negative_audio_patterns"
+    ]
+  },
+  "positive_templates": [],
+  "negative_patterns": [],
+  "promotion": {
+    "X1": "shadow local reproduction",
+    "X2": "second runtime readback",
+    "after_X2": "LOCAL_FIRST",
+    "known_pattern": "local procedural video + local procedural ambience; no Veo call",
+    "unknown_pattern": "Veo teacher only after explicit credit approval"
+  },
+  "token_credit_goal": {
+    "known_pattern_external_calls": 0,
+    "known_pattern_external_tokens": 0,
+    "known_pattern_external_credits": 0,
+    "note": "Flow/Veo remain teachers for novel cases; local packs perform recurring production."
+  }
+}

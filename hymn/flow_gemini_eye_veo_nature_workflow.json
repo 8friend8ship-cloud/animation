@@ -1,0 +1,198 @@
+{
+  "contract_id": "FLOW_GEMINI_EYE_VEO_NATURE_WORKFLOW_V1",
+  "lineage": "DUAL_EYE_MULTI_BRAIN_BRIDGE_V1",
+  "existing_parent_node": "VEO_CREDIT_REDUCTION_MOTION_LEARNING_V1",
+  "owner_pack": "ANIMATION_PACK",
+  "support_packs": [
+    "FLOW_PACK",
+    "GEMINI_EYE_PACK",
+    "GEMINI_AI_INNOVATION_PACK",
+    "OPENAI_PACK",
+    "VEO_PACK",
+    "VIDEO_PACK",
+    "CAPABILITY_DISTILLATION_HUB"
+  ],
+  "duplicate_guard": {
+    "new_task": false,
+    "new_project": false,
+    "new_pack": false,
+    "new_trigger": false,
+    "new_gemini_session": false
+  },
+  "audio_policy": {
+    "veo_teacher_seed": "GENERATE_AMBIENT_SFX_WITH_VIDEO_WHEN_APPROVED",
+    "forbid_in_hymn_teacher_seed": [
+      "dialogue",
+      "lyrics",
+      "background music"
+    ],
+    "allowed": [
+      "waterfall",
+      "river",
+      "ocean waves",
+      "rain",
+      "fireplace",
+      "wind",
+      "distant birds",
+      "storm ambience"
+    ],
+    "canonical_outputs": [
+      "SILENT_VIDEO_MASTER",
+      "AMBIENT_AUDIO_TEACHER_WAV",
+      "AV_TEACHER_QA_REPORT"
+    ],
+    "final_hymn_default": "SILENT_VIDEO + SEPARATE OPTIONAL AMBIENCE LAYER",
+    "note": "Separating video/audio gives independent reuse, volume control, looping and replacement."
+  },
+  "state_machine": [
+    {
+      "id": "S00_CANONICAL_READBACK",
+      "next": "S10_REFERENCE_GRAMMAR"
+    },
+    {
+      "id": "S10_REFERENCE_GRAMMAR",
+      "next": "S20_FLOW_STILL_PROMPT"
+    },
+    {
+      "id": "S20_FLOW_STILL_PROMPT",
+      "next": "S30_FLOW_GENERATION_APPROVAL_GATE"
+    },
+    {
+      "id": "S30_FLOW_GENERATION_APPROVAL_GATE",
+      "on_missing": "HOLD_NO_CREDIT_ACTION",
+      "next": "S40_FLOW_STILL_GENERATED"
+    },
+    {
+      "id": "S40_FLOW_STILL_GENERATED",
+      "next": "S50_GEMINI_EYE_IMAGE_QC"
+    },
+    {
+      "id": "S50_GEMINI_EYE_IMAGE_QC",
+      "on_fail": "RETURN_S20_PROMPT_REPAIR_NO_VEO",
+      "next": "S60_OPENAI_IMAGE_CROSSCHECK"
+    },
+    {
+      "id": "S60_OPENAI_IMAGE_CROSSCHECK",
+      "next": "S70_VEO_PROMPT_BUILD"
+    },
+    {
+      "id": "S70_VEO_PROMPT_BUILD",
+      "requirements": [
+        "approved Flow still first frame",
+        "8s natural motion",
+        "locked/extremely slow camera",
+        "ambient SFX only",
+        "no music/dialogue/lyrics",
+        "no cuts/new objects/text/logo",
+        "loop-friendly start/end"
+      ],
+      "next": "S80_GEMINI_EYE_VEO_PRESUBMIT_QC"
+    },
+    {
+      "id": "S80_GEMINI_EYE_VEO_PRESUBMIT_QC",
+      "on_fail": "RETURN_S70_PROMPT_REPAIR",
+      "next": "S90_VEO_CREDIT_APPROVAL_GATE"
+    },
+    {
+      "id": "S90_VEO_CREDIT_APPROVAL_GATE",
+      "on_missing": "HOLD_NO_GENERATE",
+      "next": "S100_VEO_GENERATE"
+    },
+    {
+      "id": "S100_VEO_GENERATE",
+      "requirements": [
+        "single bounded generation",
+        "no blind duplicate retry",
+        "actual output readback"
+      ],
+      "next": "S110_AV_SPLIT"
+    },
+    {
+      "id": "S110_AV_SPLIT",
+      "requirements": [
+        "extract ambient WAV",
+        "create silent MP4",
+        "ffprobe confirms silent MP4 audio streams=0"
+      ],
+      "next": "S120_GEMINI_EYE_FINAL_VIDEO_QC"
+    },
+    {
+      "id": "S120_GEMINI_EYE_FINAL_VIDEO_QC",
+      "requirements": [
+        "canonical silent video attached/read back",
+        "continuity",
+        "camera stability",
+        "lyric-safe zone",
+        "no drift/text/logo/artifact",
+        "loop suitability"
+      ],
+      "on_fail": "NEGATIVE_LEARNING_ONLY_NO_PROMOTION",
+      "next": "S130_LOCAL_VIDEO_QA"
+    },
+    {
+      "id": "S130_LOCAL_VIDEO_QA",
+      "requirements": [
+        "30fps motion analysis",
+        "cut/freeze/black-frame",
+        "global camera vs residual motion"
+      ],
+      "next": "S140_AUDIO_TEACHER_QA"
+    },
+    {
+      "id": "S140_AUDIO_TEACHER_QA",
+      "requirements": [
+        "audio stream extracted",
+        "no speech/music requested",
+        "ambient identity matches phenomenon",
+        "no clipping",
+        "loop/envelope features extracted"
+      ],
+      "on_fail": "AUDIO_NEGATIVE_LEARNING_ONLY_VIDEO_MAY_CONTINUE",
+      "next": "S150_CROSSCHECK_HUMAN"
+    },
+    {
+      "id": "S150_CROSSCHECK_HUMAN",
+      "requirements": [
+        "OpenAI crosscheck",
+        "human monitor preview"
+      ],
+      "next": "S160_DISTILL_LOCAL"
+    },
+    {
+      "id": "S160_DISTILL_LOCAL",
+      "requirements": [
+        "positive motion descriptors -> AnimationPack/VideoPack",
+        "positive ambience descriptors -> local nature ambience library",
+        "Veo prompt/camera/audio pattern -> VEO_PACK local rules",
+        "raw source is not required for local runtime"
+      ],
+      "next": "S170_LOCAL_X1_X2"
+    },
+    {
+      "id": "S170_LOCAL_X1_X2",
+      "requirements": [
+        "local X1",
+        "local X2"
+      ],
+      "next": "S180_LOCAL_FIRST"
+    },
+    {
+      "id": "S180_LOCAL_FIRST",
+      "requirements": [
+        "Capability Distillation evidence complete",
+        "known pattern uses local renderer/synth first"
+      ],
+      "next": "DONE"
+    }
+  ],
+  "local_first_goal": {
+    "update_target": "our local packs, not Google's Veo model",
+    "known_pattern_route": "local still/seed + procedural video + procedural ambience => no external token/credit call",
+    "external_veo_teacher_only_if": [
+      "novel phenomenon",
+      "low local confidence",
+      "X2 not proven",
+      "explicit user request"
+    ]
+  }
+}

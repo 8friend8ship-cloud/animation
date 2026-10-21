@@ -1,0 +1,176 @@
+{
+  "lineage": "DUAL_EYE_MULTI_BRAIN_BRIDGE_V1",
+  "owner_pack": "ANIMATION_PACK",
+  "support_from": [
+    "MUSIC_TEACHER_PACK",
+    "GEMINI_EYE_PACK",
+    "SEARCH_PACK",
+    "LEARNING_PACK"
+  ],
+  "status": "FLOW_VEO_HYMN_BACKGROUND_TEACHER_TEMPLATE_V1",
+  "no_generation_executed": true,
+  "credit_policy": "DO_NOT_GENERATE_UNTIL_EXPLICIT_USER_APPROVAL_FOR_CREDIT_USE",
+  "strategy": "FLOW STILL COMPOSITION -> VEO 3.1 8S MOTION SEED -> 30FPS MOTION TEMPLATE EXTRACTION -> LOCAL PROCEDURAL LONG LOOP -> MUSIC-SECTION PLACEMENT",
+  "why": {
+    "worship_loop_target_sec": [
+      15,
+      60
+    ],
+    "veo_seed_sec": 8,
+    "frames_per_seed_at_30fps": 240,
+    "reason": "Use Veo as a motion teacher; reuse learned motion fields locally instead of spending credits for every song/background."
+  },
+  "flow_image_rules": {
+    "aspect_ratio": "16:9",
+    "composition": "wide natural landscape",
+    "lyric_safe_zone": "center-to-lower-third low-detail dark/medium-tone area",
+    "camera": "locked or extremely slow cinematic viewpoint",
+    "avoid": [
+      "people as main subject",
+      "readable text/signs/logos",
+      "high-detail center/lower-third",
+      "extreme contrast flashing",
+      "busy foreground crossing lyric zone",
+      "copyrighted architecture/artwork as focal subject"
+    ],
+    "preferred": "our-generated image or rights-cleared source; final image stored with source/rights metadata"
+  },
+  "veo_8s_rules": {
+    "preferred_model": "Veo 3.1 Lite for teacher seeds",
+    "duration_sec": 8,
+    "orientation": "landscape",
+    "camera": "locked; no cuts; no whip pan; no zoom burst",
+    "motion": "slow, continuous, physically plausible, loop-friendly",
+    "audio": "Generate phenomenon-matched ambient SFX only when approved; no dialogue, lyrics, or background music. After generation, split to silent video master + separate ambient teacher WAV.",
+    "first_last_frame": "use when it improves loop continuity; reject if it creates unnatural reverse/hold",
+    "extend": "optional only after explicit credit approval",
+    "prompt_requirements": [
+      "natural phenomenon is the only moving subject",
+      "movement remains gentle enough for lyrics",
+      "no text, logo, person, animal close-up unless the category is BIRDS_FLYING",
+      "no sudden lightning/flashing unless specific storm template and lyric-safe test passes",
+      "preserve central/lower lyric-safe zone",
+      "begin and end in visually compatible states"
+    ]
+  },
+  "phenomena_priority": [
+    {
+      "id": "CALM_STREAM",
+      "use": [
+        "VERSE",
+        "PRAYER",
+        "RELEASE"
+      ],
+      "motion": "gentle directional water"
+    },
+    {
+      "id": "OCEAN_WAVES",
+      "use": [
+        "CHORUS",
+        "REFRAIN",
+        "MAJESTY"
+      ],
+      "motion": "slow periodic surf"
+    },
+    {
+      "id": "WATERFALL",
+      "use": [
+        "RISE",
+        "REFRAIN",
+        "HEART_PEAK"
+      ],
+      "motion": "steady downward flow; avoid hyper-fast spray"
+    },
+    {
+      "id": "RAIN_WINDOW",
+      "use": [
+        "PRAYER",
+        "MEMORIAL",
+        "QUIET_VERSE"
+      ],
+      "motion": "slow droplets; dark safe text zone"
+    },
+    {
+      "id": "FIREPLACE",
+      "use": [
+        "WINTER",
+        "REFLECTION",
+        "IDLE"
+      ],
+      "motion": "low stochastic flame/ember"
+    },
+    {
+      "id": "WIND_FOREST_FIELD",
+      "use": [
+        "VERSE",
+        "CREATION",
+        "IDLE"
+      ],
+      "motion": "low-frequency sway"
+    },
+    {
+      "id": "SUNRISE",
+      "use": [
+        "INTRO",
+        "HOPE",
+        "RESURRECTION"
+      ],
+      "motion": "slow light rise"
+    },
+    {
+      "id": "SUNSET",
+      "use": [
+        "OUTRO",
+        "PEACE",
+        "AFTERGLOW"
+      ],
+      "motion": "slow light fall"
+    },
+    {
+      "id": "BIRDS_WIDE",
+      "use": [
+        "RISE",
+        "FREEDOM",
+        "IDLE"
+      ],
+      "motion": "small distant birds; sparse crossing"
+    },
+    {
+      "id": "STORM_TO_CLEAR",
+      "use": [
+        "TENSION_TO_RELEASE",
+        "TESTIMONY"
+      ],
+      "motion": "high-to-low energy transition; use sparingly"
+    }
+  ],
+  "worship_background_rules": {
+    "default_background_changes_per_song": 1,
+    "section_change_policy": "KEEP ONE FAMILY; change only on deliberate major musical/emotional shift",
+    "lyric_readability_priority": 1,
+    "motion_distraction_limit": "If motion is noticed more than lyrics by normal viewing, reject.",
+    "idle_mode": "When no song plays, rotate approved ambient loops every 20-45s with 1.0-2.0s crossfade; never show lyrics.",
+    "song_mode": "MUSIC_TEACHER timing becomes authoritative; idle visual rotation pauses."
+  },
+  "qa": [
+    "rights/source metadata PASS",
+    "lyric-safe-zone PASS",
+    "30fps motion-template extraction PASS",
+    "seam/loop visual continuity PASS",
+    "motion speed PASS",
+    "MUSIC_TEACHER section/emotion fit PASS",
+    "Gemini Eye advisory visual review",
+    "OpenAI crosscheck",
+    "human monitor preview PASS",
+    "silent-master ffprobe audio_stream_count == 0",
+    "ambient-audio teacher QA PASS when audio exists",
+    "only PASS assets distill into local VEO_PACK/VIDEO_PACK/ANIMATION_PACK libraries"
+  ],
+  "source_lessons": [
+    "Worship backgrounds typically work as subtle loops rather than attention-grabbing video.",
+    "Readability beats spectacle.",
+    "Nature is strongest for creation, peace, prayer and reflective moments.",
+    "One visual family per song is usually better than frequent mid-song switching.",
+    "Audio/video separation is the canonical reuse format: silent background video + independently mixable ambience."
+  ]
+}

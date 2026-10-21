@@ -1,0 +1,64 @@
+{
+  "lineage": "DUAL_EYE_MULTI_BRAIN_BRIDGE_V1",
+  "owner_pack": "ANIMATION_PACK",
+  "status": "LOCAL_FREE_NATURE_VIDEO_ROUTE_DEFINED",
+  "hardware_readback": {
+    "gpu": "NVIDIA GeForce RTX 4070 Laptop GPU",
+    "vram_mib": 8188,
+    "ram_bytes": 33897803776
+  },
+  "routes": [
+    {
+      "priority": 1,
+      "engine": "PROCEDURAL_NATURE_ANIMATOR",
+      "status": "READY_TO_TEST",
+      "cost": "LOCAL_FREE",
+      "requires_model_download": false,
+      "uses": "our/CC0/public-domain still image -> 30fps MP4",
+      "supported": [
+        "SLOW_ZOOM",
+        "WATERFALL",
+        "RIVER_STREAM",
+        "OCEAN_WAVES",
+        "RAIN_WINDOW",
+        "FIREPLACE",
+        "BIRDS_FLYING",
+        "WIND_GRASS_TREES",
+        "SUNRISE_SUNSET",
+        "STORM_TO_CLEAR"
+      ]
+    },
+    {
+      "priority": 2,
+      "engine": "FRAMEPACK_LOCAL",
+      "status": "HARDWARE_ELIGIBLE_NOT_INSTALLED_NOT_RUNTIME_TESTED",
+      "cost": "LOCAL_FREE_SOFTWARE__LOCAL_COMPUTE",
+      "official_repo": "https://github.com/lllyasviel/FramePack",
+      "license": "Apache-2.0",
+      "official_min_vram_gb": 6,
+      "model_download_gt_gb": 30,
+      "rule": "do not download/install heavyweight model without explicit execution approval/storage check"
+    },
+    {
+      "priority": 3,
+      "engine": "LTX_VIDEO_LOW_VRAM_EXPERIMENT",
+      "status": "POSSIBLE_BUT_NOT_PRIMARY_UNTIL_RUNTIME_TEST",
+      "cost": "LOCAL_FREE_SOFTWARE__LOCAL_COMPUTE",
+      "note": "8GB inference has community/issue evidence; official training requirements are higher. Pilot only."
+    },
+    {
+      "priority": 4,
+      "engine": "HUNYUANVIDEO_1_5",
+      "status": "HOLD_VRAM_OFFICIAL_MIN_14GB",
+      "official_min_vram_gb": 14
+    },
+    {
+      "priority": 5,
+      "engine": "WAN2_2_5B",
+      "status": "HOLD_VRAM_OFFICIAL_MIN_24GB",
+      "official_min_vram_gb": 24
+    }
+  ],
+  "paid_generation_required": false,
+  "current_paid_generation_count": 0
+}

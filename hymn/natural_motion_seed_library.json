@@ -1,0 +1,170 @@
+{
+  "lineage": "DUAL_EYE_MULTI_BRAIN_BRIDGE_V1",
+  "owner_pack": "ANIMATION_PACK",
+  "status": "NATURAL_MOTION_TEMPLATE_LIBRARY_V1",
+  "fps": 30,
+  "rule": "Each learned/procedural template is expressed as motion fields and temporal curves; source frames are not copied.",
+  "phenomena": {
+    "WATERFALL": {
+      "motion": "persistent downward flow + turbulent spray",
+      "preferred_seed": "vertical rock/water composition",
+      "loop_sec": [
+        6,
+        12
+      ],
+      "camera": "locked or very slow push",
+      "procedural": [
+        "downward displacement",
+        "mist particles",
+        "brightness flicker low"
+      ],
+      "music_fit": [
+        "REFRAIN",
+        "HEART_PEAK",
+        "RISE"
+      ]
+    },
+    "RIVER_STREAM": {
+      "motion": "directional horizontal/diagonal flow with local eddies",
+      "loop_sec": [
+        8,
+        16
+      ],
+      "camera": "slow pan or locked",
+      "procedural": [
+        "flow warp",
+        "surface highlight drift"
+      ],
+      "music_fit": [
+        "VERSE",
+        "PRAYER",
+        "RELEASE"
+      ]
+    },
+    "OCEAN_WAVES": {
+      "motion": "quasi-periodic approach/recede with foam front",
+      "loop_sec": [
+        8,
+        14
+      ],
+      "camera": "locked wide",
+      "procedural": [
+        "sinusoidal horizontal bands",
+        "foam mask drift",
+        "slow zoom"
+      ],
+      "music_fit": [
+        "CHORUS",
+        "REFRAIN",
+        "OUTRO"
+      ]
+    },
+    "RAIN_WINDOW": {
+      "motion": "vertical droplet streaks + slow background parallax",
+      "loop_sec": [
+        6,
+        10
+      ],
+      "camera": "locked",
+      "procedural": [
+        "rain particle overlay",
+        "droplet trails",
+        "background defocus pulse"
+      ],
+      "music_fit": [
+        "VERSE",
+        "PRAYER",
+        "MEMORIAL"
+      ]
+    },
+    "FIREPLACE": {
+      "motion": "upward stochastic flame tongues + ember particles",
+      "loop_sec": [
+        5,
+        9
+      ],
+      "camera": "locked close/medium",
+      "procedural": [
+        "warm luminance oscillation",
+        "upward particle drift",
+        "localized warp"
+      ],
+      "music_fit": [
+        "VERSE",
+        "WINTER",
+        "IDLE"
+      ]
+    },
+    "BIRDS_FLYING": {
+      "motion": "sparse coherent objects crossing frame with wing oscillation",
+      "loop_sec": [
+        10,
+        20
+      ],
+      "camera": "wide",
+      "procedural": [
+        "small sprite trajectories",
+        "phase-shift wing cycles"
+      ],
+      "music_fit": [
+        "RISE",
+        "RELEASE",
+        "IDLE"
+      ]
+    },
+    "WIND_GRASS_TREES": {
+      "motion": "low-frequency side-to-side sway with layered phase offsets",
+      "loop_sec": [
+        8,
+        18
+      ],
+      "camera": "locked or slow pan",
+      "procedural": [
+        "piecewise mesh sway",
+        "foreground/background phase separation"
+      ],
+      "music_fit": [
+        "VERSE",
+        "IDLE",
+        "OUTRO"
+      ]
+    },
+    "SUNRISE_SUNSET": {
+      "motion": "very slow luminance/color progression, minimal geometry motion",
+      "loop_sec": [
+        20,
+        60
+      ],
+      "camera": "locked/slow push",
+      "procedural": [
+        "exposure curve",
+        "gradient hue shift",
+        "cloud drift"
+      ],
+      "music_fit": [
+        "INTRO",
+        "OUTRO",
+        "RELEASE",
+        "IDLE"
+      ]
+    },
+    "STORM_TO_CLEAR": {
+      "motion": "high motion/noise decreasing into low-motion bright opening",
+      "loop_sec": [
+        20,
+        45
+      ],
+      "camera": "wide",
+      "procedural": [
+        "cloud flow decay",
+        "rain fade",
+        "brightness rise"
+      ],
+      "music_fit": [
+        "TENSION_TO_RELEASE",
+        "HEART_PEAK_AFTERGLOW"
+      ]
+    }
+  },
+  "promotion_guard": "Template becomes reusable only after >=3 rights-cleared examples or a physics/procedural sanity test plus human visual review."
+}

@@ -1,0 +1,124 @@
+{
+  "lineage": "DUAL_EYE_MULTI_BRAIN_BRIDGE_V1",
+  "owner_pack": "ANIMATION_PACK",
+  "support_pack": "FLOW_PACK",
+  "status": "FLOW_NATURE_VISUAL_GRAMMAR_V1",
+  "source_policy": {
+    "stock_runtime_reference_only": "PEXELS_PIXABAY_COVERR",
+    "automated_learning_allowed": [
+      "USER_OWNED",
+      "CC0",
+      "PUBLIC_DOMAIN",
+      "OUR_GENERATED",
+      "EXPLICIT_ANALYSIS_LICENSE"
+    ],
+    "rule": "Stock references inform high-level composition/camera/light vocabulary only; never claim the stock asset as our original work."
+  },
+  "prompt_formula": [
+    "CINEMATOGRAPHY",
+    "SUBJECT",
+    "NATURAL_ACTION",
+    "ENVIRONMENT_CONTEXT",
+    "STYLE_LIGHT_AMBIANCE",
+    "HYMN_LYRIC_SAFE_CONSTRAINTS"
+  ],
+  "global_hymn_rules": {
+    "aspect_ratio": "16:9",
+    "shot": "wide or medium-wide",
+    "camera_motion_default": "locked tripod or extremely slow push/pan",
+    "lyric_safe_zone": "center and lower third low-detail with moderate/dark contrast",
+    "no_people": true,
+    "no_text_logo_signage": true,
+    "no_flash_flicker": true,
+    "no_whip_pan": true,
+    "no_fast_drone": true,
+    "no_abrupt_exposure_change": true,
+    "loop_friendly": true
+  },
+  "phenomena": {
+    "WATERFALL": {
+      "framing": "wide, waterfall on left/right third, dark rock/forest lyric-safe center-lower area",
+      "camera": "locked tripod",
+      "lens": "24-35mm",
+      "light": "soft overcast/morning",
+      "motion": "steady downward water + gentle mist + subtle foliage"
+    },
+    "RIVER_STREAM": {
+      "framing": "wide low river-bank view with diagonal water path and quiet lyric-safe bank",
+      "camera": "locked or extremely slow lateral pan",
+      "lens": "28-40mm",
+      "light": "soft morning/overcast",
+      "motion": "steady flow + small ripples + subtle reflection drift"
+    },
+    "OCEAN_WAVES": {
+      "framing": "wide shoreline, horizon upper third, darker lower center for lyrics",
+      "camera": "locked tripod",
+      "lens": "24-35mm",
+      "light": "golden/blue hour",
+      "motion": "slow periodic waves approach/recede + gentle foam"
+    },
+    "RAIN_WINDOW": {
+      "framing": "medium-wide interior window, rainy glass foreground, soft exterior, darker lower center",
+      "camera": "locked",
+      "lens": "50mm",
+      "light": "cool ambient + restrained warm interior",
+      "motion": "slow droplets down glass + soft distant rain"
+    },
+    "FIREPLACE": {
+      "framing": "medium-wide off-center fireplace with dark surrounding lyric area",
+      "camera": "locked",
+      "lens": "40-60mm",
+      "light": "warm low-key",
+      "motion": "restrained flame flicker + occasional small embers"
+    },
+    "WIND_FOREST_FIELD": {
+      "framing": "wide field/forest edge with layered depth and calm lyric area",
+      "camera": "locked or extremely slow pan",
+      "lens": "24-35mm",
+      "light": "soft daylight",
+      "motion": "low-frequency grass/tree sway with phase offsets"
+    },
+    "SUNRISE": {
+      "framing": "wide landscape, sun off-center, darker foreground lyric area",
+      "camera": "locked",
+      "lens": "24-35mm",
+      "light": "pre-dawn to soft dawn",
+      "motion": "very slow light rise + subtle cloud drift"
+    },
+    "SUNSET": {
+      "framing": "wide horizon, sun off-center, dark lower foreground",
+      "camera": "locked",
+      "lens": "24-35mm",
+      "light": "soft afterglow",
+      "motion": "very slow light fall + cloud drift"
+    },
+    "BIRDS_WIDE": {
+      "framing": "very wide sky/landscape, tiny distant birds, lyric area mostly empty",
+      "camera": "locked",
+      "lens": "28-40mm",
+      "light": "soft daylight",
+      "motion": "few distant birds cross slowly with natural wingbeats"
+    },
+    "STORM_TO_CLEAR": {
+      "framing": "wide landscape, layered clouds, dark foreground lyric area",
+      "camera": "locked",
+      "lens": "24-35mm",
+      "light": "stormy diffused with distant opening",
+      "motion": "rain/cloud motion gradually reduces as distant opening brightens"
+    }
+  },
+  "flow_output": {
+    "type": "OUR_GENERATED_STILL_SEED",
+    "required_metadata": [
+      "phenomenon",
+      "prompt",
+      "aspect_ratio",
+      "lyric_safe_zone",
+      "camera",
+      "lens_look",
+      "lighting",
+      "source_brief"
+    ],
+    "veo_rule": "Only an image that passes current Gemini Eye image QC plus OpenAI crosscheck may become a Veo first-frame seed."
+  }
+}
