@@ -2144,6 +2144,78 @@
       "runtime": "NOT_RUN",
       "promotion": "NOT_RUN",
       "coverageUnchanged": true
+    },
+    "projectCustomPlanFirst": {
+      "id": "VIDEO_PROJECT_CUSTOM_PLAN_FIRST_GATE_V1_20261126",
+      "canonical": "https://github.com/8friend8ship-cloud/V-tube/blob/3ca00e2a37ea9789d6e4360b76da73d35848702e/docs/VTUBE_PACK_CENTRAL_AGENT_SPEC_V1_20260912.md",
+      "state": "DESIGN_REGISTERED_RUNTIME_HOLD",
+      "firstPriority": "P06_INTERIOR_BLOG_CONTENT_ID",
+      "scope": "per project/content/platform/format; preserve existing approved personas, voices and 49 style registry; no duplicate physical nodes",
+      "formats": {
+        "long": {
+          "targetMinSeconds": 600,
+          "defaultAspect": "16:9",
+          "noPadding": true
+        },
+        "short": {
+          "targetSeconds": [
+            60,
+            120
+          ],
+          "defaultAspect": "9:16",
+          "shorterIfPlatformOrEditorialJustification": true,
+          "independentEdit": true
+        }
+      },
+      "preflight": [
+        "project_id",
+        "content_id",
+        "article_revision_sha",
+        "purpose_audience",
+        "platform_policy_snapshot",
+        "format_language",
+        "approved_persona_or_none",
+        "approved_voice_or_none",
+        "rights_budget",
+        "plan_id_version_sha",
+        "gemini_plan_ack",
+        "codex_plan_ack"
+      ],
+      "styleSelection": {
+        "existingRegistry": true,
+        "candidates": 3,
+        "includeSingleBaseline": true,
+        "chooseHybridIfEvidenceSupports": true,
+        "perScene": true
+      },
+      "logicalRoute": [
+        "READBACK",
+        "AI_PLAN_ACK",
+        "PROJECT_STYLE_SELECT",
+        "PERSONA_VOICE_LOCK",
+        "ASSET_REQUIREMENTS_RESOLVE",
+        "SCRIPT_STORYBOARD",
+        "PREVIS_X1_X2",
+        "GEMINI_EYE_CODEX_ASIDE_REA_QA",
+        "FIX_FAILED_SCENES",
+        "LONG_SHORT_RENDER",
+        "PLATFORM_QA",
+        "EXISTING_RELEASE_GATE",
+        "PUBLISH_ACK",
+        "FEEDBACK_24H_48H_7D"
+      ],
+      "missingAsset": "existing collector and shopping due loop; official/rights-cleared existing asset first; missing authorized local generation only, hash QA ACK; no extra triggers",
+      "p06": "approved source article and facts; actual photos vs simulation distinguished; local-first, Veo default zero; approved persona voice or explicit none; platform-specific edit and actual mobile playback",
+      "gates": [
+        "actual independent AI plan receipts",
+        "actual previsualization and rendered media review",
+        "approved persona/voice source",
+        "platform current policy and real playback",
+        "approved SKU link if shopping",
+        "actual consumer/publish ACK"
+      ],
+      "runtime": "NOT_RUN",
+      "promotion": "NOT_RUN"
     }
   }
 }
