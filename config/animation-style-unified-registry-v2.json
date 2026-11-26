@@ -1938,7 +1938,61 @@
       ],
       "stockPolicy": "Existing inventory first; per-asset revalidation and current use rights required; old approval counts are historical. No download or new license approval.",
       "next": "Complete per-dimension structured evidence/conditions and actual independent Gemini/Codex responses; verify existing JSON/MCP resolver and consumer ACK; no promotion.",
-      "coverageSnapshot": "P2 style pointer coverage 20/49 unchanged; pilot raw +1 and observation +20 not new style promotion."
+      "coverageSnapshot": "P2 style pointer coverage 20/49 unchanged; pilot raw +1 and observation +20 not new style promotion.",
+      "mcpExtensionP6": {
+        "status": "ISOLATED_MCP_EXTENSION_CANDIDATE_PASS_LIVE_NOT_WIRED",
+        "actualMcpHandshake": {
+          "centralTools": 23,
+          "asideTools": 4,
+          "workflowMap": "PASS_WORKFLOW_MAP",
+          "avatarMap": "PASS_AVATAR_MANIFEST_READONLY",
+          "pilotIdFoundInOldMaps": false
+        },
+        "existingTool": "mcp_pack_workflow_map",
+        "candidateOptionalArgs": [
+          "analysis_id",
+          "version",
+          "consumer",
+          "expected_snapshot_sha256"
+        ],
+        "sheetObservationReadback": "20/20 exact; usage/avoid conditions are recommendations",
+        "localSnapshot": "LearningPack/VIDEO_SHARED_SEED_ANALYSIS_WHITEBOARD30_69FA4498_V1.json",
+        "snapshotSha256": "2a09c590dcd6a638745f8d7e7e58fedb44bf363296b2862dd3168f60a66ac24c",
+        "snapshotBytes": 22194,
+        "views": [
+          "VTUBE",
+          "ANIMATION",
+          "ASIDE",
+          "REA",
+          "AI",
+          "COLLECTION",
+          "WRITING",
+          "THUMBNAIL",
+          "IMAGE",
+          "VOICE",
+          "LANGUAGE",
+          "X41",
+          "FX",
+          "MOTION",
+          "RENDER",
+          "GEMINI",
+          "CODEX",
+          "CENTRAL"
+        ],
+        "test": "29/29 actual stdio checks, two independent request groups, same ID repeated; legacy tool list and empty-argument result preserved; unknown ID/version/consumer/hash/arg fail closed",
+        "existingMcpSha256": "a377a0060acfecd30c525ceeb9a07197b0a2a790671b7293db24a24cacc81390",
+        "candidateSha256": "d77ef945acafd97d2a449c08b47a1cb06756bf91c295ae683e041b708c57e44b",
+        "receiptSha256": "b296da4e658815e2f28a64ac1d44d75cce895fc969283ba94b0287703538f104",
+        "candidateFile": "Temp/VIDEO_SHARED_SEED_P6_MCP_PACK_CANDIDATE_V2_20261126.py",
+        "receiptFile": "Temp/VIDEO_SHARED_SEED_P6_MCP_EXTENSION_RECEIPT_V2_20261126.json",
+        "liveMcpChanged": false,
+        "consumerAck": "NOT_RUN",
+        "geminiCodexModelAck": "NOT_RUN",
+        "collectionProvider": "HOLD",
+        "liveSheetRefresh": false,
+        "seedPromotion": false,
+        "firstUnfinished": "Review candidate diff against latest live shared MCP, generalize versioned allowlisted snapshot indexing/refresh and bind existing consumer routes with independent ACK; no live change or promotion without gates."
+      }
     }
   }
 }
