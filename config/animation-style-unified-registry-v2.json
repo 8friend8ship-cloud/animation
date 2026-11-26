@@ -798,5 +798,511 @@
       "PERFORMANCE_FEEDBACK"
     ],
     "executionStatus": "POLICY_REFERENCE_ONLY_RUNTIME_NOT_VERIFIED"
+  },
+  "styleLearningCoverage": {
+    "asOf": "2026-11-26",
+    "sourceSheet": "1b0VkG1lttudtgctqRQCC2ZydjwrPLu2cA3vxSBUD7_g",
+    "sourceRanges": [
+      "MV_QUEENS_RAW!A1:V90",
+      "MV_TEMPLATE_REGISTRY!A1:L30"
+    ],
+    "legacyLinks": [
+      {
+        "legacyFamily": "WHITEBOARD_BASE_LIVE_DRAW_HAND",
+        "styleId": "WHITEBOARD_LIVE_DRAW",
+        "relation": "RELATED_VISUAL_OR_PRODUCTION_PATTERN_NOT_IDENTICAL_STYLE",
+        "queensIds": [
+          "MVQ-20260908-WHITEBOARD"
+        ],
+        "templateIds": [
+          "T1-WHITEBOARD-STROKE"
+        ],
+        "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
+      },
+      {
+        "legacyFamily": "WHITEBOARD_CHARACTER_BUILD_REVEAL",
+        "styleId": "WHITEBOARD_LIVE_DRAW",
+        "relation": "RELATED_VISUAL_OR_PRODUCTION_PATTERN_NOT_IDENTICAL_STYLE",
+        "queensIds": [
+          "MVQ-20260908-WBCHAR"
+        ],
+        "templateIds": [
+          "T1-WHITEBOARD-CHARACTER-BUILD"
+        ],
+        "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
+      },
+      {
+        "legacyFamily": "COOKING_CHARACTER_REAL_CLOSEUP",
+        "styleId": "COOKING_CHARACTER_REAL",
+        "relation": "RELATED_VISUAL_OR_PRODUCTION_PATTERN_NOT_IDENTICAL_STYLE",
+        "queensIds": [
+          "MVQ-20260908-COOKING"
+        ],
+        "templateIds": [
+          "T1-COOKING-SCENE"
+        ],
+        "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
+      },
+      {
+        "legacyFamily": "COOKING_CHARACTER_ACTION_COMPOSITE",
+        "styleId": "COOKING_CHARACTER_REAL",
+        "relation": "RELATED_VISUAL_OR_PRODUCTION_PATTERN_NOT_IDENTICAL_STYLE",
+        "queensIds": [
+          "MVQ-20260908-COOKACT"
+        ],
+        "templateIds": [
+          "T1-COOKING-CHARACTER-ACTION"
+        ],
+        "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
+      },
+      {
+        "legacyFamily": "DAILY_MEDITATION_LIGHT_SITCOM",
+        "styleId": "DAILY_MEDITATION_SITCOM",
+        "relation": "RELATED_VISUAL_OR_PRODUCTION_PATTERN_NOT_IDENTICAL_STYLE",
+        "queensIds": [
+          "MVQ-20260908-SITCOM"
+        ],
+        "templateIds": [
+          "T1-SITCOM-STORY"
+        ],
+        "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
+      },
+      {
+        "legacyFamily": "INTERIOR_PLAN_TO_REAL_TRANSFORMATION",
+        "styleId": "INTERIOR_DESIGN_TO_REALITY",
+        "relation": "RELATED_VISUAL_OR_PRODUCTION_PATTERN_NOT_IDENTICAL_STYLE",
+        "queensIds": [
+          "MVQ-20260908-INTTRANS"
+        ],
+        "templateIds": [
+          "T1-INTERIOR-PLAN-TO-REAL-TRANSFORM"
+        ],
+        "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
+      },
+      {
+        "legacyFamily": "INTERIOR_STORE_ELEVATION_REAL_PROOF_CAROUSEL",
+        "styleId": "INTERIOR_STORE_SHOWCASE",
+        "relation": "RELATED_VISUAL_OR_PRODUCTION_PATTERN_NOT_IDENTICAL_STYLE",
+        "queensIds": [
+          "MVQ-20260908-STOREPROOF"
+        ],
+        "templateIds": [
+          "T1-INTERIOR-STORE-PROOF-CAROUSEL"
+        ],
+        "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
+      },
+      {
+        "legacyFamily": "PERSONA_REAL_TO_SKETCH_EXPLAINER",
+        "styleId": "SKETCH",
+        "relation": "RELATED_VISUAL_OR_PRODUCTION_PATTERN_NOT_IDENTICAL_STYLE",
+        "queensIds": [
+          "MVQ-20260908-PSK"
+        ],
+        "templateIds": [
+          "T1-PERSONA-REAL-TO-SKETCH-EXPLAINER"
+        ],
+        "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
+      },
+      {
+        "legacyFamily": "ARCHITECTURE_WATERCOLOR_PROJECT_SEQUENCE",
+        "styleId": "WATERCOLOR",
+        "relation": "RELATED_VISUAL_OR_PRODUCTION_PATTERN_NOT_IDENTICAL_STYLE",
+        "queensIds": [
+          "MVQ-20260908-AWC"
+        ],
+        "templateIds": [
+          "T1-ARCHITECTURE-WATERCOLOR-PROJECT-SEQUENCE"
+        ],
+        "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
+      },
+      {
+        "legacyFamily": "INTERIOR_CINEMATIC_TWO_STAGE_PUSHIN",
+        "styleId": "INTERIOR_WALKTHROUGH",
+        "relation": "RELATED_VISUAL_OR_PRODUCTION_PATTERN_NOT_IDENTICAL_STYLE",
+        "queensIds": [
+          "MVQ-20260908-CINPUSH"
+        ],
+        "templateIds": [
+          "T1-INTERIOR-CINEMATIC-TWO-STAGE-PUSHIN"
+        ],
+        "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
+      }
+    ],
+    "coverage": [
+      {
+        "styleId": "BLUE_TIE",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "RED_TIE_TEDDY",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "ANIME",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "CARTOON",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "PIXEL_ART",
+        "directReferences": [
+          "MVQ-20261126-ugV6cLgwomo"
+        ],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "STICK_FIGURE",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "MOTION_COMIC",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "CHILD_DRAWING",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "GHIBLI_LIKE",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "SKETCH",
+        "directReferences": [
+          "MVQ-20261126-H10rQoSg41c"
+        ],
+        "relatedTemplateIds": [
+          "T1-PERSONA-REAL-TO-SKETCH-EXPLAINER"
+        ],
+        "relatedQueensIds": [
+          "MVQ-20260908-PSK"
+        ]
+      },
+      {
+        "styleId": "WATERCOLOR",
+        "directReferences": [
+          "MVQ-20261126-U6f1GdRkpfw"
+        ],
+        "relatedTemplateIds": [
+          "T1-ARCHITECTURE-WATERCOLOR-PROJECT-SEQUENCE"
+        ],
+        "relatedQueensIds": [
+          "MVQ-20260908-AWC"
+        ]
+      },
+      {
+        "styleId": "OIL_PAINT",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "WOODBLOCK_PRINT",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "POP_ART",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "CHALKBOARD",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "WHITEBOARD_LIVE_DRAW",
+        "directReferences": [
+          "MVQ-20261126-u6XAPnuFjJc"
+        ],
+        "relatedTemplateIds": [
+          "T1-WHITEBOARD-STROKE",
+          "T1-WHITEBOARD-CHARACTER-BUILD"
+        ],
+        "relatedQueensIds": [
+          "MVQ-20260908-WHITEBOARD",
+          "MVQ-20260908-WBCHAR"
+        ]
+      },
+      {
+        "styleId": "THREE_D_RENDER",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "CLAY",
+        "directReferences": [
+          "MVQ-20261126-E5t_DXgZmFM"
+        ],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "FILM_NOIR",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "CYBERPUNK",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "PHOTO_PARALLAX",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "FLOW_CINEMATIC",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "ORIGAMI",
+        "directReferences": [
+          "MVQ-20261126-OPbBFwTdF-c"
+        ],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "LOW_POLY",
+        "directReferences": [
+          "MVQ-20261126-tMiqe2lkF00"
+        ],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "PAPER_CUTOUT",
+        "directReferences": [
+          "MVQ-20261126-sdxE53o2WrU"
+        ],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "COLLAGE",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "STICKER",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "RANSOM_NOTE",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "MIXED_MEDIA",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "BLACK_WHITE_COMIC",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "NEON",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "KINETIC_TEXT",
+        "directReferences": [
+          "MVQ-20261126-H1NYrn_qZII"
+        ],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "NOTEBOOKLM_EDU",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "PRESENTATION_PDF",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "DOCS_SHEETS_DATA",
+        "directReferences": [
+          "MVQ-20261126-jbkSRLYSojo"
+        ],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "COOKING_CHARACTER_REAL",
+        "directReferences": [],
+        "relatedTemplateIds": [
+          "T1-COOKING-SCENE",
+          "T1-COOKING-CHARACTER-ACTION"
+        ],
+        "relatedQueensIds": [
+          "MVQ-20260908-COOKING",
+          "MVQ-20260908-COOKACT"
+        ]
+      },
+      {
+        "styleId": "DAILY_MEDITATION_SITCOM",
+        "directReferences": [],
+        "relatedTemplateIds": [
+          "T1-SITCOM-STORY"
+        ],
+        "relatedQueensIds": [
+          "MVQ-20260908-SITCOM"
+        ]
+      },
+      {
+        "styleId": "INTERIOR_WALKTHROUGH",
+        "directReferences": [],
+        "relatedTemplateIds": [
+          "T1-INTERIOR-CINEMATIC-TWO-STAGE-PUSHIN"
+        ],
+        "relatedQueensIds": [
+          "MVQ-20260908-CINPUSH"
+        ]
+      },
+      {
+        "styleId": "INTERIOR_STORE_SHOWCASE",
+        "directReferences": [],
+        "relatedTemplateIds": [
+          "T1-INTERIOR-STORE-PROOF-CAROUSEL"
+        ],
+        "relatedQueensIds": [
+          "MVQ-20260908-STOREPROOF"
+        ]
+      },
+      {
+        "styleId": "INTERIOR_DESIGN_TO_REALITY",
+        "directReferences": [],
+        "relatedTemplateIds": [
+          "T1-INTERIOR-PLAN-TO-REAL-TRANSFORM"
+        ],
+        "relatedQueensIds": [
+          "MVQ-20260908-INTTRANS"
+        ]
+      },
+      {
+        "styleId": "HYBRID_TIMELINE",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "PICTOGRAM",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "ISOTYPE",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "SAFETY_SIGN",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "FLAT_ILLUSTRATION",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "VECTOR_ICON",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "CORPORATE",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "DIAGRAM",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      },
+      {
+        "styleId": "MINIMALISM",
+        "directReferences": [],
+        "relatedTemplateIds": [],
+        "relatedQueensIds": []
+      }
+    ],
+    "summary": {
+      "registry": 49,
+      "rawRows": 89,
+      "exactStyleIdRows": 10,
+      "stylesWithDirect": 10,
+      "stylesWithAnyPointer": 15,
+      "stylesWithoutPointer": 34,
+      "legacyLinks": 10
+    },
+    "policy": "A reference pointer is not a learned or production-approved style. Do not duplicate old Queens or T1 records. Reuse the related pattern, inspect the actual media and test applicability; the BBC chart reference is method-only, not a Docs/Sheets production claim. No automatic promotion.",
+    "next": "Verify existing collection consumer and ACK before sending gap requests. Prioritize missing styles by user task demand, not numerical coverage alone.",
+    "directorPolicy": {
+      "readbackRequired": [
+        "https://docs.google.com/document/d/1N6B96SpMM7l990EbzR9Md5RmHdC5wGSRxu3ClxnKZog/edit",
+        "https://docs.google.com/document/d/1XyiyKHSoDxwhxHi1QHekl3r2fsmvcGJaaXzvztHhfQg/edit",
+        "https://github.com/8friend8ship-cloud/V-tube/blob/main/docs/VTUBE_PACK_CENTRAL_AGENT_SPEC_V1_20260912.md"
+      ],
+      "inherit": [
+        "VIDEO_PRODUCTION_SUPREME_LOCAL_FIRST_TEMPLATE_EVOLUTION_V1_20261126",
+        "VIDEO_PERSONA_MOTION_VISUAL_AUDIO_DIRECTOR_V1_20261126",
+        "VIDEO_STYLE_FIRST_REAL_TEMPLATE_GATE_V1_20261126"
+      ],
+      "gate": "Purpose and evidence before style. R1 technical/source/rights, R2 본섬김8, R3 하몬써클6; actual MP4/voice/mobile Gemini Eye, Codex, Aside/REA. No fixed-score fixture, old unapproved TTS, no mere motion-block substitution."
+    }
   }
 }
