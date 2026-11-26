@@ -1,7 +1,7 @@
 {
   "schema": "HD_ANIMATION_STYLE_UNIFIED_REGISTRY_V2",
-  "version": "2.0.0",
-  "effectiveAt": "2026-08-26T17:28:00+09:00",
+  "version": "2.1.0",
+  "effectiveAt": "2026-11-26",
   "policy": {
     "sourceOfTruth": "HISTORICAL_UNION_NOT_LATEST_ONLY",
     "rule": "When integrating Animation Studio, inspect repository history/branches and preserve unique useful style capabilities from older versions. Do not treat latest main as the only style source.",
@@ -13,90 +13,406 @@
     {
       "ref": "8b78cf4a25eee283aa6a1780b270615d30a15593",
       "era": "2026-02-initial",
-      "advantages": ["blue-tie base persona", "red-tie teddy base persona", "15 direct visual styles", "simple style picker", "script/audio to scene foundation"]
+      "advantages": [
+        "blue-tie base persona",
+        "red-tie teddy base persona",
+        "15 direct visual styles",
+        "simple style picker",
+        "script/audio to scene foundation"
+      ]
     },
     {
       "ref": "0c009982f7770630eef80c94b7696cf7a537c1f6",
       "era": "2026-07-local-media",
-      "advantages": ["expanded categorized style library", "children drawing", "print/chalk styles", "IndexedDB media persistence", "MP4 export", "style persistence"]
+      "advantages": [
+        "expanded categorized style library",
+        "children drawing",
+        "print/chalk styles",
+        "IndexedDB media persistence",
+        "MP4 export",
+        "style persistence"
+      ]
     },
     {
       "ref": "de74be7433d64498c87ea44a23a0f7a5ddf3d4d9",
       "era": "2026-08-whiteboard",
-      "advantages": ["SRT/audio-driven whiteboard planning", "renderer integration", "completed-scene annotation workflow"]
+      "advantages": [
+        "SRT/audio-driven whiteboard planning",
+        "renderer integration",
+        "completed-scene annotation workflow"
+      ]
     },
     {
       "ref": "de24622fb053b6501e16ed37c4503c0edf69bf08",
       "era": "2026-08-style-template-master",
-      "advantages": ["style template registry", "persona/camera/action/audio/subtitle rules", "T1/T2 linkage"]
+      "advantages": [
+        "style template registry",
+        "persona/camera/action/audio/subtitle rules",
+        "T1/T2 linkage"
+      ]
     },
     {
       "ref": "17d4b99754dafa8d00d0b788deb6f0a5126f37d8",
       "era": "2026-08-hybrid",
-      "advantages": ["time-varying hybrid styles", "whiteboard+motion comic+Flow+kinetic+parallax mix", "timeline-based routing"]
+      "advantages": [
+        "time-varying hybrid styles",
+        "whiteboard+motion comic+Flow+kinetic+parallax mix",
+        "timeline-based routing"
+      ]
     }
   ],
   "styleFamilies": [
     {
       "family": "CHARACTER_ANIMATION",
       "styles": [
-        {"id":"BLUE_TIE","nameKo":"블루 타이","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"RED_TIE_TEDDY","nameKo":"레드타이 테디","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"ANIME","nameKo":"애니메이션","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"CARTOON","nameKo":"카툰","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"PIXEL_ART","nameKo":"픽셀아트","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"STICK_FIGURE","nameKo":"막대인간","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"MOTION_COMIC","nameKo":"모션 코믹","source":"hybrid","status":"ACTIVE_CANDIDATE"}
+        {
+          "id": "BLUE_TIE",
+          "nameKo": "블루 타이",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "RED_TIE_TEDDY",
+          "nameKo": "레드타이 테디",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "ANIME",
+          "nameKo": "애니메이션",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "CARTOON",
+          "nameKo": "카툰",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "PIXEL_ART",
+          "nameKo": "픽셀아트",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "STICK_FIGURE",
+          "nameKo": "막대인간",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "MOTION_COMIC",
+          "nameKo": "모션 코믹",
+          "source": "hybrid",
+          "status": "ACTIVE_CANDIDATE"
+        }
       ]
     },
     {
       "family": "ART_ILLUSTRATION",
       "styles": [
-        {"id":"CHILD_DRAWING","nameKo":"아이가 그린 그림","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"GHIBLI_LIKE","nameKo":"지브리풍","source":"historical","status":"RESTORED_CANDIDATE","rightsNote":"Use only abstract painterly/narrative traits; avoid direct imitation of protected characters/scenes."},
-        {"id":"SKETCH","nameKo":"스케치","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"WATERCOLOR","nameKo":"수채화","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"OIL_PAINT","nameKo":"유화","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"WOODBLOCK_PRINT","nameKo":"판화","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"POP_ART","nameKo":"팝아트","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"CHALKBOARD","nameKo":"칠판 낙서","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"WHITEBOARD_LIVE_DRAW","nameKo":"손그림 설명형","source":"current-template","status":"CANDIDATE"}
+        {
+          "id": "CHILD_DRAWING",
+          "nameKo": "아이가 그린 그림",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "GHIBLI_LIKE",
+          "nameKo": "지브리풍",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE",
+          "rightsNote": "Use only abstract painterly/narrative traits; avoid direct imitation of protected characters/scenes."
+        },
+        {
+          "id": "SKETCH",
+          "nameKo": "스케치",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "WATERCOLOR",
+          "nameKo": "수채화",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "OIL_PAINT",
+          "nameKo": "유화",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "WOODBLOCK_PRINT",
+          "nameKo": "판화",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "POP_ART",
+          "nameKo": "팝아트",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "CHALKBOARD",
+          "nameKo": "칠판 낙서",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "WHITEBOARD_LIVE_DRAW",
+          "nameKo": "손그림 설명형",
+          "source": "current-template",
+          "status": "CANDIDATE"
+        }
       ]
     },
     {
       "family": "THREED_TEXTURE_MOOD",
       "styles": [
-        {"id":"THREE_D_RENDER","nameKo":"3D 렌더","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"CLAY","nameKo":"클레이","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"FILM_NOIR","nameKo":"필름 누아르","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"CYBERPUNK","nameKo":"사이버펑크","source":"historical","status":"RESTORED_CANDIDATE"},
-        {"id":"PHOTO_PARALLAX","nameKo":"포토 패럴랙스","source":"hybrid","status":"ACTIVE_CANDIDATE"},
-        {"id":"FLOW_CINEMATIC","nameKo":"Flow 시네마틱","source":"hybrid","status":"ACTIVE_CANDIDATE"}
+        {
+          "id": "THREE_D_RENDER",
+          "nameKo": "3D 렌더",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "CLAY",
+          "nameKo": "클레이",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "FILM_NOIR",
+          "nameKo": "필름 누아르",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "CYBERPUNK",
+          "nameKo": "사이버펑크",
+          "source": "historical",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "PHOTO_PARALLAX",
+          "nameKo": "포토 패럴랙스",
+          "source": "hybrid",
+          "status": "ACTIVE_CANDIDATE"
+        },
+        {
+          "id": "FLOW_CINEMATIC",
+          "nameKo": "Flow 시네마틱",
+          "source": "hybrid",
+          "status": "ACTIVE_CANDIDATE"
+        },
+        {
+          "id": "ORIGAMI",
+          "nameKo": "종이접기",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "LOW_POLY",
+          "nameKo": "로우 폴리",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "PAPER_CUTOUT",
+          "nameKo": "페이퍼 컷아웃",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "COLLAGE",
+          "nameKo": "콜라주",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "STICKER",
+          "nameKo": "스티커",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "RANSOM_NOTE",
+          "nameKo": "랜섬 노트",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "MIXED_MEDIA",
+          "nameKo": "믹스드 미디어",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "BLACK_WHITE_COMIC",
+          "nameKo": "흑백 만화",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "NEON",
+          "nameKo": "네온",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        }
       ]
     },
     {
       "family": "DATA_PRESENTATION",
       "styles": [
-        {"id":"KINETIC_TEXT","nameKo":"키네틱 타이포","source":"hybrid","status":"ACTIVE_CANDIDATE","bestFor":["short question","number","headline","comparison"]},
-        {"id":"NOTEBOOKLM_EDU","nameKo":"NotebookLM 교육 슬라이드형","source":"new-unified","status":"NEW_CANDIDATE","bestFor":["education","brief","summary"]},
-        {"id":"PRESENTATION_PDF","nameKo":"프레젠테이션/PDF 요약형","source":"new-unified","status":"NEW_CANDIDATE","bestFor":["review","key points","before-after"]},
-        {"id":"DOCS_SHEETS_DATA","nameKo":"Docs/Sheets 데이터형","source":"new-unified","status":"NEW_CANDIDATE","bestFor":["numbers","chart","table","metric"]}
+        {
+          "id": "KINETIC_TEXT",
+          "nameKo": "키네틱 타이포",
+          "source": "hybrid",
+          "status": "ACTIVE_CANDIDATE",
+          "bestFor": [
+            "short question",
+            "number",
+            "headline",
+            "comparison"
+          ]
+        },
+        {
+          "id": "NOTEBOOKLM_EDU",
+          "nameKo": "NotebookLM 교육 슬라이드형",
+          "source": "new-unified",
+          "status": "NEW_CANDIDATE",
+          "bestFor": [
+            "education",
+            "brief",
+            "summary"
+          ]
+        },
+        {
+          "id": "PRESENTATION_PDF",
+          "nameKo": "프레젠테이션/PDF 요약형",
+          "source": "new-unified",
+          "status": "NEW_CANDIDATE",
+          "bestFor": [
+            "review",
+            "key points",
+            "before-after"
+          ]
+        },
+        {
+          "id": "DOCS_SHEETS_DATA",
+          "nameKo": "Docs/Sheets 데이터형",
+          "source": "new-unified",
+          "status": "NEW_CANDIDATE",
+          "bestFor": [
+            "numbers",
+            "chart",
+            "table",
+            "metric"
+          ]
+        }
       ]
     },
     {
       "family": "DOMAIN_PRODUCTION",
       "styles": [
-        {"id":"COOKING_CHARACTER_REAL","nameKo":"캐릭터+실사 요리","source":"current-template","status":"CANDIDATE"},
-        {"id":"DAILY_MEDITATION_SITCOM","nameKo":"일상묵상 가벼운 시트콤","source":"current-template","status":"CANDIDATE"},
-        {"id":"INTERIOR_WALKTHROUGH","nameKo":"인테리어 공간 워크스루","source":"current-template","status":"CANDIDATE"},
-        {"id":"INTERIOR_STORE_SHOWCASE","nameKo":"상업공간 쇼케이스","source":"current-template","status":"CANDIDATE"},
-        {"id":"INTERIOR_DESIGN_TO_REALITY","nameKo":"설계도→완성공간","source":"current-template","status":"CANDIDATE"}
+        {
+          "id": "COOKING_CHARACTER_REAL",
+          "nameKo": "캐릭터+실사 요리",
+          "source": "current-template",
+          "status": "CANDIDATE"
+        },
+        {
+          "id": "DAILY_MEDITATION_SITCOM",
+          "nameKo": "일상묵상 가벼운 시트콤",
+          "source": "current-template",
+          "status": "CANDIDATE"
+        },
+        {
+          "id": "INTERIOR_WALKTHROUGH",
+          "nameKo": "인테리어 공간 워크스루",
+          "source": "current-template",
+          "status": "CANDIDATE"
+        },
+        {
+          "id": "INTERIOR_STORE_SHOWCASE",
+          "nameKo": "상업공간 쇼케이스",
+          "source": "current-template",
+          "status": "CANDIDATE"
+        },
+        {
+          "id": "INTERIOR_DESIGN_TO_REALITY",
+          "nameKo": "설계도→완성공간",
+          "source": "current-template",
+          "status": "CANDIDATE"
+        }
       ]
     },
     {
       "family": "HYBRID",
       "styles": [
-        {"id":"HYBRID_TIMELINE","nameKo":"하이브리드 타임라인","source":"hybrid","status":"ACTIVE_CANDIDATE","rule":"Mix styles by semantic/time blocks, not fixed interval."}
+        {
+          "id": "HYBRID_TIMELINE",
+          "nameKo": "하이브리드 타임라인",
+          "source": "hybrid",
+          "status": "ACTIVE_CANDIDATE",
+          "rule": "Mix styles by semantic/time blocks, not fixed interval."
+        }
+      ]
+    },
+    {
+      "family": "DESIGN_SYMBOL",
+      "styles": [
+        {
+          "id": "PICTOGRAM",
+          "nameKo": "픽토그램",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "ISOTYPE",
+          "nameKo": "아이소타입",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "SAFETY_SIGN",
+          "nameKo": "세이프티 사인",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "FLAT_ILLUSTRATION",
+          "nameKo": "플랫 일러스트",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "VECTOR_ICON",
+          "nameKo": "벡터 아이콘",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "CORPORATE",
+          "nameKo": "코퍼레이트",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "DIAGRAM",
+          "nameKo": "다이어그램",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        },
+        {
+          "id": "MINIMALISM",
+          "nameKo": "미니멀리즘",
+          "source": "main/Home.tsx",
+          "status": "RESTORED_CANDIDATE"
+        }
       ]
     }
   ],
@@ -108,5 +424,348 @@
     "Keep presentation/data frames low-text: one headline or short phrase, one key number/chart/table focus, optional short label.",
     "Allow multiple style families in one video and preserve persona/asset continuity across style transitions.",
     "Natural-language bot and whiteboard patch modify only requested ranges/scenes; approved segments stay locked by default."
-  ]
+  ],
+  "uiStyleAliases": [
+    {
+      "uiName": "블루 타이",
+      "styleId": "BLUE_TIE",
+      "category": "캐릭터/애니",
+      "bestFor": "설명·사회현상·풍자",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "레드타이 테디",
+      "styleId": "RED_TIE_TEDDY",
+      "category": "캐릭터/애니",
+      "bestFor": "유머·반응·대화",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "애니메이션",
+      "styleId": "ANIME",
+      "category": "캐릭터/애니",
+      "bestFor": "인물·감정·서사",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "카툰",
+      "styleId": "CARTOON",
+      "category": "캐릭터/애니",
+      "bestFor": "교육·가족·유머",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "픽셀아트",
+      "styleId": "PIXEL_ART",
+      "category": "캐릭터/애니",
+      "bestFor": "게임·레트로",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "막대인간",
+      "styleId": "STICK_FIGURE",
+      "category": "캐릭터/애니",
+      "bestFor": "간결한 상황·문제 설명",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "아이가 그린 그림",
+      "styleId": "CHILD_DRAWING",
+      "category": "예술/회화",
+      "bestFor": "동화·가족·교육",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "지브리",
+      "styleId": "GHIBLI_LIKE",
+      "category": "예술/회화",
+      "bestFor": "따뜻한 회화적 자연·감정; 독자 디자인",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "스케치",
+      "styleId": "SKETCH",
+      "category": "예술/회화",
+      "bestFor": "공간 설계·개념·과정",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "수채화",
+      "styleId": "WATERCOLOR",
+      "category": "예술/회화",
+      "bestFor": "여행·자연·서정",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "유화",
+      "styleId": "OIL_PAINT",
+      "category": "예술/회화",
+      "bestFor": "문학·역사·감성",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "판화",
+      "styleId": "WOODBLOCK_PRINT",
+      "category": "예술/회화",
+      "bestFor": "문화·전통·역사",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "팝아트",
+      "styleId": "POP_ART",
+      "category": "예술/회화",
+      "bestFor": "패션·광고·강조",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "칠판 낙서",
+      "styleId": "CHALKBOARD",
+      "category": "예술/회화",
+      "bestFor": "교육·공식·개념",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "3D 렌더",
+      "styleId": "THREE_D_RENDER",
+      "category": "3D/질감",
+      "bestFor": "공간·제품·캐릭터",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "클레이",
+      "styleId": "CLAY",
+      "category": "3D/질감",
+      "bestFor": "동화·손작업·질감",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "종이접기",
+      "styleId": "ORIGAMI",
+      "category": "3D/질감",
+      "bestFor": "공예·기하·교육",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "로우 폴리",
+      "styleId": "LOW_POLY",
+      "category": "3D/질감",
+      "bestFor": "게임·지도·저비용 3D",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "페이퍼 컷아웃",
+      "styleId": "PAPER_CUTOUT",
+      "category": "3D/질감",
+      "bestFor": "우화·설명·스톱모션",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "콜라주",
+      "styleId": "COLLAGE",
+      "category": "3D/질감",
+      "bestFor": "여행·장소·비교",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "스티커",
+      "styleId": "STICKER",
+      "category": "3D/질감",
+      "bestFor": "쇼츠·제품·반응",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "랜섬 노트",
+      "styleId": "RANSOM_NOTE",
+      "category": "3D/질감",
+      "bestFor": "텍스처 타이포·강조",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "믹스드 미디어",
+      "styleId": "MIXED_MEDIA",
+      "category": "3D/질감",
+      "bestFor": "실사 증거·설명 혼합",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "픽토그램",
+      "styleId": "PICTOGRAM",
+      "category": "디자인/심볼",
+      "bestFor": "안내·간단한 정보",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "아이소타입",
+      "styleId": "ISOTYPE",
+      "category": "디자인/심볼",
+      "bestFor": "통계·수량 비교",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "세이프티 사인",
+      "styleId": "SAFETY_SIGN",
+      "category": "디자인/심볼",
+      "bestFor": "안전·주의",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "플랫 일러스트",
+      "styleId": "FLAT_ILLUSTRATION",
+      "category": "디자인/심볼",
+      "bestFor": "앱·교육·제품",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "벡터 아이콘",
+      "styleId": "VECTOR_ICON",
+      "category": "디자인/심볼",
+      "bestFor": "기능·UI 설명",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "코퍼레이트",
+      "styleId": "CORPORATE",
+      "category": "디자인/심볼",
+      "bestFor": "사업·제안·정보",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "다이어그램",
+      "styleId": "DIAGRAM",
+      "category": "디자인/심볼",
+      "bestFor": "과정·함수·워크플로우",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "미니멀리즘",
+      "styleId": "MINIMALISM",
+      "category": "디자인/심볼",
+      "bestFor": "핵심 메시지",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "흑백 만화",
+      "styleId": "BLACK_WHITE_COMIC",
+      "category": "분위기",
+      "bestFor": "드라마·감정",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "필름 누아르",
+      "styleId": "FILM_NOIR",
+      "category": "분위기",
+      "bestFor": "긴장·회상",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "사이버펑크",
+      "styleId": "CYBERPUNK",
+      "category": "분위기",
+      "bestFor": "미래·SF",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    },
+    {
+      "uiName": "네온",
+      "styleId": "NEON",
+      "category": "분위기",
+      "bestFor": "음악·춤·전환",
+      "fitStatus": "PROPOSED_REQUIRES_EVIDENCE"
+    }
+  ],
+  "registryAudit": {
+    "date": "2026-11-26",
+    "priorBlob": "e1cdf0b9fe52d35be1bc82c895127576425e563a",
+    "uiSourceBlob": "ffc0da003780f91ae1e0799e3ee703e4247130fe",
+    "uiStyles": 35,
+    "priorStyles": 32,
+    "added": 17,
+    "unionStyles": 49,
+    "addedIds": [
+      "ORIGAMI",
+      "LOW_POLY",
+      "PAPER_CUTOUT",
+      "COLLAGE",
+      "STICKER",
+      "RANSOM_NOTE",
+      "MIXED_MEDIA",
+      "PICTOGRAM",
+      "ISOTYPE",
+      "SAFETY_SIGN",
+      "FLAT_ILLUSTRATION",
+      "VECTOR_ICON",
+      "CORPORATE",
+      "DIAGRAM",
+      "MINIMALISM",
+      "BLACK_WHITE_COMIC",
+      "NEON"
+    ],
+    "status": "STATIC_MAPPING_VERIFIED_RUNTIME_NOT_RUN"
+  },
+  "styleLearningScope": {
+    "ownerScope": "영상만들기 템프릿화 작업",
+    "only": [
+      "style reference collection",
+      "Queens observations",
+      "Seed abstraction",
+      "T1/T2 reuse",
+      "hybrid comparison",
+      "recommendation and template QA"
+    ],
+    "exclude": [
+      "MetaHuman face creation",
+      "rigging development",
+      "physics development",
+      "3D asset creation",
+      "voice model development",
+      "publishing operations"
+    ],
+    "rule": "Consume existing approved assets via references. Route gaps to their existing owner chat; do not duplicate packs, workers, triggers or paid calls.",
+    "twoTracks": {
+      "learning": "collection→Queens→Seed→T1→T2→feedback",
+      "production": "request→recommend→previs→render→QA→approved handoff"
+    },
+    "existingPaths": {
+      "collector": "existing 수집팩 / YOUTUBE_SEED_PIPELINE; binding verification pending",
+      "queens": "ANIMATION_SEED_LIBRARY/MV_QUEENS_RAW",
+      "observations": "MV_QUEENS_STYLE_OBS",
+      "seed": "MV_SEED_LIBRARY",
+      "template": "MV_TEMPLATE_REGISTRY",
+      "qa": "MV_QA_LOG",
+      "codex": "existing Codex팩: dedup/schema/reuse/implementation/retest; provider ACK required",
+      "gemini": "existing Gemini팩: semantic fit and style analysis; Gemini Eye actual preview X1/X2; provider ACK required"
+    },
+    "contract": {
+      "dedup": "videoId + observation type; styleId alias; normalized scene pattern hash",
+      "sourceFields": [
+        "videoId",
+        "url",
+        "channel",
+        "publishedAt",
+        "metricObservedAt",
+        "views",
+        "likes",
+        "subscriberCount",
+        "rights",
+        "styleId",
+        "sourceEvidence"
+      ],
+      "observations": [
+        "purpose",
+        "audience",
+        "hook",
+        "semantic scene boundaries",
+        "visual grammar",
+        "camera",
+        "motion",
+        "audio",
+        "transitions",
+        "whenToUse",
+        "whenNotToUse",
+        "evidence"
+      ],
+      "recommendation": "rank 3 candidates including hybrid only if it improves clarity; compare single-style baseline vs hybrid on same topic, audience and length; no fixed 5-second cuts; explain expected fit, cost, required assets and gate status",
+      "promotion": "two different-topic renders plus independent actual Gemini Eye and Codex receipts; user/public release approval separate; no metric causality claims",
+      "executionStatus": "CONTRACT_ONLY_NOT_BOUND"
+    }
+  }
 }
