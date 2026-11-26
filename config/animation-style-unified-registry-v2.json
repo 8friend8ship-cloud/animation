@@ -1890,6 +1890,55 @@
       "newPhysicalTrigger": false
     },
     "latestLearning": "existing collection due loop; no new trigger; update only validated patterns; use 24h/48h/7d available metrics",
-    "coverageUnchanged": true
+    "coverageUnchanged": true,
+    "pilotEvidence": {
+      "analysisId": "ANALYSIS-WHITEBOARD30-69FA4498-V1",
+      "sourceSha256": "69FA4498D3BB51030C1B7D42E8990DF061E04D91EC3FC537F9A1C2A3AC039E3A",
+      "status": "PARTIAL_EVIDENCE_ONLY_RUNTIME_HOLD",
+      "sheetRanges": {
+        "raw": "MV_QUEENS_RAW!A91:V91",
+        "observations": "MV_QUEENS_STYLE_OBS!A320:K339",
+        "lookup": "CALL_INDEX!A77:G77",
+        "event": "MV_CENTRAL_EVENT_LOG!A365:I365"
+      },
+      "observations": {
+        "OBSERVED": 13,
+        "NOT_AVAILABLE": 4,
+        "HYPOTHESIS": 1,
+        "NOT_RUN": 2
+      },
+      "evidence": "P3 six sampled frames and technical decode; no continuous visual/audio listening or independent model ACK",
+      "packAckDefault": "NOT_RUN",
+      "recommendations": [
+        {
+          "styleIds": [
+            "WHITEBOARD_LIVE_DRAW"
+          ],
+          "mode": "SINGLE_BASELINE"
+        },
+        {
+          "styleIds": [
+            "WHITEBOARD_LIVE_DRAW",
+            "STICK_FIGURE"
+          ],
+          "mode": "HYBRID_CANDIDATE"
+        },
+        {
+          "styleIds": [
+            "WHITEBOARD_LIVE_DRAW",
+            "KINETIC_TEXT"
+          ],
+          "mode": "HYBRID_CANDIDATE"
+        }
+      ],
+      "stockRegistryPointers": [
+        "VTube/stock_cache/metadata/VISUAL_SFX_EXISTING_APPROVED_VIDEO_V1.json",
+        "VTube/stock_cache/metadata/VISUAL_VFX_NATURE_APPROVAL_GATE_V1.json",
+        "VTube/stock_cache/metadata/SFX_SEARCH_SEED_CATALOG_V1.json"
+      ],
+      "stockPolicy": "Existing inventory first; per-asset revalidation and current use rights required; old approval counts are historical. No download or new license approval.",
+      "next": "Complete per-dimension structured evidence/conditions and actual independent Gemini/Codex responses; verify existing JSON/MCP resolver and consumer ACK; no promotion.",
+      "coverageSnapshot": "P2 style pointer coverage 20/49 unchanged; pilot raw +1 and observation +20 not new style promotion."
+    }
   }
 }
