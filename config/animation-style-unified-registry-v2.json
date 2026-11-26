@@ -1992,6 +1992,45 @@
         "liveSheetRefresh": false,
         "seedPromotion": false,
         "firstUnfinished": "Review candidate diff against latest live shared MCP, generalize versioned allowlisted snapshot indexing/refresh and bind existing consumer routes with independent ACK; no live change or promotion without gates."
+      },
+      "mcpExtensionP7": {
+        "status": "ISOLATED_GENERAL_RESOLVER_PASS_LIVE_HOLD",
+        "analysisIds": [
+          "ANALYSIS-WHITEBOARD30-69FA4498-V1",
+          "ANALYSIS-YOUTUBE-H10rQoSg41c-V1"
+        ],
+        "snapshotSha256": [
+          "2a09c590dcd6a638745f8d7e7e58fedb44bf363296b2862dd3168f60a66ac24c",
+          "04ae41f076a9db3faead3891859eb343cd0cf91f8f6f71a897d6c380cfedb35e"
+        ],
+        "index": "LearningPack/VIDEO_SHARED_SEED_ANALYSIS_INDEX_V1.json",
+        "indexSha256": "dff872ef3da06f8dc834f9e7d5ec149787c7dc33eb42bd223564d9ad9b0b1f5c",
+        "resolverSource": {
+          "path": "learning/video_shared_seed_resolver_v1.py",
+          "commit": "1c2b311fdf2227f91ad740dd419a667a68a5baaa",
+          "blob": "f20556b737f9d22da6ffb47ab32de865b0924467",
+          "localSha256": "5e21e88cb809de2f2750eaf46e04c584045915e871c7ffb12952c4cf86e8001e"
+        },
+        "candidateSha256": "23c6859350647d72d9d52edbae77ee51fff80afe204d075d57f5d9642ce34d97",
+        "receiptSha256": "7aa5c002a1293ae38773ffe54e948f74cca0661e71fa1a3a7772db93f94019f0",
+        "checks": "64/64; 2 actual reference IDs x18 consumer views; previous version and conflict tests isolated synthetic revision only; same input no change; legacy 23 tools and response preserved",
+        "metadataOnlySecondSource": {
+          "raw": "MV_QUEENS_RAW!A85:V85",
+          "obs": "MV_QUEENS_STYLE_OBS!A314:K314",
+          "states": {
+            "OBSERVED": 1,
+            "HYPOTHESIS": 5,
+            "NOT_AVAILABLE": 4,
+            "NOT_RUN": 10
+          },
+          "actualMediaReview": false
+        },
+        "liveMcpChanged": false,
+        "actualConsumerAck": "NOT_RUN",
+        "liveSheetRefresh": false,
+        "collectionProvider": "HOLD",
+        "seedPromotion": false,
+        "firstUnfinished": "Independent model code and evidence review, approved existing MCP deployment with concurrency checks, actual consumer ACK; existing sheet-to-index refresh owner wiring and stock/collection/visual/audio gates. No synthetic record promotion."
       }
     }
   }
