@@ -767,5 +767,36 @@
       "promotion": "two different-topic renders plus independent actual Gemini Eye and Codex receipts; user/public release approval separate; no metric causality claims",
       "executionStatus": "CONTRACT_ONLY_NOT_BOUND"
     }
+  },
+  "sharedVideoProductionDirective": {
+    "policyId": "VIDEO_ALL_PACKS_DIRECTIVE_20261126",
+    "canonicalUrl": "https://github.com/8friend8ship-cloud/V-tube/blob/main/docs/VTUBE_PACK_CENTRAL_AGENT_SPEC_V1_20260912.md",
+    "verifiedCommit": "4a0e3392dc3f23f8a9296d1d61ef15d46918fd3e",
+    "loadLatestBeforeWork": true,
+    "scope": [
+      "Animation",
+      "VTUBE",
+      "Video",
+      "Motion",
+      "Central Agent",
+      "Veo",
+      "Flow",
+      "Persona",
+      "Voice",
+      "FX",
+      "Publish"
+    ],
+    "preserveStyleStatus": true,
+    "requiredGates": [
+      "TEMPLATE_FIRST",
+      "BON8_HARMONY6",
+      "GEMINI_CODEX_REAL_ACK",
+      "PERSONA_VOICE_RIGHTS",
+      "LOCAL_FIRST_P06_VEO_ZERO_TARGET",
+      "VISUAL_AUDIO_MOBILE_QA_X2",
+      "PLATFORM_LANGUAGE_SHOP_APP_BRIDGE",
+      "PERFORMANCE_FEEDBACK"
+    ],
+    "executionStatus": "POLICY_REFERENCE_ONLY_RUNTIME_NOT_VERIFIED"
   }
 }
