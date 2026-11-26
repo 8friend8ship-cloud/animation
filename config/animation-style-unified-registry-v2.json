@@ -2032,6 +2032,118 @@
         "seedPromotion": false,
         "firstUnfinished": "Independent model code and evidence review, approved existing MCP deployment with concurrency checks, actual consumer ACK; existing sheet-to-index refresh owner wiring and stock/collection/visual/audio gates. No synthetic record promotion."
       }
+    },
+    "spaceAssetReuseP8": {
+      "id": "SPACE_MOTION_EXISTING_ASSET_REUSE_P8_20261126",
+      "status": "DESIGN_REGISTERED_RUNTIME_HOLD",
+      "reuseExisting": [
+        "CARP-INTERIOR-001",
+        "CARP-SEARCH-001",
+        "CARP-ROUTE-001",
+        "SAC-ENV-001",
+        "SAC-PROP-001",
+        "SAC-COMPOSE-001",
+        "SCN-EDIT-EXPLAIN-001",
+        "SPACE MOTION",
+        "LIVING MOTION"
+      ],
+      "styleIds": [
+        "THREE_D_RENDER",
+        "INTERIOR_WALKTHROUGH",
+        "INTERIOR_DESIGN_TO_REALITY",
+        "HYBRID_TIMELINE"
+      ],
+      "reference": {
+        "videoId": "7R-WHdddudk",
+        "url": "https://www.youtube.com/shorts/7R-WHdddudk",
+        "priorStudy": "2026-11-08",
+        "actualFramesReopened": [
+          "00:10 round dining table and chairs in cutaway kitchen",
+          "00:12 wall shelves, hobby turntable/decor and rug, same room region reframed"
+        ],
+        "limitation": "Two stored frames inspected; no continuous playback, original editing software or exact motion inference; original full transcript HOLD; reference only, no source graphic/audio/script cloning."
+      },
+      "relatedReference": {
+        "videoId": "Q8RBEPbqhgo",
+        "url": "https://youtu.be/Q8RBEPbqhgo",
+        "method": "D5 phasing and grouped-object exploded/reassembly; historic tutorial, validate installed version and license first"
+      },
+      "route": [
+        "COLLECTION_EXISTING_ASSET_SEARCH",
+        "AI_BRIEF_AND_GEMINI_CODEX_PLAN",
+        "APPROVED_SOURCE_ID_VERSION_HASH_RIGHTS_GATE",
+        "ENGINE_SELECTION_EXISTING_SCENE",
+        "SPACE_MOTION_STAGED_PLACEMENT_OR_LIVING_MOTION_IF_PHYSICS_VERIFIED",
+        "PREVIS_BEFORE_GENERATION",
+        "GEMINI_EYE_ASIDE_REA_CODEX_QA",
+        "LOCAL_COMPOSITE_OR_FLOW_REFERENCE_ONLY_WHEN_NEEDED",
+        "DERIVATIVE_INDEX_JSON_MCP_TEMPLATE_REUSE"
+      ],
+      "engineRoles": {
+        "SketchUp": "existing layout, grouped objects, dimension evidence",
+        "Blender": "orthographic cutaway, object visibility/transform animation, detail, overlays",
+        "D5": "existing approved render or phasing if installed version/license permits",
+        "Unreal": "Sequencer; real interactions require separate physics/Blueprint evidence",
+        "Twinmotion": "existing approved stills/tours/phasing when supported"
+      },
+      "assetRequired": [
+        "space_id",
+        "asset_id",
+        "parent_asset_id",
+        "source_engine",
+        "source_path_or_pointer",
+        "source_sha256",
+        "revision",
+        "rights",
+        "approved_use_scope",
+        "geometry_units",
+        "measured_or_estimated",
+        "camera_preset",
+        "object_groups",
+        "anchor_transforms",
+        "clearance_constraints",
+        "preview_refs",
+        "summary",
+        "memo",
+        "keywords",
+        "usage_description",
+        "recommended_style",
+        "avoid_conditions",
+        "last_good",
+        "first_unfinished",
+        "consumer_ack"
+      ],
+      "priority": [
+        "room_furniture_staged_layout",
+        "window_structure_and_clearance",
+        "door_hinge_clearance",
+        "kitchen_work_zones"
+      ],
+      "templateCandidate": {
+        "mode": "SPACE_MOTION",
+        "durationSeconds": 30,
+        "aspectRatio": "9:16",
+        "sequence": [
+          "room constraint and question",
+          "empty shell and scale",
+          "furniture one semantic group at a time",
+          "explain purpose per placement",
+          "clearance and comparison",
+          "completed view and takeaway"
+        ],
+        "camera": "top/isometric base; optional detail cut; geometry stays locked",
+        "qualification": "timing proposal, not measured original or approved output"
+      },
+      "gates": [
+        "approved still is not approved physics",
+        "hold unverified asset, rights, scale, collisions and clearance",
+        "Flow/Veo cannot silently alter structural geometry, placement, door/window anchors",
+        "prefer existing render and deterministic Blender/UE/FFmpeg compositing; no paid API or new trigger",
+        "AI/Gemini/Codex evidence and pre/post visual verification before approval"
+      ],
+      "runtime": "NOT_RUN",
+      "promotion": "NOT_RUN",
+      "coverageUnchanged": true
     }
   }
 }
