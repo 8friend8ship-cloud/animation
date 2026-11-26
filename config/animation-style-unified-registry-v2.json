@@ -1732,5 +1732,164 @@
       "sharedCollector": "API_DISPATCH_REGISTRY YOUTUBE_DATA_V3 P5_PATQ_PATCH_10_PASS_ROLLBACK_X2__COLLECTOR_32_LEDGER_28_PASS__GAS_NOT_DEPLOYED__PROVIDER_HOLD",
       "sourceContract": "SRC_YOUTUBE_KEYWORD existing cache-first, no new trigger"
     }
+  },
+  "sharedSeedAnalysisContract": {
+    "id": "VIDEO_SHARED_SEED_ANALYSIS_CONTRACT_V1_20261126",
+    "canonical": {
+      "repo": "8friend8ship-cloud/V-tube",
+      "commit": "e8abc1c1b18bc297323ae490840d6a9f815917a5",
+      "path": "docs/VTUBE_PACK_CENTRAL_AGENT_SPEC_V1_20260912.md"
+    },
+    "state": "DESIGN_REGISTERED_RUNTIME_HOLD",
+    "sourceKey": [
+      "YouTube:videoId",
+      "Drive:fileId+SHA256"
+    ],
+    "analysisDimensions": [
+      "title_keywords",
+      "thumbnail",
+      "opening_hook",
+      "writing",
+      "explanation",
+      "script",
+      "subtitles",
+      "images",
+      "video_editing",
+      "style",
+      "narrative",
+      "character_emotion",
+      "motion",
+      "camera",
+      "vfx",
+      "voice",
+      "audio_sfx_bgm",
+      "stock_assets",
+      "performance",
+      "production_efficiency"
+    ],
+    "observationRequired": [
+      "dimension",
+      "evidence_ref",
+      "timecode_or_evidence_type",
+      "state",
+      "usage_condition",
+      "avoid_condition",
+      "reuse_ids"
+    ],
+    "observationStates": [
+      "OBSERVED",
+      "HYPOTHESIS",
+      "NOT_AVAILABLE",
+      "NOT_RUN"
+    ],
+    "summaryRequired": [
+      "analysis_id",
+      "source_key",
+      "source_hash_or_unavailable",
+      "schema_version",
+      "summary",
+      "memo",
+      "keywords",
+      "usage_description",
+      "recommended_style_ids",
+      "recommendations",
+      "rights",
+      "evidence_refs",
+      "template_id_version",
+      "pack_ack_map",
+      "last_good",
+      "first_bad",
+      "first_unfinished"
+    ],
+    "recommendationRequired": [
+      "style_ids",
+      "single_or_hybrid",
+      "reason",
+      "estimated_time_cost",
+      "assets",
+      "rights",
+      "qa_state"
+    ],
+    "sheetRoutes": {
+      "id": "1b0VkG1lttudtgctqRQCC2ZydjwrPLu2cA3vxSBUD7_g",
+      "raw": "MV_QUEENS_RAW",
+      "observations": "MV_QUEENS_STYLE_OBS",
+      "seed": "MV_SEED_LIBRARY",
+      "templates": "MV_TEMPLATE_REGISTRY",
+      "qa": "MV_QA_LOG",
+      "lookup": "CALL_INDEX",
+      "fanout": "INGEST_FANOUT",
+      "gate": "WORKFLOW_GATE",
+      "events": "MV_CENTRAL_EVENT_LOG"
+    },
+    "packGroups": [
+      "Collection/YouTube/Learning",
+      "AI/Gemini/Codex",
+      "VTUBE/Video/Animation",
+      "Writing/Thumbnail/Image/Persona/Motion/Voice/Language/X41/FX/FFM/Remotion/Flow/Veo/NotebookLM",
+      "Aside/REA/Gemini Eye",
+      "Central/JSON/MCP",
+      "Publish/Performance"
+    ],
+    "packAckRequired": [
+      "pack_id",
+      "analysis_id",
+      "version",
+      "input_hash",
+      "output_hash_or_reason",
+      "actual_route",
+      "state",
+      "receipt_ref"
+    ],
+    "packAckStates": [
+      "ACK_VERIFIED",
+      "HOLD",
+      "NOT_RUN",
+      "NOT_APPLICABLE"
+    ],
+    "stock": {
+      "reuseFirst": true,
+      "sourceCandidates": [
+        "Pexels",
+        "Pixabay",
+        "Mixkit",
+        "Wikimedia Commons"
+      ],
+      "required": [
+        "source_url",
+        "license_url",
+        "checked_at",
+        "creator",
+        "asset_sha256",
+        "dimensions_duration",
+        "commercial_use",
+        "edit_use",
+        "redistribution",
+        "model_training_permission",
+        "person_brand_audio_restrictions"
+      ],
+      "unknownRights": "HOLD",
+      "actualSceneVsSyntheticDisclosure": true
+    },
+    "promotion": [
+      "rights",
+      "actual media evidence",
+      "Gemini/Codex independent ACK",
+      "single_vs_hybrid two topics",
+      "visual/audio/mobile X1/X2",
+      "Aside/REA",
+      "readback"
+    ],
+    "continuity": {
+      "dedup": "source_key+analysis_version",
+      "immutableApproved": true,
+      "restart": "LAST_GOOD→FIRST_UNFINISHED",
+      "retry": "failed stage only",
+      "runtime": "HOLD until actual consumer/ACK evidence",
+      "provider": "existing authorized quota only",
+      "newPhysicalTrigger": false
+    },
+    "latestLearning": "existing collection due loop; no new trigger; update only validated patterns; use 24h/48h/7d available metrics",
+    "coverageUnchanged": true
   }
 }
