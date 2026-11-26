@@ -2216,6 +2216,160 @@
       ],
       "runtime": "NOT_RUN",
       "promotion": "NOT_RUN"
+    },
+    "styleTemplateFactoryResearchFirst": {
+      "id": "STYLE_TEMPLATE_FACTORY_RESEARCH_FIRST_V1_20261126",
+      "state": "STYLE01_FUNCTION_CANARY_PASS_RUNTIME_HOLD",
+      "scope": "This chat owns reusable style research, directing methods, workflow, pipeline and template development. Individual project videos, publication, product sourcing and character/asset production remain with existing owner chats and due loops. Generic synthetic template QA is permitted; no project video production here.",
+      "priorityGroups": [
+        {
+          "order": 1,
+          "styles": [
+            "WHITEBOARD_LIVE_DRAW",
+            "SKETCH",
+            "BLUE_TIE",
+            "RED_TIE_TEDDY",
+            "WATERCOLOR",
+            "MIXED_MEDIA"
+          ],
+          "why": "high reuse explanatory drawing, character continuity and live-action hybrid"
+        },
+        {
+          "order": 2,
+          "styles": [
+            "THREE_D_RENDER",
+            "INTERIOR_WALKTHROUGH",
+            "INTERIOR_DESIGN_TO_REALITY",
+            "INTERIOR_STORE_SHOWCASE",
+            "PHOTO_PARALLAX",
+            "HYBRID_TIMELINE"
+          ],
+          "why": "space staging and camera continuity"
+        },
+        {
+          "order": 3,
+          "styles": [
+            "STICK_FIGURE",
+            "CARTOON",
+            "ANIME",
+            "MOTION_COMIC",
+            "CHILD_DRAWING",
+            "GHIBLI_LIKE",
+            "PIXEL_ART"
+          ],
+          "why": "character acting and visual storytelling; original assets only"
+        },
+        {
+          "order": 4,
+          "styles": [
+            "PAPER_CUTOUT",
+            "COLLAGE",
+            "CLAY",
+            "ORIGAMI",
+            "LOW_POLY",
+            "BLACK_WHITE_COMIC",
+            "OIL_PAINT",
+            "WOODBLOCK_PRINT",
+            "POP_ART",
+            "CHALKBOARD"
+          ],
+          "why": "material and graphic animation methods"
+        },
+        {
+          "order": 5,
+          "styles": [
+            "KINETIC_TEXT",
+            "NOTEBOOKLM_EDU",
+            "PRESENTATION_PDF",
+            "DOCS_SHEETS_DATA",
+            "DIAGRAM",
+            "PICTOGRAM",
+            "ISOTYPE",
+            "SAFETY_SIGN",
+            "FLAT_ILLUSTRATION",
+            "VECTOR_ICON",
+            "CORPORATE",
+            "MINIMALISM"
+          ],
+          "why": "education/data and informational clarity"
+        },
+        {
+          "order": 6,
+          "styles": [
+            "COOKING_CHARACTER_REAL",
+            "DAILY_MEDITATION_SITCOM",
+            "FLOW_CINEMATIC",
+            "FILM_NOIR",
+            "CYBERPUNK",
+            "STICKER",
+            "RANSOM_NOTE",
+            "NEON"
+          ],
+          "why": "domain, cinematic and decorative techniques"
+        }
+      ],
+      "route": [
+        "existing reference and template readback",
+        "actual allowed source observation with timestamps; metadata and documentation not full video analysis",
+        "Gemini/Codex independent style method plan",
+        "generalized recipe and parameters",
+        "existing renderer or pure function adaptation",
+        "synthetic independent topic A/B test X1/X2",
+        "actual visual QA and owner consumer ACK",
+        "versioned reusable template promotion"
+      ],
+      "recipeRequired": [
+        "style_id",
+        "existing_template_id",
+        "source_id_rights",
+        "observations_timecodes",
+        "composition_palette_layers",
+        "motion_path_easing_and_beats",
+        "camera_and_transition",
+        "persona_voice_requirements",
+        "input_output_parameter_contract",
+        "engine_mapping",
+        "forbidden_shortcuts",
+        "test_fixtures",
+        "before_after_delta",
+        "receipt_sha",
+        "promotion_state"
+      ],
+      "style01": {
+        "existingTemplate": "T1-WHITEBOARD-STROKE",
+        "existingFactory": "VideoTemplateFactory/StyleTemplates/STYLE01_X1",
+        "sourceResearch": [
+          {
+            "url": "https://docs.blender.org/manual/en/4.5/grease_pencil/modifiers/generate/build.html",
+            "method": "sequential and natural drawing speed; official documentation, not actual video observation"
+          },
+          {
+            "url": "https://www.adobe.com/learn/after-effects/web/animated-paint-brush-strokes",
+            "method": "write-on animation and retiming; official tutorial page, playback not inspected"
+          },
+          {
+            "url": "https://studio.blender.org/training/story-tools/",
+            "method": "2D drawings over 3D environment and timeline assembly; official course description"
+          }
+        ],
+        "implementation": "config/style01-stroke-plan-v2-candidate.py",
+        "implementationCommit": "04fea0a1639527e787b77d6f8f51eabce8e62137",
+        "localCandidateSha256": "bb59b86cc2c53804fac000474df440c6b7eac5e51b0cade5b5d58ec616c7824f",
+        "receiptSha256": "ba5573d470d9d6c7e3bcf8c9971badc385361d064702979d8898566845975098",
+        "parameters": [
+          "stroke_id",
+          "beat_id",
+          "start_s",
+          "end_s",
+          "normalized_points",
+          "fps"
+        ],
+        "checks": "two synthetic topics 73+82 frames X1/X2; 6 invalid inputs rejected each; completed paths persist; pen endpoint equals active reveal endpoint; monotonic progress; source preserved",
+        "state": "FUNCTION_CANARY_PASS_VISUAL_RUNTIME_HOLD",
+        "next": "bind candidate to existing whiteboard renderer; test real canvas output using independent generic assets; Gemini/Codex/Aside/REA visual QA; no actual project video"
+      },
+      "nextStyle": "SKETCH then BLUE_TIE/RED_TIE_TEDDY; existing STYLE11 mixed media research reused without duplicate source requests",
+      "production": "NOT_RUN"
     }
   }
 }
