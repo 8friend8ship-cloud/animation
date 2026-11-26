@@ -926,6 +926,30 @@
           "T1-INTERIOR-CINEMATIC-TWO-STAGE-PUSHIN"
         ],
         "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
+      },
+      {
+        "legacyFamily": "TRAVEL_REGION_SIGNATURE_COLLAGE_PROOF",
+        "styleId": "COLLAGE",
+        "relation": "RELATED_VISUAL_OR_PRODUCTION_PATTERN_NOT_IDENTICAL_STYLE",
+        "queensIds": [
+          "MVQ-20260909-TRC"
+        ],
+        "templateIds": [
+          "T1-TRAVEL-REGION-SIGNATURE-COLLAGE"
+        ],
+        "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
+      },
+      {
+        "legacyFamily": "AGENT_SKILL_DISCOVERY_ORCHESTRATION_PROOF",
+        "styleId": "DIAGRAM",
+        "relation": "RELATED_VISUAL_OR_PRODUCTION_PATTERN_NOT_IDENTICAL_STYLE",
+        "queensIds": [
+          "MVQ-20260909-AS"
+        ],
+        "templateIds": [
+          "T1-AGENT-SKILL-DISCOVERY-ORCHESTRATION-PROOF"
+        ],
+        "status": "STATIC_INDEX_LINK_NOT_NEW_APPROVAL"
       }
     ],
     "coverage": [
@@ -933,25 +957,29 @@
         "styleId": "BLUE_TIE",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "RED_TIE_TEDDY",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "ANIME",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "CARTOON",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "PIXEL_ART",
@@ -959,31 +987,38 @@
           "MVQ-20261126-ugV6cLgwomo"
         ],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "STICK_FIGURE",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "MOTION_COMIC",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": [
+          "ANIM-20260817-004"
+        ]
       },
       {
         "styleId": "CHILD_DRAWING",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "GHIBLI_LIKE",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "SKETCH",
@@ -995,7 +1030,8 @@
         ],
         "relatedQueensIds": [
           "MVQ-20260908-PSK"
-        ]
+        ],
+        "historicalProductionIds": []
       },
       {
         "styleId": "WATERCOLOR",
@@ -1007,31 +1043,36 @@
         ],
         "relatedQueensIds": [
           "MVQ-20260908-AWC"
-        ]
+        ],
+        "historicalProductionIds": []
       },
       {
         "styleId": "OIL_PAINT",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "WOODBLOCK_PRINT",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "POP_ART",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "CHALKBOARD",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "WHITEBOARD_LIVE_DRAW",
@@ -1045,13 +1086,15 @@
         "relatedQueensIds": [
           "MVQ-20260908-WHITEBOARD",
           "MVQ-20260908-WBCHAR"
-        ]
+        ],
+        "historicalProductionIds": []
       },
       {
         "styleId": "THREE_D_RENDER",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "CLAY",
@@ -1059,31 +1102,38 @@
           "MVQ-20261126-E5t_DXgZmFM"
         ],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "FILM_NOIR",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "CYBERPUNK",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "PHOTO_PARALLAX",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": [
+          "ANIM-20260817-004"
+        ]
       },
       {
         "styleId": "FLOW_CINEMATIC",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "ORIGAMI",
@@ -1091,7 +1141,8 @@
           "MVQ-20261126-OPbBFwTdF-c"
         ],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "LOW_POLY",
@@ -1099,7 +1150,8 @@
           "MVQ-20261126-tMiqe2lkF00"
         ],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "PAPER_CUTOUT",
@@ -1107,43 +1159,54 @@
           "MVQ-20261126-sdxE53o2WrU"
         ],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "COLLAGE",
         "directReferences": [],
-        "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedTemplateIds": [
+          "T1-TRAVEL-REGION-SIGNATURE-COLLAGE"
+        ],
+        "relatedQueensIds": [
+          "MVQ-20260909-TRC"
+        ],
+        "historicalProductionIds": []
       },
       {
         "styleId": "STICKER",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "RANSOM_NOTE",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "MIXED_MEDIA",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "BLACK_WHITE_COMIC",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "NEON",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "KINETIC_TEXT",
@@ -1151,19 +1214,22 @@
           "MVQ-20261126-H1NYrn_qZII"
         ],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "NOTEBOOKLM_EDU",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "PRESENTATION_PDF",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "DOCS_SHEETS_DATA",
@@ -1171,7 +1237,8 @@
           "MVQ-20261126-jbkSRLYSojo"
         ],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "COOKING_CHARACTER_REAL",
@@ -1183,7 +1250,8 @@
         "relatedQueensIds": [
           "MVQ-20260908-COOKING",
           "MVQ-20260908-COOKACT"
-        ]
+        ],
+        "historicalProductionIds": []
       },
       {
         "styleId": "DAILY_MEDITATION_SITCOM",
@@ -1193,7 +1261,8 @@
         ],
         "relatedQueensIds": [
           "MVQ-20260908-SITCOM"
-        ]
+        ],
+        "historicalProductionIds": []
       },
       {
         "styleId": "INTERIOR_WALKTHROUGH",
@@ -1203,7 +1272,8 @@
         ],
         "relatedQueensIds": [
           "MVQ-20260908-CINPUSH"
-        ]
+        ],
+        "historicalProductionIds": []
       },
       {
         "styleId": "INTERIOR_STORE_SHOWCASE",
@@ -1213,7 +1283,8 @@
         ],
         "relatedQueensIds": [
           "MVQ-20260908-STOREPROOF"
-        ]
+        ],
+        "historicalProductionIds": []
       },
       {
         "styleId": "INTERIOR_DESIGN_TO_REALITY",
@@ -1223,61 +1294,77 @@
         ],
         "relatedQueensIds": [
           "MVQ-20260908-INTTRANS"
-        ]
+        ],
+        "historicalProductionIds": []
       },
       {
         "styleId": "HYBRID_TIMELINE",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": [
+          "ANIM-20260817-004"
+        ]
       },
       {
         "styleId": "PICTOGRAM",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "ISOTYPE",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "SAFETY_SIGN",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "FLAT_ILLUSTRATION",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "VECTOR_ICON",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "CORPORATE",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       },
       {
         "styleId": "DIAGRAM",
         "directReferences": [],
-        "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedTemplateIds": [
+          "T1-AGENT-SKILL-DISCOVERY-ORCHESTRATION-PROOF"
+        ],
+        "relatedQueensIds": [
+          "MVQ-20260909-AS"
+        ],
+        "historicalProductionIds": []
       },
       {
         "styleId": "MINIMALISM",
         "directReferences": [],
         "relatedTemplateIds": [],
-        "relatedQueensIds": []
+        "relatedQueensIds": [],
+        "historicalProductionIds": []
       }
     ],
     "summary": {
@@ -1285,9 +1372,12 @@
       "rawRows": 89,
       "exactStyleIdRows": 10,
       "stylesWithDirect": 10,
-      "stylesWithAnyPointer": 15,
-      "stylesWithoutPointer": 34,
-      "legacyLinks": 10
+      "stylesWithAnyPointer": 17,
+      "stylesWithoutPointer": 32,
+      "legacyLinks": 12,
+      "historicalProductionStyles": 3,
+      "stylesWithAnyIncludingHistorical": 20,
+      "stylesWithoutAnyIncludingHistorical": 29
     },
     "policy": "A reference pointer is not a learned or production-approved style. Do not duplicate old Queens or T1 records. Reuse the related pattern, inspect the actual media and test applicability; the BBC chart reference is method-only, not a Docs/Sheets production claim. No automatic promotion.",
     "next": "Verify existing collection consumer and ACK before sending gap requests. Prioritize missing styles by user task demand, not numerical coverage alone.",
@@ -1303,6 +1393,344 @@
         "VIDEO_STYLE_FIRST_REAL_TEMPLATE_GATE_V1_20261126"
       ],
       "gate": "Purpose and evidence before style. R1 technical/source/rights, R2 본섬김8, R3 하몬써클6; actual MP4/voice/mobile Gemini Eye, Codex, Aside/REA. No fixed-score fixture, old unapproved TTS, no mere motion-block substitution."
+    },
+    "historicalProductionLinks": [
+      {
+        "styleId": "MOTION_COMIC",
+        "productId": "ANIM-20260817-004",
+        "sourceRow": 5,
+        "sourceRange": "PRODUCTION_INDEX!A5:U5",
+        "note": "Historical six-style comparison record; current binary not found in listed Drive production folder, actual rerender/visual QA NOT_RUN.",
+        "status": "HISTORICAL_PRODUCTION_POINTER_ONLY"
+      },
+      {
+        "styleId": "PHOTO_PARALLAX",
+        "productId": "ANIM-20260817-004",
+        "sourceRow": 5,
+        "sourceRange": "PRODUCTION_INDEX!A5:U5",
+        "note": "Historical six-style comparison record; current binary not found in listed Drive production folder, actual rerender/visual QA NOT_RUN.",
+        "status": "HISTORICAL_PRODUCTION_POINTER_ONLY"
+      },
+      {
+        "styleId": "HYBRID_TIMELINE",
+        "productId": "ANIM-20260817-004",
+        "sourceRow": 5,
+        "sourceRange": "PRODUCTION_INDEX!A5:U5",
+        "note": "Historical six-style comparison record; current binary not found in listed Drive production folder, actual rerender/visual QA NOT_RUN.",
+        "status": "HISTORICAL_PRODUCTION_POINTER_ONLY"
+      }
+    ],
+    "flowHistoricalPlaceholder": {
+      "styleId": "FLOW_CINEMATIC",
+      "productId": "ANIM-20260817-003",
+      "status": "LOCAL_MOCKUP_FLOW_QUEUED_NOT_REAL_FLOW_PROOF"
+    },
+    "gapRequest": {
+      "jobId": "VIDEO_STYLE_GAP_REUSE_20261126_V1",
+      "dedupKey": "ANIMATION:STYLE_GAP:REGISTRY_V21:20261126",
+      "sourceId": "SRC_YOUTUBE_KEYWORD",
+      "centralSpreadsheetId": "1uodMplwpovV7Dq1UpO7o3vC0vaWjj-84IsoEXRuAGPY",
+      "queueTab": "COLLECT_QUEUE",
+      "targetCount": 29,
+      "requestItems": [
+        {
+          "requestId": "STYLE_GAP:ANIME",
+          "styleId": "ANIME",
+          "query": "official 2D anime animation storyboard acting production breakdown",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:BLACK_WHITE_COMIC",
+          "styleId": "BLACK_WHITE_COMIC",
+          "query": "black white comic motion storytelling animation",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:BLUE_TIE",
+          "styleId": "BLUE_TIE",
+          "query": "original mascot simple round head stick character explainer animation storytelling technique",
+          "target": 1,
+          "priority": "P0",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:CARTOON",
+          "styleId": "CARTOON",
+          "query": "cartoon character animation acting visual storytelling tutorial",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:CHALKBOARD",
+          "styleId": "CHALKBOARD",
+          "query": "chalkboard educational animation drawing mathematics",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:CHILD_DRAWING",
+          "styleId": "CHILD_DRAWING",
+          "query": "children crayon drawing animation educational storytelling",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:CORPORATE",
+          "styleId": "CORPORATE",
+          "query": "corporate animated explainer workflow product demonstration",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:CYBERPUNK",
+          "styleId": "CYBERPUNK",
+          "query": "cyberpunk animation lighting original short making of",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:FILM_NOIR",
+          "styleId": "FILM_NOIR",
+          "query": "film noir lighting black white animation short making of",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:FLAT_ILLUSTRATION",
+          "styleId": "FLAT_ILLUSTRATION",
+          "query": "flat illustration animated explainer video making of",
+          "target": 1,
+          "priority": "P0",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:FLOW_CINEMATIC",
+          "styleId": "FLOW_CINEMATIC",
+          "query": "Google Flow cinematic filmmaking official scene continuity workflow",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:GHIBLI_LIKE",
+          "styleId": "GHIBLI_LIKE",
+          "query": "painterly nature hand drawn animation soft light original short making of",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:ISOTYPE",
+          "styleId": "ISOTYPE",
+          "query": "isotype pictorial statistics animation visualization",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:MINIMALISM",
+          "styleId": "MINIMALISM",
+          "query": "minimalist animated explainer simple graphic storytelling",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:MIXED_MEDIA",
+          "styleId": "MIXED_MEDIA",
+          "query": "mixed media collage live action animation explainer making of",
+          "target": 1,
+          "priority": "P0",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:NEON",
+          "styleId": "NEON",
+          "query": "neon motion graphics music visualizer animation",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:NOTEBOOKLM_EDU",
+          "styleId": "NOTEBOOKLM_EDU",
+          "query": "NotebookLM video overview educational visual explanation official",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:OIL_PAINT",
+          "styleId": "OIL_PAINT",
+          "query": "oil painting animation painterly frame by frame making of",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:PICTOGRAM",
+          "styleId": "PICTOGRAM",
+          "query": "pictogram animation instructional visual communication",
+          "target": 1,
+          "priority": "P0",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:POP_ART",
+          "styleId": "POP_ART",
+          "query": "pop art motion graphics product design animation",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:PRESENTATION_PDF",
+          "styleId": "PRESENTATION_PDF",
+          "query": "animated presentation visual storytelling explainer educational",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:RANSOM_NOTE",
+          "styleId": "RANSOM_NOTE",
+          "query": "cutout magazine letter typography animation tutorial",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:RED_TIE_TEDDY",
+          "styleId": "RED_TIE_TEDDY",
+          "query": "original cartoon mascot reaction comedy timing animation tutorial",
+          "target": 1,
+          "priority": "P0",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:SAFETY_SIGN",
+          "styleId": "SAFETY_SIGN",
+          "query": "animated safety signage instructional video pictograms",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:STICKER",
+          "styleId": "STICKER",
+          "query": "sticker animation motion graphics product explainer",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:STICK_FIGURE",
+          "styleId": "STICK_FIGURE",
+          "query": "stick figure animation explainer story gesture",
+          "target": 1,
+          "priority": "P0",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:THREE_D_RENDER",
+          "styleId": "THREE_D_RENDER",
+          "query": "3D animation cinematic product interior camera official making of",
+          "target": 1,
+          "priority": "P0",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:VECTOR_ICON",
+          "styleId": "VECTOR_ICON",
+          "query": "vector icon animation educational micro interaction",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        },
+        {
+          "requestId": "STYLE_GAP:WOODBLOCK_PRINT",
+          "styleId": "WOODBLOCK_PRINT",
+          "query": "woodcut print animated short production process",
+          "target": 1,
+          "priority": "P1",
+          "rights": "REFERENCE_ONLY",
+          "reuseFirst": true,
+          "status": "HOLD_DISPATCH_UNBOUND"
+        }
+      ],
+      "gate": "Existing shared source/cache/owned asset first. Blue/red original persona source only, never clone other characters. Search provider only after verified NO_MATCH and approved current quota/owner/consumer ACK. Public metadata reference only. No auto-promotion.",
+      "state": "HOLD_PENDING_CENTRAL_CONSUMER_ACK"
+    },
+    "cacheAudit": {
+      "videoIndexSample": "ContentOS-QUEENS-YouTubeSource Video_Index A1:J3000: 2999 rows examined; results mainly review/music and metrics zero. Not full index and not evidence of absent style.",
+      "sharedCollector": "API_DISPATCH_REGISTRY YOUTUBE_DATA_V3 P5_PATQ_PATCH_10_PASS_ROLLBACK_X2__COLLECTOR_32_LEDGER_28_PASS__GAS_NOT_DEPLOYED__PROVIDER_HOLD",
+      "sourceContract": "SRC_YOUTUBE_KEYWORD existing cache-first, no new trigger"
     }
   }
 }
